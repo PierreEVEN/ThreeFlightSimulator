@@ -1,13 +1,13 @@
 import {Landscape} from './Landscape.js'
 import {GLTFLoader} from "./node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+import {Plane} from "./plane.js";
 
 let W = document.body.scrollWidth;
 let H = document.body.scrollHeight;
 
 let container = document.querySelector('#threejsContainer');
 
-let scene, camera, clock, light, renderer, controls, landscape;
-
+let scene, camera, clock, light, renderer, controls, landscape, plane = null;
 const gltfLoader = new GLTFLoader();
 function init() {
 
@@ -45,11 +45,11 @@ function init() {
 	// Create landscape
 	landscape = new Landscape(scene, camera);
 
+	// Create default plane
+	loadPlane();
 
-
-
+//WIP :: load tree instances :: TEST
 	gltfLoader.load('./tree.glb', function (gltf) {
-
 
 		const matrix = new THREE.Matrix4();
 		gltf.scene.traverse(function(child) {
@@ -82,12 +82,19 @@ function init() {
 	})
 }
 
+async function loadPlane() {
+	const planeMesh = await gltfLoader.loadAsync('./tree.glb');
+	scene.add(planeMesh);
+	plane = new Plane(scene, planeMesh);
+
+}
 
 function animate() {
-        requestAnimationFrame(animate);
-		controls.update();
-		landscape.render();
-        renderer.render(scene, camera);
+	requestAnimationFrame(animate);
+	controls.update();
+	landscape.render();
+	renderer.render(scene, camera);
+	if (plane !== null) plane.update(clock.getDelta());
 }
 
 init();
