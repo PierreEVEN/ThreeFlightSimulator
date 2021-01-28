@@ -8,11 +8,10 @@ let container = document.querySelector('#threejsContainer');
 
 let scene, camera, clock, light, renderer, controls, landscape;
 
-let test;
-
 const gltfLoader = new GLTFLoader();
-
 function init() {
+
+
 
 	clock = new THREE.Clock(true);
 
@@ -46,17 +45,41 @@ function init() {
 	// Create landscape
 	landscape = new Landscape(scene, camera);
 
-	test = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 10), new THREE.MeshPhongMaterial(), 100);
-	test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-
-	const matrix = new THREE.Matrix4();
-	for (let i = 0; i < 100; ++i) {
-		matrix.setPosition(i * 10, 0, 0);
-		test.setMatrixAt(i, matrix);
-	}
 
 
-	scene.add(test);
+
+	gltfLoader.load('./tree.glb', function (gltf) {
+
+
+		const matrix = new THREE.Matrix4();
+		gltf.scene.traverse(function(child) {
+			if (child.isMesh) {
+
+				console.log('mesh ' + child.name +' : '+ child.geometry);
+
+				let width = 100;
+				let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
+				test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+
+				for (let x = 0; x < width; ++x) {
+					for (let y = 0; y < width; ++y) {
+
+						let posX = x * 10 + Math.random() * 10 - 5;
+						let posY = y * 10 + Math.random() * 10 - 5;
+
+						matrix.makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
+						matrix.scale(new THREE.Vector3(0.01,0.01,0.01));
+						matrix.setPosition(posX, posY, landscape.getHeightAtLocation(posX, posY));
+						test.setMatrixAt(x + y * width, matrix);
+					}
+				}
+
+				scene.add(test);
+
+			}
+		});
+
+	})
 }
 
 
