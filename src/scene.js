@@ -50,6 +50,17 @@ function init() {
 	// Create default plane
 	loadPlane();
 
+
+	let Geom1 = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 1500), new THREE.MeshPhysicalMaterial({color:new THREE.Color(0.2, 0.25, 0.5)}));
+	let Geom2 = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 1500), new THREE.MeshPhysicalMaterial({color:new THREE.Color(0.2, 0.25, 0.5)}));
+
+	Geom1.position.x += 200;
+
+	scene.add(Geom1);
+	scene.add(Geom2);
+
+
+
 //WIP :: load tree instances :: TEST
 	gltfLoader.load('./tree.glb', function (gltf) {
 
@@ -57,15 +68,15 @@ function init() {
 		gltf.scene.traverse(function(child) {
 			if (child.isMesh) {
 
-				let width = 100;
+				let width = 300;
 				let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
 				test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
 
 				for (let x = 0; x < width; ++x) {
 					for (let y = 0; y < width; ++y) {
 
-						let posX = x * 10 + Math.random() * 10 - 5;
-						let posY = y * 10 + Math.random() * 10 - 5;
+						let posX = x * 50 + Math.random() * 50 - 25;
+						let posY = y * 50 + Math.random() * 50 - 25;
 
 						matrix.makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
 						matrix.scale(new THREE.Vector3(0.01,0.01,0.01));
@@ -106,11 +117,11 @@ function loadPlane() {
 
 function animate() {
 	requestAnimationFrame(animate);
+	stats.update();
 	landscape.render();
 	renderer.render(scene, camera);
 	if (plane) plane.update(clock.getDelta());
 	if (controller) controller.update(clock.getDelta());
-	stats.update();
 }
 
 init();
