@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="fr">
 	<head>
+		
 		<title>Pierre EVEN - ThreeJS demo</title>
 		<meta charset="utf-8">
 		<link rel="stylesheet" href="style.css">
@@ -9,10 +10,10 @@
 
 	<body>
 		<div id="threejsContainer"></div>
-		<script src="three.min.js"></script>
-		<script src="OrbitControls.js"></script>
-		<script type="module" src="Landscape.js"></script>
-		<script type="module" src="scene.js"></script>
+		<script type="module" src="threejs/build/three.module.js"></script>
+		<script type="module" src="src/planeController.js"></script>
+		<script type="module" src="src/landscape.js"></script>
+		<script type="module" src="src/scene.js"></script>
 	</body>
 
 	<script id="LandscapeVertexShaders" type="x-shader/x-vertex">
@@ -29,7 +30,6 @@
 	</script>
 
 	<script id="LandscapeFragmentShaders" type="x-shader/x-fragment">
-
 		varying vec3 pNormal;
 		varying vec3 pColor;
 
@@ -40,8 +40,6 @@
 		void main() {
 			float slope = dot(abs(pNormal), vec3(0,0,1));
 			vec3 color = mix(ColorA, ColorB, pow(slope, 20.0));
-
-
 		  	gl_FragColor = vec4(color, 1);
 		}
 	</script>
