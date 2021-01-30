@@ -1,6 +1,5 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {Quaternion, Vector3} from "../threejs/build/three.module.js";
-import {ImprovedNoise} from "../threejs/examples/jsm/maths/ImprovedNoise.js";
 
 export { Landscape }
 
@@ -12,12 +11,12 @@ let vertexShaderCode, fragmentShaderCode, loaded;
 
 class Landscape {
 
-    constructor(inScene, inCamera) {
+    constructor(inScene, inCamera, heightGenerator) {
+        this.heightGenerator = heightGenerator;
         this.Scene = inScene;
         this.camera = inCamera;
         this.Sections = [];
         this.time = 0;
-        this.Noise = new ImprovedNoise();
         let fileLoader = new THREE.FileLoader();
         fileLoader.load('shaders/landscape.VS.glsl', function(data) { vertexShaderCode = data; });
         fileLoader.load('shaders/landscape.FS.glsl', function(data) { fragmentShaderCode = data; });
@@ -36,20 +35,6 @@ class Landscape {
             }
         }
         return false;
-    }
-
-    getHeightAtLocation(x, y) {
-        let scale = .01;
-        let scale2 = .001;
-        let scale3 = .0003;
-        return this.Noise.noise(x * scale, y * scale, 0) * 10 +
-            Math.pow(this.Noise.noise(x * scale2, y * scale2, 0), 2) * 300 +
-            Math.pow(this.Noise.noise(x * scale3, y * scale3, 0), 2) * 1000;
-    }
-
-    getBiomeAtLocation(x, y) {
-        let scale = .0001;
-        return Math.pow(this.Noise.noise(x * scale, y * scale, 0), 5) * 500;
     }
 
     render(deltaTime) {
@@ -232,11 +217,11 @@ class OctreeNode {
                 let posY = (y - 1) * CellSize + this.Position.y - Width / 2;
 
                 vertices.set(
-                    [posX, posY, this.Landscape.getHeightAtLocation(posX, posY)],
+                    [posX, posY, this.Landscape.heightGenerator.getHeightAtLocation(posX, posY)],
                     (x + y * VerticesPerChunk) * 3
                 );
                 color.set(
-                    [this.Landscape.getBiomeAtLocation(posX, posY), 0, 0],
+                    [this.Landscape.heightGenerator.getBiomeAtLocation(posX, posY), 0, 0],
                     (x + y * VerticesPerChunk) * 3
                 );
             }
@@ -311,7 +296,7 @@ class OctreeNode {
         // Height correction
         this.cameraGroundLocation.x = this.Landscape.camera.position.x;
         this.cameraGroundLocation.y = this.Landscape.camera.position.y;
-        this.cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
+        this.cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.heightGenerator.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
         let Level = 8 - Math.min(8, (this.cameraGroundLocation.distanceTo(this.Position) - this.Scale)  / 500.0);
         return Math.trunc(Level);
     }

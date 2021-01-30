@@ -45,14 +45,14 @@ class Plane {
         /*
         Inputs
          */
-        this.desiredEngineInput = 0;
-        this.desiredRollInput = 0;
-        this.desiredPitchInput = 0;
-        this.desiredYawInput = 0;
-        this.engineInput = 0;
-        this.rollInput = 0;
-        this.pitchInput = 0;
-        this.yawInput = 0;
+        this.desiredEngineInput = 0.5;
+        this.desiredRollInput = 0.0;
+        this.desiredPitchInput = 0.0;
+        this.desiredYawInput = 0.0;
+        this.engineInput = 0.5;
+        this.rollInput = 0.0;
+        this.pitchInput = 0.0;
+        this.yawInput = 0.0;
 
         /*
         Maths

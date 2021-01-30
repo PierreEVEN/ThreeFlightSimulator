@@ -26,7 +26,6 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.isFPS = false;
 
     this.mouseSensitivity = 0.5;
-
     if ( domElement === undefined ) {
 
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
