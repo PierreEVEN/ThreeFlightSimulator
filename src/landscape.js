@@ -1,5 +1,6 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {Quaternion, Vector3} from "../threejs/build/three.module.js";
+import {RESOURCE_MANAGER} from "./resourceManager.js";
 
 export { Landscape }
 
@@ -17,15 +18,6 @@ class Landscape {
         this.camera = inCamera;
         this.Sections = [];
         this.time = 0;
-        let fileLoader = new THREE.FileLoader();
-        fileLoader.load('shaders/landscape.VS.glsl', function(data) { vertexShaderCode = data; });
-        fileLoader.load('shaders/landscape.FS.glsl', function(data) { fragmentShaderCode = data; });
-    }
-
-    tryInit() {
-        if (loaded) return true;
-        if (!vertexShaderCode || !fragmentShaderCode) return false;
-        loaded = true;
 
         this.LandscapeMaterial = this.createShaderMaterial();
 
@@ -34,12 +26,9 @@ class Landscape {
                 this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
             }
         }
-        return false;
     }
 
     render(deltaTime) {
-        if (!this.tryInit()) return;
-
         this.time += deltaTime;
         this.LandscapeMaterial.uniforms.time.value = this.time;
 
@@ -56,47 +45,36 @@ class Landscape {
     }
 
     createShaderMaterial() {
-        this.fileLoader = new THREE.FileLoader();
-        let noise = this.createTexture('./textures/noise.png');
-        let grass1 = this.createTexture('./textures/forrest_ground_01_diff_1k.jpg');
-        let grass2 = this.createTexture('./textures/brown_mud_leaves_01_diff_1k.jpg');
-        let rock1 = this.createTexture('./textures/aerial_rocks_02_diff_1k.jpg');
-        let rock2 = this.createTexture('./textures/aerial_rocks_04_diff_1k.jpg');
-        let snow1 = this.createTexture('./textures/snow_02_diff_1k.jpg');
-        let sand1 = this.createTexture('./textures/aerial_beach_01_diff_1k.jpg');
-        let waterDisp = this.createTexture('./textures/Water_001_DISP.png');
-        let waterNorm = this.createTexture('./textures/Water_001_NORM.jpg');
-
         let uniforms = {
             time: { value: 0 },
-            noise: { type: 't', value: noise },
-            grass1: { type: 't', value: grass1 },
-            grass2: { type: 't', value: grass2 },
-            rock1: { type: 't', value: rock1 },
-            rock1: { type: 't', value: rock2 },
-            snow1: { type: 't', value: snow1 },
-            sand1: { type: 't', value: sand1 },
-            waterDisp: { type: 't', value: waterDisp },
-            waterNorm: { type: 't', value: waterNorm },
+            noise: { type: 't', value: RESOURCE_MANAGER.texture_noise },
+            grass1: { type: 't', value: RESOURCE_MANAGER.texture_grass1 },
+            grass2: { type: 't', value: RESOURCE_MANAGER.texture_grass2 },
+            rock1: { type: 't', value: RESOURCE_MANAGER.texture_rock1 },
+            rock2: { type: 't', value: RESOURCE_MANAGER.texture_rock2 },
+            snow1: { type: 't', value: RESOURCE_MANAGER.texture_snow1 },
+            sand1: { type: 't', value: RESOURCE_MANAGER.texture_sand1 },
+            waterDisp: { type: 't', value: RESOURCE_MANAGER.texture_waterDisp },
+            waterNorm: { type: 't', value: RESOURCE_MANAGER.texture_waterNorm },
         };
 
         let material =  new THREE.ShaderMaterial( {
             uniforms: uniforms,
             wireframe:false,
             vertexColors: true,
-            vertexShader: vertexShaderCode,
-            fragmentShader: fragmentShaderCode
+            vertexShader: RESOURCE_MANAGER.vertexShader_landscape,
+            fragmentShader: RESOURCE_MANAGER.fragmentShader_landscape
         });
 
-        material.noise = noise;
-        material.grass1 = grass1;
-        material.grass2 = grass2;
-        material.rock1 = rock1;
-        material.rock2 = rock2;
-        material.snow1 = snow1;
-        material.sand1 = sand1;
-        material.waterDisp = waterDisp;
-        material.waterNorm = waterNorm;
+        material.noise = RESOURCE_MANAGER.texture_noise;
+        material.grass1 = RESOURCE_MANAGER.texture_grass1;
+        material.grass2 = RESOURCE_MANAGER.texture_grass2;
+        material.rock1 = RESOURCE_MANAGER.texture_rock1;
+        material.rock2 = RESOURCE_MANAGER.texture_rock2;
+        material.snow1 = RESOURCE_MANAGER.texture_snow1;
+        material.sand1 = RESOURCE_MANAGER.texture_sand1;
+        material.waterDisp = RESOURCE_MANAGER.texture_waterDisp;
+        material.waterNorm = RESOURCE_MANAGER.texture_waterNorm;
 
         return material;
     }

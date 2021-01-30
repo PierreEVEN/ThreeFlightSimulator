@@ -6,15 +6,15 @@ const gltfLoader = new GLTFLoader();
 class FoliageSystem {
 
     constructor(scene, heightGenerator) {
-
 //WIP :: load tree instances :: TEST
         gltfLoader.load('./models/tree.glb', function (gltf) {
 
             const matrix = new THREE.Matrix4();
             gltf.scene.traverse(function(child) {
                 if (child.isMesh) {
-                    let spacing = 20;
+                    let spacing = 40;
                     let width = 300;
+                    let scale = 0.025;
                     let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
                     test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
 
@@ -27,7 +27,7 @@ class FoliageSystem {
                             if (posZ < 30 || posZ > 250) continue;
 
                             matrix.makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
-                            matrix.scale(new THREE.Vector3(0.01,0.01,0.01));
+                            matrix.scale(new THREE.Vector3(scale,scale,scale));
                             matrix.setPosition(posX, posY, posZ);
                             test.setMatrixAt(x + y * width, matrix);
                         }

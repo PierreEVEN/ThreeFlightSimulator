@@ -118,7 +118,7 @@ class Plane {
         this.velocity.applyQuaternion(this.inverseRotation); // apply inverse rotation
         {
             // Add thrust
-            let acceleration = 20 * this.engineInput;
+            let acceleration = 13 * this.engineInput;
             this.velocity.x += acceleration * deltaTime;
 
             // Add lifts

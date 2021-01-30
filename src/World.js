@@ -76,7 +76,16 @@ class World {
 			this.planeInformations.inputthrottle = this.planeActor.engineInput;
 		}
 		if (this.controller) this.controller.update(deltaTime);
+
+		if (this.planeActor.position.z < this.heightGenerator.getHeightAtLocation(this.planeActor.position.x, this.planeActor.position.y)) {
+			this.planeActor.position.set(0, 0, 100);
+			this.planeActor.velocity.set(100, 0, 0);
+		}
+
 	}
+
+
+
 
 
 	tryLoadPlane() {
