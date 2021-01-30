@@ -21,7 +21,6 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
 
     this.mouseSensitivity = 0.5;
 
-
     if ( domElement === undefined ) {
 
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
@@ -63,6 +62,9 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
             case 'KeyV':
                 this.isFPS = !this.isFPS;
                 break;
+            case 'KeyP':
+                this.plane.pause = !this.plane.pause;
+                break;
             case 'KeyW':
                 this.plane.setPitchInput(1);
                 break;
@@ -93,10 +95,14 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
 
         this.pitch = Math.max(this.minPitch, Math.min(this.maxPitch, this.pitch));
         if (this.isFPS) this.yaw = Math.max(this.minYaw, Math.min(this.maxYaw, this.yaw + 90)) - 90;
+        this.updateMouse();
+    }
 
+    this.updateMouse = function() {
         // Update camera rotation
         this.eulerRotation.set(MathUtils.degToRad(this.pitch + 90), 0, MathUtils.degToRad(this.yaw), 'ZYX');
     }
+    this.updateMouse();
 
     this.mouseWheel = function (event) {
         this.distance += event.deltaY;

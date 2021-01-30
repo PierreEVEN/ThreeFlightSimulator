@@ -19,6 +19,7 @@
 	<script id="LandscapeVertexShaders" type="x-shader/x-vertex">
 		varying vec3 pNormal;
 		varying vec3 pColor;
+		varying vec3 pPosition;
 
 		void main() {
 			pNormal = normal;
@@ -26,20 +27,29 @@
 			gl_Position = projectionMatrix *
 							modelViewMatrix *
 							vec4(position,1.0);
+			pPosition = position;
 		}
 	</script>
 
 	<script id="LandscapeFragmentShaders" type="x-shader/x-fragment">
 		varying vec3 pNormal;
 		varying vec3 pColor;
+    	varying vec2 pUv;
+		varying vec3 pPosition;
+
+    	uniform sampler2D grassTexture;
+    	uniform sampler2D rockTexture;
 
 
-		vec3 ColorA = vec3(.4, .4, .35);
-		vec3 ColorB = vec3(.5, .8, .3);
 
 		void main() {
+
+			vec3 ColorA = texture2D(rockTexture, pPosition.xy * 0.02).xyz;
+			vec3 ColorB = texture2D(grassTexture, pPosition.xy * 0.02).rgb;
+
+
 			float slope = dot(abs(pNormal), vec3(0,0,1));
-			vec3 color = mix(ColorA, ColorB, pow(slope, 20.0));
+			vec3 color = mix(ColorA, ColorB, pow(abs(slope), 20.0));
 		  	gl_FragColor = vec4(color, 1);
 		}
 	</script>

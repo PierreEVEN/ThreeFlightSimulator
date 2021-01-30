@@ -31,13 +31,13 @@ Partant de ca, il faudra un système qui découpe le terrain en plusieurs zones 
 
 Pour ce genre de problèmes, la solution la plus indiquée est un quad tree, c'est-à-dire un arbre 2D où chaque section de l'arbre peut être subdivisée (=découpée) en 4 sous-zones a chaque fois 2x plus petites.
 
-![quadTreeImage](./documentation/quatrees.png) *schémas récapitulatif d'un quadtree*
+![quadTreeImage](quatrees.png) *schémas récapitulatif d'un quadtree*
 
 Comme expliqué dans les contraintes listées ci-dessus, on ne peut pas se permettre d'afficher un carré par noeud du quadtree. Un réglage qui m'a semblé être assez performant sur navigateur consiste en des sections de 20 x 20 carrés.
 
 Seulement, le fait d'avoir des noeuds à différents niveaux de détails conjoints peut être assez problématique, et on peut voir par endroit des trous apparaitre comme montré ci-dessous.
 
-![seamsHoles](./documentation/seamsHoles.png) *Exemple de trous de couture aux jointures entre différents niveaux de noeuds*
+![seamsHoles](seamsHoles.png) *Exemple de trous de couture aux jointures entre différents niveaux de noeuds*
 
 Pour palier à ce problème il existe différentes techniques. La plus évidente serait de simplement redresser les sommets là où il y a des trous, seulement ce genre de calcul peut être assez lourd, et certains cas particuliers sont assez complexes à résoudre.
 
@@ -50,8 +50,8 @@ On se retrouve alors avec une 'nappe' qui déborde d'une cran de trop de chaque 
 
 Comme nous travaillons sur un langage interprété, donc relativement lent, j'ai opté pour la 3e méthode. (aussi par sa simplicité).
 
-![LandscapeSection](./documentation/GeneratedSection.png) *Génération du maillage d'un noeud de l'octree*
-![BasicLandscape](./documentation/GenerateLandscapeBase.png) *Génération et subdivision de plusieurs sections de landscape*
+![LandscapeSection](GeneratedSection.png) *Génération du maillage d'un noeud de l'octree*
+![BasicLandscape](GenerateLandscapeBase.png) *Génération et subdivision de plusieurs sections de landscape*
 
 #### Déformation du terrain
 
@@ -63,7 +63,7 @@ Pour ce genre d'opération, on utilise habituellement un bruit de perlin.
 En combinant ce bruit avec lui-même à différentes échelles, on peut produire une heightmap infinie simulant un relief simple (il est très difficile de simuler une érosion sur ce genre de terrain, on ferra sans).
 Il ne reste plus qu'à appliquer cet algorithme à la generation du maillage :
 
-![BasicMountains](./documentation/Altitude.png) *Quelques collines basiques*
+![BasicMountains](Altitude.png) *Quelques collines basiques*
 
 
 #### Shaders du terrain

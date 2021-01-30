@@ -12,6 +12,7 @@ class Plane {
         this.velocity = new THREE.Vector3(200, 0, 0);
         this.rotation = new THREE.Quaternion().identity();
 
+        this.pause = true;
         this.mesh = inMesh;
 
         this.engineInput = 0;
@@ -28,6 +29,9 @@ class Plane {
     }
 
     update(deltaTime) {
+
+        if (this.pause) return;
+
         const inputMult = 0.5;
 
         this.InputRotationVector.x = this.rollInput;

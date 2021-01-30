@@ -1,4 +1,5 @@
 import * as THREE from '../threejs/build/three.module.js';
+import {Quaternion, Vector3} from "../threejs/build/three.module.js";
 import {ImprovedNoise} from "../threejs/examples/jsm/maths/ImprovedNoise.js";
 
 export { Landscape }
@@ -45,13 +46,28 @@ class Landscape {
     }
 
     createShaderMaterial() {
-        return new THREE.ShaderMaterial( {
-            uniforms: {},
+        let grass = new THREE.TextureLoader().load( './textures/forrest_ground_01_diff_1k.jpg' );
+        grass.wrapS = THREE.RepeatWrapping;
+        grass.wrapT = THREE.RepeatWrapping;
+        let rock = new THREE.TextureLoader().load( './textures/aerial_rocks_02_diff_1k.jpg' );
+        rock.wrapS = THREE.RepeatWrapping;
+        rock.wrapT = THREE.RepeatWrapping;
+        let uniforms = {
+            grassTexture: { type: 't', value: grass },
+            rockTexture: { type: 't', value: rock }
+        };
+
+        let material =  new THREE.ShaderMaterial( {
+            uniforms: uniforms,
             //wireframe:true,
             vertexColors: true,
             vertexShader: document.getElementById( 'LandscapeVertexShaders' ).textContent,
             fragmentShader: document.getElementById( 'LandscapeFragmentShaders' ).textContent
         });
+        material.rockTexture = rock;
+        material.grassTexture = grass;
+
+        return material;
     }
 }
 
@@ -86,6 +102,7 @@ class OctreeNode {
         this.Scale = inScale;
         this.Mesh = null;
         this.Landscape = inLandscape;
+        this.cameraGroundLocation = new Vector3();
     }
 
     update() {
@@ -245,7 +262,11 @@ class OctreeNode {
     }
 
     computeDesiredLODLevel() {
-        let Level = 5 - Math.min(5, this.Landscape.camera.position.distanceTo(this.Position) / 400.0);
+        // Height correction
+        this.cameraGroundLocation.x = this.Landscape.camera.position.x;
+        this.cameraGroundLocation.y = this.Landscape.camera.position.y;
+        this.cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
+        let Level = 5 - Math.min(5, this.cameraGroundLocation.distanceTo(this.Position) / 800.0);
         return Math.trunc(Level);
     }
 }

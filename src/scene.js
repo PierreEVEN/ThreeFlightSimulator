@@ -51,24 +51,14 @@ function init() {
 	loadPlane();
 
 
-	let Geom1 = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 1500), new THREE.MeshPhysicalMaterial({color:new THREE.Color(0.2, 0.25, 0.5)}));
-	let Geom2 = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 1500), new THREE.MeshPhysicalMaterial({color:new THREE.Color(0.2, 0.25, 0.5)}));
-
-	Geom1.position.x += 200;
-
-	scene.add(Geom1);
-	scene.add(Geom2);
-
-
-
 //WIP :: load tree instances :: TEST
-	gltfLoader.load('./tree.glb', function (gltf) {
+	gltfLoader.load('./models/tree.glb', function (gltf) {
 
 		const matrix = new THREE.Matrix4();
 		gltf.scene.traverse(function(child) {
 			if (child.isMesh) {
 
-				let width = 300;
+				let width = 50;
 				let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
 				test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
 
@@ -93,6 +83,29 @@ function init() {
 	});
 }
 
+function getCookie(name) {
+	const value = `; ${document.cookie}`;
+	const parts = value.split(`; ${name}=`);
+	if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+window.onbeforeunload = function (event) {
+	let flags = ";Secure";
+	document.cookie = "planePositionX=" + plane.position.x + flags;
+	document.cookie = "planePositionY=" + plane.position.y + flags;
+	document.cookie = "planePositionZ=" + plane.position.z + flags;
+	document.cookie = "planeRotationX=" + plane.rotation.x + flags;
+	document.cookie = "planeRotationY=" + plane.rotation.y + flags;
+	document.cookie = "planeRotationZ=" + plane.rotation.z + flags;
+	document.cookie = "planeRotationW=" + plane.rotation.w + flags;
+	document.cookie = "planeVelocityX=" + plane.velocity.x + flags;
+	document.cookie = "planeVelocityY=" + plane.velocity.y + flags;
+	document.cookie = "planeVelocityZ=" + plane.velocity.z + flags;
+	document.cookie = "cameraPitch=" + controller.pitch + flags;
+	document.cookie = "cameraYaw=" + controller.yaw + flags;
+	document.cookie = "isFps=" + controller.isFPS + flags;
+}
+
 function loadPlane() {
 	gltfLoader.load('./models/F-16/F-16.glb', function (gltf) {
 
@@ -112,6 +125,27 @@ function loadPlane() {
 		scene.add(rootNode);
 		plane = new Plane(scene, rootNode);
 		controller = new PlaneController(renderer.domElement, plane, camera );
+
+		//if (getCookie('planePositionX')) plane.position.x = parseFloat(getCookie('planePositionX'));
+		//if (getCookie('planePositionY')) plane.position.y = parseFloat(getCookie('planePositionY'));
+		if (getCookie('planePositionZ')) plane.position.z = parseFloat(getCookie('planePositionZ'));
+
+		if (getCookie('planeRotationX')) plane.rotation.x = parseFloat(getCookie('planeRotationX'));
+		if (getCookie('planeRotationY')) plane.rotation.y = parseFloat(getCookie('planeRotationY'));
+		if (getCookie('planeRotationZ')) plane.rotation.z = parseFloat(getCookie('planeRotationZ'));
+		if (getCookie('planeRotationW')) plane.rotation.w = parseFloat(getCookie('planeRotationW'));
+
+		if (getCookie('planeVelocityX')) plane.velocity.x = parseFloat(getCookie('planeVelocityX'));
+		if (getCookie('planeVelocityY')) plane.velocity.y = parseFloat(getCookie('planeVelocityY'));
+		if (getCookie('planeVelocityZ')) plane.velocity.z = parseFloat(getCookie('planeVelocityZ'));
+
+		if (getCookie('cameraPitch')) controller.pitch = parseFloat(getCookie('cameraPitch'));
+		if (getCookie('cameraYaw')) controller.yaw = parseFloat(getCookie('cameraYaw'));
+		if (getCookie('isFps')) controller.isFPS = getCookie('isFps') === 'true';
+		controller.updateMouse();
+
+
+
 	});
 }
 
