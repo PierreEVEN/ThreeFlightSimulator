@@ -4,18 +4,24 @@ import {MathUtils} from "../threejs/src/math/MathUtils.js";
 export {PlaneController};
 
 
-let PlaneController = function ( domElement, inPlane, inCamera ) {
+let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
 
     this.distance = 40;
     this.pitch = 0;
     this.yaw = 0;
     this.eulerRotation = new Euler(0,0,0, 'ZYX');
+    this.landscape = inLandscape;
 
+    /*
+    Camera settings
+     */
     this.minPitch = -80;
     this.maxPitch = 80;
 
     this.minYaw = -180;
     this.maxYaw = 180;
+
+    this.shiftPressed = false;
 
     this.isFPS = false;
 
@@ -43,22 +49,25 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
                 this.plane.setPitchInput(0);
                 break;
             case 'KeyA':
-                this.plane.setRollInput(0);
+                this.plane.setYawInput(0);
                 break;
             case 'KeyD':
-                this.plane.setRollInput(0);
+                this.plane.setYawInput(0);
                 break;
             case 'KeyQ':
-                this.plane.setYawInput(0);
+                this.plane.setRollInput(0);
                 break;
             case 'KeyE':
-                this.plane.setYawInput(0);
+                this.plane.setRollInput(0);
                 break;
         }
     }
 
     this.keydown = function ( event ) {
         switch (event.code) {
+            case 'F1':
+                this.landscape.LandscapeMaterial.wireframe = !this.landscape.LandscapeMaterial.wireframe;
+                break;
             case 'KeyV':
                 this.isFPS = !this.isFPS;
                 break;
@@ -72,16 +81,16 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
                 this.plane.setPitchInput(-1);
                 break;
             case 'KeyA':
-                this.plane.setRollInput(-1);
-                break;
-            case 'KeyD':
-                this.plane.setRollInput(1);
-                break;
-            case 'KeyQ':
                 this.plane.setYawInput(1);
                 break;
-            case 'KeyE':
+            case 'KeyD':
                 this.plane.setYawInput(-1);
+                break;
+            case 'KeyQ':
+                this.plane.setRollInput(-1);
+                break;
+            case 'KeyE':
+                this.plane.setRollInput(1);
                 break;
         }
     }
@@ -105,7 +114,12 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
     this.updateMouse();
 
     this.mouseWheel = function (event) {
-        this.distance += event.deltaY;
+        if (this.isFPS || true) {
+            this.plane.setEngineInput(this.plane.engineInput - event.deltaY * 0.02);
+        }
+        else {
+            this.distance += event.deltaY;
+        }
     }
 
     this.forwardVector = new Vector3();
@@ -137,7 +151,6 @@ let PlaneController = function ( domElement, inPlane, inCamera ) {
 
     domElement.addEventListener('click', function () {
         domElement.requestPointerLock();
-
     });
 
     let _keydown = bind( this, this.keydown );

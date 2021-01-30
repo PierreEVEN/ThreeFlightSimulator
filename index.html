@@ -1,87 +1,19 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 	<head>
 		
-		<title>Pierre EVEN - ThreeJS demo</title>
+		<title>Three flight simulator</title>
 		<meta charset="utf-8">
-		<link rel="stylesheet" href="style.css">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
 	</head>
 
 	<body>
-		<div id="threejsContainer"></div>
-		<script type="module" src="threejs/build/three.module.js"></script>
-		<script type="module" src="src/planeController.js"></script>
-		<script type="module" src="src/landscape.js"></script>
 		<script type="module" src="src/scene.js"></script>
 	</body>
-
-	<script id="LandscapeVertexShaders" type="x-shader/x-vertex">
-		varying vec3 pNormal;
-		varying vec3 pColor;
-		varying vec3 pPosition;
-
-		void main() {
-			pNormal = normal;
-			pColor = color;
-			gl_Position = projectionMatrix *
-							modelViewMatrix *
-							vec4(position,1.0);
-			pPosition = position;
-		}
-	</script>
-
-	<script id="LandscapeFragmentShaders" type="x-shader/x-fragment">
-		varying vec3 pNormal;
-		varying vec3 pColor;
-    	varying vec2 pUv;
-		varying vec3 pPosition;
-
-    	uniform sampler2D noise;
-
-    	uniform sampler2D grass1;
-    	uniform sampler2D grass2;
-
-    	uniform sampler2D rock1;
-    	uniform sampler2D rock2;
-
-    	uniform sampler2D snow1;
-    	uniform sampler2D sand1;
-
-		void main() {
-			float slope = dot(abs(pNormal), vec3(0,0,1));
-
-			/*
-			Plains texture
-			*/
-
-			//Randomize texture
-			vec3 rockColor = mix(texture2D(rock1, pPosition.xy * 0.02).xyz, texture2D(rock2, pPosition.xy * 0.03).xyz, texture2D(noise, pPosition.xy * 0.001).x);
-			vec3 grassColor = mix(texture2D(grass1, pPosition.xy * 0.02).xyz, texture2D(grass2, pPosition.xy * 0.03).xyz, texture2D(noise, pPosition.xy * 0.013).x) * vec3(1, 1.3, 1);
-
-			//Merge rock and grass by normal
-			vec3 plainColor = mix(rockColor, grassColor, pow(abs(slope), 20.0));
-
-			/*
-			Snow texture
-			*/
-			vec3 snowColor = texture2D(snow1, pPosition.xy * 0.001).xyz;
-
-			/*
-			Sand texture
-			*/
-			vec3 sandColor = texture2D(sand1, pPosition.xy * 0.01).xyz;
-
-			/*
-			Final merge
-			*/
-			//Merge snow
-			vec3 finalColor = mix(plainColor, snowColor, max(0.0, min(1.0, (pPosition.z - 300.0 + texture2D(noise, pPosition.xy * 0.0003).x * 50.0) / 20.0)));
-			// Merge sand
-			finalColor = mix(sandColor, finalColor, max(0.0, min(1.0, (pPosition.z - 25.0 + texture2D(noise, pPosition.xy * 0.0003).x * 5.0) / 5.0)));
-
-
-		  	gl_FragColor = vec4(finalColor, 1);
-		}
-	</script>
 </html>

@@ -5,8 +5,10 @@ import {ImprovedNoise} from "../threejs/examples/jsm/maths/ImprovedNoise.js";
 export { Landscape }
 
 const CellsPerChunk = 20;
-const SectionWidth = 2000;
-const ViewDistance = 20;
+const SectionWidth = 20000;
+const ViewDistance = 3;
+
+let vertexShaderCode, fragmentShaderCode, loaded;
 
 class Landscape {
 
@@ -14,7 +16,17 @@ class Landscape {
         this.Scene = inScene;
         this.camera = inCamera;
         this.Sections = [];
+        this.time = 0;
         this.Noise = new ImprovedNoise();
+        let fileLoader = new THREE.FileLoader();
+        fileLoader.load('shaders/landscape.VS.glsl', function(data) { vertexShaderCode = data; });
+        fileLoader.load('shaders/landscape.FS.glsl', function(data) { fragmentShaderCode = data; });
+    }
+
+    tryInit() {
+        if (loaded) return true;
+        if (!vertexShaderCode || !fragmentShaderCode) return false;
+        loaded = true;
 
         this.LandscapeMaterial = this.createShaderMaterial();
 
@@ -23,6 +35,7 @@ class Landscape {
                 this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
             }
         }
+        return false;
     }
 
     getHeightAtLocation(x, y) {
@@ -39,7 +52,12 @@ class Landscape {
         return Math.pow(this.Noise.noise(x * scale, y * scale, 0), 5) * 500;
     }
 
-    render() {
+    render(deltaTime) {
+        if (!this.tryInit()) return;
+
+        this.time += deltaTime;
+        this.LandscapeMaterial.uniforms.time.value = this.time;
+
         for (let section of this.Sections) {
             section.update();
         }
@@ -53,14 +71,19 @@ class Landscape {
     }
 
     createShaderMaterial() {
-        let noise = this.createTexture('./textures/noise.png' );
-        let grass1 = this.createTexture('./textures/forrest_ground_01_diff_1k.jpg' );
-        let grass2 = this.createTexture('./textures/brown_mud_leaves_01_diff_1k.jpg' );
-        let rock1 = this.createTexture('./textures/aerial_rocks_02_diff_1k.jpg' );
-        let rock2 = this.createTexture('./textures/aerial_rocks_04_diff_1k.jpg' );
-        let snow1 = this.createTexture('./textures/snow_02_diff_1k.jpg' );
-        let sand1 = this.createTexture('./textures/aerial_beach_01_diff_1k.jpg' );
+        this.fileLoader = new THREE.FileLoader();
+        let noise = this.createTexture('./textures/noise.png');
+        let grass1 = this.createTexture('./textures/forrest_ground_01_diff_1k.jpg');
+        let grass2 = this.createTexture('./textures/brown_mud_leaves_01_diff_1k.jpg');
+        let rock1 = this.createTexture('./textures/aerial_rocks_02_diff_1k.jpg');
+        let rock2 = this.createTexture('./textures/aerial_rocks_04_diff_1k.jpg');
+        let snow1 = this.createTexture('./textures/snow_02_diff_1k.jpg');
+        let sand1 = this.createTexture('./textures/aerial_beach_01_diff_1k.jpg');
+        let waterDisp = this.createTexture('./textures/Water_001_DISP.png');
+        let waterNorm = this.createTexture('./textures/Water_001_NORM.jpg');
+
         let uniforms = {
+            time: { value: 0 },
             noise: { type: 't', value: noise },
             grass1: { type: 't', value: grass1 },
             grass2: { type: 't', value: grass2 },
@@ -68,15 +91,18 @@ class Landscape {
             rock1: { type: 't', value: rock2 },
             snow1: { type: 't', value: snow1 },
             sand1: { type: 't', value: sand1 },
+            waterDisp: { type: 't', value: waterDisp },
+            waterNorm: { type: 't', value: waterNorm },
         };
 
         let material =  new THREE.ShaderMaterial( {
             uniforms: uniforms,
-            //wireframe:true,
+            wireframe:false,
             vertexColors: true,
-            vertexShader: document.getElementById( 'LandscapeVertexShaders' ).textContent,
-            fragmentShader: document.getElementById( 'LandscapeFragmentShaders' ).textContent
+            vertexShader: vertexShaderCode,
+            fragmentShader: fragmentShaderCode
         });
+
         material.noise = noise;
         material.grass1 = grass1;
         material.grass2 = grass2;
@@ -84,6 +110,8 @@ class Landscape {
         material.rock2 = rock2;
         material.snow1 = snow1;
         material.sand1 = sand1;
+        material.waterDisp = waterDisp;
+        material.waterNorm = waterNorm;
 
         return material;
     }
@@ -284,7 +312,7 @@ class OctreeNode {
         this.cameraGroundLocation.x = this.Landscape.camera.position.x;
         this.cameraGroundLocation.y = this.Landscape.camera.position.y;
         this.cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
-        let Level = 5 - Math.min(5, this.cameraGroundLocation.distanceTo(this.Position) / 800.0);
+        let Level = 8 - Math.min(8, (this.cameraGroundLocation.distanceTo(this.Position) - this.Scale)  / 500.0);
         return Math.trunc(Level);
     }
 }

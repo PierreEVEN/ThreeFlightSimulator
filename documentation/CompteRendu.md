@@ -73,6 +73,8 @@ Il va donc falloir écrire un shaders.
 
 [WIP] Pour l'instant, il sera très basique, il faut surtout visualiser le dénivelé. je me contenterais de faire un produit scalaire avec la normale du sol pour faire un mix entre 2 couleurs (marron pour les pentes, vert pour le plat).
 
+#### Oceans
+
 #### Génération du foliage
 
 [TODO]
