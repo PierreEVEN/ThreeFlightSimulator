@@ -45,16 +45,29 @@ class Landscape {
         }
     }
 
+    createTexture(path) {
+        let texture = new THREE.TextureLoader().load(path);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    }
+
     createShaderMaterial() {
-        let grass = new THREE.TextureLoader().load( './textures/forrest_ground_01_diff_1k.jpg' );
-        grass.wrapS = THREE.RepeatWrapping;
-        grass.wrapT = THREE.RepeatWrapping;
-        let rock = new THREE.TextureLoader().load( './textures/aerial_rocks_02_diff_1k.jpg' );
-        rock.wrapS = THREE.RepeatWrapping;
-        rock.wrapT = THREE.RepeatWrapping;
+        let noise = this.createTexture('./textures/noise.png' );
+        let grass1 = this.createTexture('./textures/forrest_ground_01_diff_1k.jpg' );
+        let grass2 = this.createTexture('./textures/brown_mud_leaves_01_diff_1k.jpg' );
+        let rock1 = this.createTexture('./textures/aerial_rocks_02_diff_1k.jpg' );
+        let rock2 = this.createTexture('./textures/aerial_rocks_04_diff_1k.jpg' );
+        let snow1 = this.createTexture('./textures/snow_02_diff_1k.jpg' );
+        let sand1 = this.createTexture('./textures/aerial_beach_01_diff_1k.jpg' );
         let uniforms = {
-            grassTexture: { type: 't', value: grass },
-            rockTexture: { type: 't', value: rock }
+            noise: { type: 't', value: noise },
+            grass1: { type: 't', value: grass1 },
+            grass2: { type: 't', value: grass2 },
+            rock1: { type: 't', value: rock1 },
+            rock1: { type: 't', value: rock2 },
+            snow1: { type: 't', value: snow1 },
+            sand1: { type: 't', value: sand1 },
         };
 
         let material =  new THREE.ShaderMaterial( {
@@ -64,8 +77,13 @@ class Landscape {
             vertexShader: document.getElementById( 'LandscapeVertexShaders' ).textContent,
             fragmentShader: document.getElementById( 'LandscapeFragmentShaders' ).textContent
         });
-        material.rockTexture = rock;
-        material.grassTexture = grass;
+        material.noise = noise;
+        material.grass1 = grass1;
+        material.grass2 = grass2;
+        material.rock1 = rock1;
+        material.rock2 = rock2;
+        material.snow1 = snow1;
+        material.sand1 = sand1;
 
         return material;
     }

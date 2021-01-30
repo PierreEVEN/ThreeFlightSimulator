@@ -5,14 +5,23 @@ import {GLTFLoader} from "../threejs/examples/jsm/loaders/GLTFLoader.js";
 import {Plane} from "./plane.js";
 import {PlaneController} from "./planeController.js";
 import {OrbitControls} from "../threejs/examples/jsm/controls/OrbitControls.js";
+import {GUI} from "../threejs/examples/jsm/libs/dat.gui.module.js";
 
 let W = document.body.scrollWidth;
 let H = document.body.scrollHeight;
 
 let container = document.querySelector('#threejsContainer');
 
-let scene, camera, clock, light, renderer, controller, landscape, plane = null, stats;
+let scene, camera, clock, light, renderer, controller, landscape, plane = null, stats, gui;
 const gltfLoader = new GLTFLoader();
+
+
+let planeInformations = {
+	velx: 0,
+	vely: 0,
+	velz: 0,
+	velocity: 0
+};
 
 function init() {
 	stats = new Stats();
@@ -21,11 +30,14 @@ function init() {
 	clock = new THREE.Clock(true);
 
 	scene = new THREE.Scene();
-	renderer = new THREE.WebGLRenderer();
-	renderer.antialias = true;
+	renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			depth:true,
+			logarithmicDepthBuffer: false,
+		});
 	renderer.setSize(W, H);
 
-	camera = new THREE.PerspectiveCamera(75, W / H, 0.1, 10000);
+	camera = new THREE.PerspectiveCamera(75, W / H, 0.1, 5000);
 	camera.position.set(0, 10, 10);
 	camera.lookAt(scene.position);
 	camera.up.set(0,0,1);
@@ -50,6 +62,21 @@ function init() {
 	// Create default plane
 	loadPlane();
 
+	// Create water plane
+	let waterPlane = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000, 50, 50), new THREE.MeshPhysicalMaterial({
+			color: new THREE.Color(0.5, 0.8, 1),
+			reflectivity: 1
+		}
+		));
+	waterPlane.position.z = 20;
+	scene.add(waterPlane);
+
+	gui = new GUI();
+	var velocity = gui.addFolder('Velocity absolute');
+	velocity.add(planeInformations, 'velx', -400, 400).name('X').listen();
+	velocity.add(planeInformations, 'vely', -400, 400).name('X').listen();
+	velocity.add(planeInformations, 'velz', -400, 400).name('X').listen();
+	velocity.open();
 
 //WIP :: load tree instances :: TEST
 	gltfLoader.load('./models/tree.glb', function (gltf) {
@@ -57,20 +84,22 @@ function init() {
 		const matrix = new THREE.Matrix4();
 		gltf.scene.traverse(function(child) {
 			if (child.isMesh) {
-
-				let width = 50;
+				let spacing = 20;
+				let width = 300;
 				let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
 				test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
 
 				for (let x = 0; x < width; ++x) {
 					for (let y = 0; y < width; ++y) {
 
-						let posX = x * 50 + Math.random() * 50 - 25;
-						let posY = y * 50 + Math.random() * 50 - 25;
+						let posX = x * spacing + Math.random() * spacing - spacing / 2;
+						let posY = y * spacing + Math.random() * spacing - spacing / 2;
+						let posZ = landscape.getHeightAtLocation(posX, posY);
+						if (posZ < 30 || posZ > 250) continue;
 
 						matrix.makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
 						matrix.scale(new THREE.Vector3(0.01,0.01,0.01));
-						matrix.setPosition(posX, posY, landscape.getHeightAtLocation(posX, posY));
+						matrix.setPosition(posX, posY, posZ);
 						test.setMatrixAt(x + y * width, matrix);
 					}
 				}
@@ -123,12 +152,12 @@ function loadPlane() {
         });
 
 		scene.add(rootNode);
-		plane = new Plane(scene, rootNode);
+		plane = new Plane(scene, rootNode, true);
 		controller = new PlaneController(renderer.domElement, plane, camera );
 
 		//if (getCookie('planePositionX')) plane.position.x = parseFloat(getCookie('planePositionX'));
 		//if (getCookie('planePositionY')) plane.position.y = parseFloat(getCookie('planePositionY'));
-		if (getCookie('planePositionZ')) plane.position.z = parseFloat(getCookie('planePositionZ'));
+		/*if (getCookie('planePositionZ')) plane.position.z = parseFloat(getCookie('planePositionZ'));
 
 		if (getCookie('planeRotationX')) plane.rotation.x = parseFloat(getCookie('planeRotationX'));
 		if (getCookie('planeRotationY')) plane.rotation.y = parseFloat(getCookie('planeRotationY'));
@@ -144,6 +173,8 @@ function loadPlane() {
 		if (getCookie('isFps')) controller.isFPS = getCookie('isFps') === 'true';
 		controller.updateMouse();
 
+		 */
+
 
 
 	});
@@ -154,8 +185,16 @@ function animate() {
 	stats.update();
 	landscape.render();
 	renderer.render(scene, camera);
-	if (plane) plane.update(clock.getDelta());
+	if (plane) {
+		plane.update(clock.getDelta());
+
+		planeInformations.velx = plane.velocity.x;
+		planeInformations.vely = plane.velocity.y;
+		planeInformations.velz = plane.velocity.z;
+		planeInformations.velocity = plane.velocity.length();
+	}
 	if (controller) controller.update(clock.getDelta());
+
 }
 
 init();
