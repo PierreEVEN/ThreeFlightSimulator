@@ -47,11 +47,12 @@ Une troisième, peu être moins intuitive (utilisée dans Flight simulator 2020 
 Il se trouve que rajouter quelques polygones a un cout relativement faible. Au lieu de générer une grille de nxn sommets, on génère une grille de (n + 2) x (n + 2).
 On se retrouve alors avec une 'nappe' qui déborde d'une cran de trop de chaque coté de la section. Il suffit alors de rabattre les bords vers le bas afin de cacher les éventuels trous. Cette approche est sans doute légèrement moins optimisée coté CPU, elle a l'avantage d'être très simple à mettre en place et d'avoir un cout très faible pour le CPU.
 
-
 Comme nous travaillons sur un langage interprété, donc relativement lent, j'ai opté pour la 3e méthode. (aussi par sa simplicité).
 
 ![LandscapeSection](GeneratedSection.png) *Génération du maillage d'un noeud de l'octree*
 ![BasicLandscape](GenerateLandscapeBase.png) *Génération et subdivision de plusieurs sections de landscape*
+
+[TODO] Parler de l'exemple d'algo de génération du maillage
 
 #### Déformation du terrain
 
@@ -71,16 +72,22 @@ Il ne reste plus qu'à appliquer cet algorithme à la generation du maillage :
 Maintenant qu'on a un terrain qui se génère, il serait intéressant d'avoir une surface plus jolie.
 Il va donc falloir écrire un shaders.
 
-[WIP] Pour l'instant, il sera très basique, il faut surtout visualiser le dénivelé. je me contenterais de faire un produit scalaire avec la normale du sol pour faire un mix entre 2 couleurs (marron pour les pentes, vert pour le plat).
+[TODO] Detailler le shaders de terrain
 
 #### Oceans
 
+[TODO] Oceans dans le shaders
+
 #### Génération du foliage
 
-[TODO]
+[TODO] foliage quad trees
+
+[TODO] Octahedral impostors
 
 #### Génération des structures
 
-[TODO]
+[TODO] Deformation du terrain pour accueuillir les structures
 
 ### Modèle de vol
+
+[TODO] Simulation de vol
