@@ -48,16 +48,29 @@ function init() {
         renderer.setSize( window.innerWidth, window.innerHeight );
     });
 
-    // Initialize world
-    world = new World(renderer);
-
     // Create camera
-    camera = new THREE.Camera();
-    world.scene.add(camera);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 20000);
+
+    // Initialize world
+    world = new World(renderer, camera);
+
+    // Create default plane
+    let rootNode = null;
+    RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
+        if (child.isMesh) {
+            if (rootNode === null) {
+                rootNode = new THREE.Mesh(child.geometry, child.material);
+            } else {
+                rootNode.attach(new THREE.Mesh(child.geometry, child.material));
+            }
+        }
+    });
+    let plane = world.addPlane(rootNode);
 
     // Add global controller
-    //controller = new PlaneController(renderer.domElement, world.planeActor, camera, world.landscape);
+    controller = new PlaneController(renderer.domElement, plane, camera, world.landscape);
 }
+let test = new THREE.Scene();
 
 function preInit() {
 
@@ -79,9 +92,11 @@ function animate() {
     let deltaTime = clock.getDelta();
 
     world.tick(deltaTime);
+    controller.update(deltaTime);
+
+
+    renderer.render(world.scene, camera);
     stats.update();
-    //controller.update(deltaTime);
-    renderer.render(world.scene, world.camera);
 }
 
 loadResources();
