@@ -1,10 +1,12 @@
 import {World} from "./World.js";
 import Stats from '../threejs/examples/jsm/libs/stats.module.js'
 import {PlaneController} from './planeController.js'
+import {PlaneDebugUI} from './planeDebugUI.js'
+import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 
-let clock, stats, renderer, world, camera, controller;
+let clock, stats, renderer, world, camera, controller, debugUI;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
@@ -43,8 +45,8 @@ function init() {
 
     // Set resize delegate
     window.addEventListener( 'resize', function () {
-        world.camera.aspect = window.innerWidth / window.innerHeight;
-        world.camera.updateProjectionMatrix();
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
     });
 
@@ -69,6 +71,9 @@ function init() {
 
     // Add global controller
     controller = new PlaneController(renderer.domElement, plane, camera, world.landscape);
+    new SaveGame(controller);
+
+    debugUI = new PlaneDebugUI(controller);
 }
 let test = new THREE.Scene();
 
@@ -93,7 +98,7 @@ function animate() {
 
     world.tick(deltaTime);
     controller.update(deltaTime);
-
+    debugUI.tick(deltaTime);
 
     renderer.render(world.scene, camera);
     stats.update();
