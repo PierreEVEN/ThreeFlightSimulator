@@ -22,7 +22,7 @@ class World {
 		this.heightGenerator = new HeightGenerator();
 
 		// Create foliage system
-		this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator);
+		this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
 
 		// Create landscape
 		this.landscape = new Landscape(this.scene, camera, this.heightGenerator);
@@ -33,6 +33,7 @@ class World {
 
 	tick(deltaTime) {
 		this.landscape.render(deltaTime);
+		this.foliageSystem.update();
 		for (let plane of this.planes) {
 			plane.update(deltaTime);
 			if (plane.position.z < this.heightGenerator.getHeightAtLocation(plane.position.x, plane.position.y)) {

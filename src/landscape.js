@@ -8,8 +8,6 @@ const CellsPerChunk = 20;
 const SectionWidth = 20000;
 const ViewDistance = 3;
 
-let vertexShaderCode, fragmentShaderCode, loaded;
-
 class Landscape {
 
     constructor(inScene, inCamera, heightGenerator) {
