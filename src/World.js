@@ -12,9 +12,9 @@ class World {
 		this.scene = new THREE.Scene();
 
 		// Light
-		this.ambiantLight = new THREE.AmbientLight(new THREE.Color(.3, .3, .3));
+		this.ambiantLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1));
 		this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-		this.directionalLight.position.set(0, 5, 0);
+		this.directionalLight.position.set(0, 1, 1);
 		this.scene.add(this.ambiantLight);
 		this.scene.add(this.directionalLight);
 
@@ -37,8 +37,8 @@ class World {
 		for (let plane of this.planes) {
 			plane.update(deltaTime);
 			if (plane.position.z < this.heightGenerator.getHeightAtLocation(plane.position.x, plane.position.y)) {
-				plane.position.set(0, 0, 100);
-				plane.velocity.set(100, 0, 0);
+				plane.position.set(0, 0, 400);
+				plane.velocity.set(0, 0, 0);
 			}
 		}
 	}

@@ -10,7 +10,7 @@ class Plane {
 
     constructor(inScene, inMesh, debug = false) {
         this.scene = inScene;
-        this.position = new THREE.Vector3(0, 0, 100);
+        this.position = new THREE.Vector3(0, 0, 400);
         this.rotation = new THREE.Quaternion().identity();
         this.inverseRotation = new Quaternion();
         this.pause = false;
@@ -146,9 +146,9 @@ class Plane {
         this.updateDebug();
 
         // Teleport plane to zero in case of physic bug
-        if (this.position.length() > 10000)  {
-            this.position.set(0, 0, 50);
-            this.velocity.set(200, 0, 0);
+        if (this.position.length() > 500000)  {
+            this.position.set(0, 0, 400);
+            this.velocity.set(0, 0, 0);
         }
     }
 

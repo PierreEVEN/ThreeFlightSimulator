@@ -13,6 +13,11 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.landscape = inLandscape;
 
     /*
+    Inputs
+     */
+    this.gamepads = [];
+
+    /*
     Camera settings
      */
     this.minPitch = -80;
@@ -127,14 +132,53 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.testMatrix = new Matrix4();
     this.identityVec = new Vector3(1,1,1);
 
+    this.updateControlers = function() {
+
+        for (let j = 0; j < this.gamepads.length; ++j) {
+            let controller = this.gamepads[j].gamepad;
+            if (!controller || !controller.buttons) continue;
+            for (var i = 0; i < controller.axes.length; i++) {
+                //var b = buttons[i];
+                let val = controller.axes[i];
+                //console.log(val);//'axe : ' + i + ' value = ' + val.value);
+                if (j == 0) {
+                    switch (i) {
+                        case 0:
+                            this.plane.setRollInput(val);
+                            break;
+                        case 1:
+                            this.plane.setEngineInput(1.2 - (val / 2 + 0.5) * 1.2);
+                            break;
+                        case 6:
+                            this.plane.setPitchInput(val * -1);
+                            break;
+                        case 5:
+                            this.plane.setYawInput(val * -1);
+                            break;
+                    }
+                }
+                else {
+                    switch(i) {
+                        case 1: this.pitch = val * 500;
+                        case 3: this.yaw = -val * 500 - 90;
+                    }
+                }
+                // 2: yaw;
+                //4 : roll;
+            }
+        }
+    }
+
     this.update = function(deltaTime) {
+        this.updateControlers();
+        this.updateMouse();
         this.cameraRotation.setFromEuler(this.eulerRotation);
         if (this.isFPS) {
 
             this.testMatrix.identity();
             this.testMatrix.compose(this.plane.position, this.plane.rotation, this.identityVec);
 
-            this.camera.position.set(3.3, 0, 1.1);
+            this.camera.position.set(3.3, 0, 0.9);
             this.camera.position.y += (this.yaw + 90) / 800;
             this.camera.quaternion.setFromEuler(this.eulerRotation);
             this.camera.applyMatrix4(this.testMatrix);
@@ -148,9 +192,23 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
         }
     }
 
+
+
     domElement.addEventListener('click', function () {
         domElement.requestPointerLock();
     });
+
+    this.addGamepad = function ( gamepad ) {
+        this.gamepads.push(gamepad);
+        console.log('connected controller ');
+    }
+
+    this.removeGamepad = function ( gamepad ) {
+        for (let i = this.gamepads.length - 1; i >= 0; --i) {
+            this.gamepads.splice(i, 1);
+        }
+        console.log('disconnected controller');
+    }
 
     let _keydown = bind( this, this.keydown );
     let _keyup = bind( this, this.keyup );
@@ -158,6 +216,8 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     let _mousedown = bind( this, this.mousedown );
     let _mouseup = bind( this, this.mouseup );
     let _mousemove = bind( this, this.mousemove );
+    let _gamepadConnected = bind( this, this.addGamepad );
+    let _gamepadDisconnected = bind( this, this.removeGamepad );
 
     this.lock = function() {
         domElement.requestPointerLock();
@@ -195,7 +255,11 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
 
     window.addEventListener( 'keydown', _keydown );
     window.addEventListener( 'keyup', _keyup );
+
+    window.addEventListener("gamepadconnected", _gamepadConnected);
+    window.addEventListener("gamepaddisconnected", _gamepadDisconnected);
 }
+
 
 PlaneController.prototype = Object.create( EventDispatcher.prototype );
 PlaneController.prototype.constructor = PlaneController;

@@ -28,8 +28,12 @@ void main() {
 	*/
 
 	//Randomize texture
-	vec3 rockColor = mix(texture2D(rock1, pPosition.xy * 0.02).xyz, texture2D(rock2, pPosition.xy * 0.03).xyz, texture2D(noise, pPosition.xy * 0.001).x);
-	vec3 grassColor = mix(texture2D(grass1, pPosition.xy * 0.02).xyz, texture2D(grass2, pPosition.xy * 0.03).xyz, texture2D(noise, pPosition.xy * 0.013).x) * vec3(1, 1.3, 1);
+	vec3 rockColor = mix(texture2D(rock1, pPosition.xy * 0.1).xyz, texture2D(rock2, pPosition.xy * 0.03).xyz, texture2D(noise, pPosition.xy * 0.031).x);
+	vec3 grassColor = mix(
+		texture2D(grass1, pPosition.xy * 0.005).xyz,
+		texture2D(grass2, pPosition.xy * 0.12).xyz,
+		texture2D(noise, pPosition.xy * 0.013).x
+	) * vec3(1, 1.3, 1);
 
 	//Merge rock and grass by normal
 	vec3 plainColor = mix(rockColor, grassColor, pow(abs(slope), 20.0));
@@ -42,7 +46,7 @@ void main() {
 	/*
 	Sand texture
 	*/
-	vec3 sandColor = texture2D(sand1, pPosition.xy * 0.01).xyz;
+	vec3 sandColor = texture2D(sand1, pPosition.xy * 0.04).xyz;
 
 	/*
 	Final merge
