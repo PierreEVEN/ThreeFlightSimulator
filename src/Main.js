@@ -75,7 +75,6 @@ function init() {
 
     debugUI = new PlaneDebugUI(controller);
 }
-let test = new THREE.Scene();
 
 function preInit() {
 

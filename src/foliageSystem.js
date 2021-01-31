@@ -13,7 +13,7 @@ class FoliageSystem {
             gltf.scene.traverse(function(child) {
                 if (child.isMesh) {
                     let spacing = 40;
-                    let width = 300;
+                    let width = 50;
                     let scale = 0.025;
                     let test = new THREE.InstancedMesh(child.geometry, child.material, width * width);
                     test.instanceMatrix.setUsage(THREE.StaticDrawUsage);
