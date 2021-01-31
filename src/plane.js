@@ -13,7 +13,7 @@ class Plane {
         this.position = new THREE.Vector3(0, 0, 100);
         this.rotation = new THREE.Quaternion().identity();
         this.inverseRotation = new Quaternion();
-        this.pause = true;
+        this.pause = false;
         this.mesh = inMesh;
 
         /*
