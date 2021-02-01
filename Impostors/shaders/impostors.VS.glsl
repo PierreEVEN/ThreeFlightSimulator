@@ -1,6 +1,5 @@
-varying vec3 pNormal;
+
 varying vec3 pPosition;
-varying vec3 pCameraPos;
 varying vec2 pUV;
 uniform float captureRadius;
 
@@ -11,7 +10,9 @@ int spherical = 1;
 
 vec2 discretizeUvs(vec2 uvs) {
 	float diameter = captureRadius * 2.0;
-	return trunc(uvs * (diameter + 0.01)) / diameter;
+
+	vec2 test = uvs * (diameter + 0.01);
+	return trunc(test) / diameter;
 }
 
 vec2 calcSimpleUV(vec2 baseUV, vec3 objPosition) {
@@ -38,6 +39,7 @@ vec2 calcSimpleUV(vec2 baseUV, vec3 objPosition) {
 
 
 void main() {
+
 	#ifdef USE_INSTANCING
 	mat4 modelView = modelViewMatrix * instanceMatrix;
 	vec3 objPosition = (instanceMatrix * vec4(0, 0, 0,1.0)).xyz;
@@ -75,4 +77,5 @@ void main() {
 
 	// Compute vertex position
 	gl_Position = projectionMatrix * modelView * vec4(position, 1.0);
+	pPosition = gl_Position.xyz;
 }

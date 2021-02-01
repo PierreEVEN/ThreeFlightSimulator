@@ -12,33 +12,32 @@ class World {
 
 		// Light
 		this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-		this.directionalLight.position.set(0, 1, 1);
-		this.scene.add(this.ambiantLight);
+		this.directionalLight.position.set(0, 0, 0);
 		this.scene.add(this.directionalLight);
 
 		this.scene.add(camera);
-		let uniforms = {
+		this.uniforms = {
+			lightDir: { value: this.directionalLight.position},
 			captureRadius: { value: RESOURCE_MANAGER.captureRadius},
-			testImpostor: {type: 't', value: RESOURCE_MANAGER.TEST.texture},
-			testImpostorSimplified: {type: 't', value: RESOURCE_MANAGER.TEST.texture},
+			colorTexture: {type: 't', value: RESOURCE_MANAGER.TEST.texture},
+			normalTexture: {type: 't', value: RESOURCE_MANAGER.TEST2.texture},
 		}
 
-		let base = new THREE.Mesh(new THREE.BoxGeometry(20, 20, 1, 100, 100), new THREE.MeshPhysicalMaterial({map:RESOURCE_MANAGER.texture_forestGround}))
+		let base = new THREE.Mesh(new THREE.BoxGeometry(20, 20, 1, 100, 100), new THREE.MeshBasicMaterial({map:RESOURCE_MANAGER.texture_forestGround}))
 		base.position.z -= 1;
 		this.scene.add(base);
 
 
-
 		let impostorMat_Instancing = new THREE.ShaderMaterial( {
-			uniforms: uniforms,
+			uniforms: this.uniforms,
 			//wireframe:true,
 			//vertexColors: true,
 			vertexShader: RESOURCE_MANAGER.vertexShader_impostors,
 			fragmentShader: RESOURCE_MANAGER.fragmentShader_impostors,
 		});
 		impostorMat_Instancing.captureRadius = RESOURCE_MANAGER.captureRadius;
-		impostorMat_Instancing.testImpostor = RESOURCE_MANAGER.TEST.texture;
-		impostorMat_Instancing.testImpostorSimplified = RESOURCE_MANAGER.TEST.texture;
+		impostorMat_Instancing.colorTexture = RESOURCE_MANAGER.TEST.texture;
+		impostorMat_Instancing.normalTexture = RESOURCE_MANAGER.TEST2.texture;
 
 		const instCount = 1000;
 		const spacing = 0.6;
@@ -55,9 +54,17 @@ class World {
 			}
 		}
 		this.scene.add(instMesh);
-
+		this.r = 0;
+		this.rotMatrix = new THREE.Euler();
 	}
 
+
 	tick(deltaTime) {
+		this.r += deltaTime * 1;
+		this.directionalLight.position.y = 1;
+		this.directionalLight.position.x = Math.sin(this.r);
+		this.directionalLight.position.z = Math.cos(this.r);
+		this.directionalLight.position.normalize();
+
 	}
 }

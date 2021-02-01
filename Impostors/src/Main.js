@@ -13,6 +13,8 @@ function loadResources() {
 
     RESOURCE_MANAGER.loadFileResource('./shaders/impostors.VS.glsl', 'vertexShader_impostors');
     RESOURCE_MANAGER.loadFileResource('./shaders/impostors.FS.glsl', 'fragmentShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
 
     RESOURCE_MANAGER.loadTextureResource('./textures/forrest_ground_01_diff_1k.jpg', 'texture_forestGround');
     RESOURCE_MANAGER.loadTextureResource('./textures/TestImpost.png', 'texture_TestImpost');
@@ -60,6 +62,10 @@ function init() {
     demo.position.z += 2.5;
     demo.position.x += 1;
     world.scene.add(demo);
+    let demo2 = new THREE.Mesh(new THREE.BoxGeometry(.2, 4, 4), new THREE.MeshBasicMaterial({map:RESOURCE_MANAGER.TEST2.texture}));
+    demo2.position.z += 2.5;
+    demo2.position.x -= 5;
+    world.scene.add(demo2);
 }
 
 function preInit() {
