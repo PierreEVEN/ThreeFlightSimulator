@@ -9,7 +9,7 @@ const gltfLoader = new GLTFLoader();
 
 let meshGroups = [];
 
-let testGaom = new THREE.BoxGeometry(100, 2000, 100);
+//let testGaom = new THREE.BoxGeometry(100, 2000, 100);
 
 class FoliageType {
 
@@ -21,12 +21,12 @@ class FoliageType {
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 150;
+        this.density = 50;
 
         RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
             if (child.isMesh) {
                 meshGroups.push({
-                    geometry:testGaom,//child.geometry,
+                    geometry:child.geometry,//child.geometry,
                     material:child.material
                 });
             }
