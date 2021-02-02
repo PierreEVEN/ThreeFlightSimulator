@@ -8,29 +8,26 @@ const gltfLoader = new GLTFLoader();
 
 
 let meshGroups = [];
-
+let instCount = 0;
 //let testGaom = new THREE.BoxGeometry(100, 2000, 100);
 
 class FoliageType {
-
-
-
     constructor() {
         this.minLOD = 0;
-        this.maxLOD = 1;
+        this.maxLOD = 3;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 50;
+        this.density = 100;
 
-        RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
-            if (child.isMesh) {
+        //RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
+         //   if (child.isMesh) {
                 meshGroups.push({
-                    geometry:child.geometry,//child.geometry,
-                    material:child.material
+                    geometry:new THREE.PlaneGeometry(10, 10),//child.geometry,
+                    material:RESOURCE_MANAGER.TreeImpostor.material
                 });
-            }
-        });
+        //    }
+        //});
     }
 
     generate(heightGenerator, nodeLevel, position, size) {
@@ -46,7 +43,7 @@ class FoliageType {
 
                 let posX = x * spacing - size / 2 + position.x + Math.random() * spacing;
                 let posY = y * spacing - size / 2 + position.y + Math.random() * spacing;
-                let posZ = heightGenerator.getHeightAtLocation(posX, posY);
+                let posZ = heightGenerator.getHeightAtLocation(posX, posY) + 4;
                 if (posZ < 30 || posZ > 250) continue;
 
                 let matrix = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
@@ -55,7 +52,6 @@ class FoliageType {
                 instances.push(matrix);
             }
         }
-
         // generate meshs
         let meshs = [];
         for (let group of meshGroups) {
@@ -83,35 +79,7 @@ class FoliageSystem {
         this.heightGenerator = heightGenerator;
         this.foliageTypes = [new FoliageType()];
 
-        /*
-        for (let group of meshGroups) {
-            scene.add(group.mesh);
-
-            group.mesh.count = 50 * 50;
-
-            const matrix = new THREE.Matrix4();
-            let spacing =50;
-            let width = 50;
-            let scale = 0.025;
-
-            for (let x = 0; x < width; ++x) {
-                for (let y = 0; y < width; ++y) {
-
-                    let posX = x * spacing + Math.random() * spacing - spacing / 2 - width * spacing / 2;
-                    let posY = y * spacing + Math.random() * spacing - spacing / 2 - width * spacing / 2;
-                    let posZ = heightGenerator.getHeightAtLocation(posX, posY);
-                    if (posZ < 30 || posZ > 250) continue;
-
-                    matrix.makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
-                    matrix.scale(new THREE.Vector3(scale,scale,scale));
-                    matrix.setPosition(posX, posY, posZ);
-                    group.mesh.setMatrixAt(x + y * width, matrix);
-                }
-            }
-        }
-        */
-
-        this.sectionSize = 2000;
+        this.sectionSize = 4000;
 
         this.sections = [];
     }
@@ -246,21 +214,22 @@ class foliageSystemNode {
 
         for (let foliage of this.foliageSystem.foliageTypes) {
             let foli = foliage.generate(this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
+            for (let inst of foli) {
+                if (inst.count) {
+                    this.instCount = inst.count;
+                    instCount += inst.count;
+                }
+            }
             this.foliages = this.foliages.concat(foli);
         }
 
         for (let foliage of this.foliages) {
             this.foliageSystem.scene.add(foliage);
         }
-
-        /*this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(this.nodeSize, this.nodeSize), new THREE.MeshPhysicalMaterial({color:new THREE.Color(this.nodeLevel/4, 1 - this.nodeLevel/4, 0)}));
-        this.mesh.position.set(this.nodePosition.x, this.nodePosition.y, this.nodePosition.z);
-        this.mesh.position.z += 100 + this.nodeLevel * 10;
-        this.foliageSystem.scene.add(this.mesh);
-         */
     }
 
     destroy() {
+        if (this.instCount) instCount -= this.instCount;
         for (let child of this.childs) {
             child.destroy();
         }
@@ -277,7 +246,7 @@ class foliageSystemNode {
         this.cameraGroundLocation.x = this.foliageSystem.camera.position.x;
         this.cameraGroundLocation.y = this.foliageSystem.camera.position.y;
         this.cameraGroundLocation.z = this.foliageSystem.camera.position.z - this.foliageSystem.heightGenerator.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
-        let Level = 3 - Math.min(3, (this.cameraGroundLocation.distanceTo(this.nodePosition) - this.nodeSize * 2)  / 100.0);
+        let Level = 3 - Math.min(3, (this.cameraGroundLocation.distanceTo(this.nodePosition) - this.nodeSize * 2)  / 200.0);
         return Math.trunc(Level);
     }
 }

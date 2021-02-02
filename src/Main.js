@@ -5,15 +5,21 @@ import {PlaneDebugUI} from './planeDebugUI.js'
 import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
+import {ImpostorRenderer} from "./impostorRenderer.js";
 
 let clock, stats, renderer, world, camera, controller, debugUI;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
     RESOURCE_MANAGER.loadMeshResource('./models/tree.glb', 'model_tree');
+    RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.VS.glsl', 'vertexShader_landscape');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.FS.glsl', 'fragmentShader_landscape');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors.VS.glsl', 'vertexShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors.FS.glsl', 'fragmentShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
 
     RESOURCE_MANAGER.loadTextureResource('./textures/noise.png', 'texture_noise');
     RESOURCE_MANAGER.loadTextureResource('./textures/forrest_ground_01_diff_1k.jpg', 'texture_grass1');
@@ -31,6 +37,7 @@ function init() {
 
     // Setup renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.autoClear = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(new THREE.Color(.6,.8,1),  1);
@@ -53,6 +60,12 @@ function init() {
 
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 20000);
+
+    // build impostors
+    RESOURCE_MANAGER.model_tree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
+    RESOURCE_MANAGER.model_tree.scene.rotation.z += -Math.PI / 2;
+    RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_tree.scene);
+    RESOURCE_MANAGER.TreeImpostor.render(renderer);
 
     // Initialize world
     world = new World(renderer, camera);
@@ -100,6 +113,10 @@ function animate() {
     controller.update(deltaTime);
     debugUI.tick(deltaTime);
 
+    renderer.setRenderTarget( null );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(new THREE.Color(.6,.8,1), 1);
+    renderer.clear();
     renderer.render(world.scene, camera);
     stats.update();
 }

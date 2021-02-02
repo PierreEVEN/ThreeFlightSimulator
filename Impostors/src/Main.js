@@ -51,21 +51,34 @@ function init() {
     camera.position.x -= 5;
     camera.up.set(0,0,1);
 
-    impostorTest = new ImpostorRenderer(camera);
-
     // Initialize world
     world = new World(renderer, camera);
 
     // Add global controller
     controller = new OrbitControls(camera, renderer.domElement);
-    let demo = new THREE.Mesh(new THREE.BoxGeometry(.2, 4, 4), new THREE.MeshBasicMaterial({map:RESOURCE_MANAGER.TEST.texture}));
-    demo.position.z += 2.5;
-    demo.position.x += 1;
-    world.scene.add(demo);
-    let demo2 = new THREE.Mesh(new THREE.BoxGeometry(.2, 4, 4), new THREE.MeshBasicMaterial({map:RESOURCE_MANAGER.TEST2.texture}));
-    demo2.position.z += 2.5;
-    demo2.position.x -= 5;
-    world.scene.add(demo2);
+
+    // Create impostors
+    RESOURCE_MANAGER.model_treeBasic.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
+    RESOURCE_MANAGER.model_treeBasic.scene.rotation.z += -Math.PI / 2;
+    impostorTest = new ImpostorRenderer(RESOURCE_MANAGER.model_treeBasic.scene);
+    impostorTest.render(renderer);
+    RESOURCE_MANAGER.TEST = impostorTest;
+
+    // Create impostor instances
+    const instCount = 1000;
+    const spacing = 0.6;
+    const matrix = new THREE.Matrix4();
+    let instMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(), RESOURCE_MANAGER.TEST.material, instCount * instCount);
+    instMesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+
+    for (let x = 0; x < instCount; ++x) {
+        for (let y = 0; y < instCount; ++y) {
+            matrix.identity();
+            matrix.setPosition((x - instCount / 2) * spacing + Math.random() * spacing, (y - instCount / 2) * spacing + Math.random() * spacing, 0);
+            instMesh.setMatrixAt(x + y * instCount, matrix);
+        }
+    }
+    world.scene.add(instMesh);
 }
 
 function preInit() {
@@ -89,8 +102,6 @@ function animate() {
 
     world.tick(deltaTime);
     controller.update();
-
-    impostorTest.render(renderer);
 
     renderer.setRenderTarget( null );
     renderer.setSize(window.innerWidth, window.innerHeight);

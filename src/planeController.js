@@ -1,5 +1,6 @@
 import {Euler, EventDispatcher, Matrix4, Quaternion, Vector3} from "../threejs/build/three.module.js";
 import {MathUtils} from "../threejs/src/math/MathUtils.js";
+import {RESOURCE_MANAGER} from "./resourceManager.js";
 
 export {PlaneController};
 
@@ -71,6 +72,7 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
         switch (event.code) {
             case 'F1':
                 this.landscape.LandscapeMaterial.wireframe = !this.landscape.LandscapeMaterial.wireframe;
+                RESOURCE_MANAGER.TreeImpostor.material.wireframe = this.landscape.LandscapeMaterial.wireframe;
                 break;
             case 'KeyV':
                 this.isFPS = !this.isFPS;
