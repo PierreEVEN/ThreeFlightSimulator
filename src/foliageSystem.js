@@ -14,11 +14,11 @@ let instCount = 0;
 class FoliageType {
     constructor() {
         this.minLOD = 0;
-        this.maxLOD = 3;
+        this.maxLOD = 2;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 100;
+        this.density = 20;
 
         //RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
          //   if (child.isMesh) {

@@ -1,0 +1,52 @@
+body {
+    margin: 0px;
+}
+
+div#interface {
+    display: flex;
+    position:absolute;
+    width: 100%;
+
+    height: 100%;
+    align-items: center;
+}
+
+div#menuBar {
+    color:white;
+    font-family: Calibri;
+    background-color: rgba(0.1, 0.1, 0.1, 0.7);
+    display: flex;
+    min-width: 350px;
+    width: 30%;
+    height: 80%;
+    flex-direction: column;
+    align-items: center;
+}
+
+div#menuBackground {
+    display: flex;
+    width: 70%;
+    height: 100%;
+}
+
+
+div#menuButtons {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+.disabled {
+    color: gray;
+}
+
+.game-button {
+    display: flex;
+    width: 200px;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
