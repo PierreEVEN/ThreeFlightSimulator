@@ -146,7 +146,7 @@ class Plane {
         this.updateDebug();
 
         // Teleport plane to zero in case of physic bug
-        if (this.position.length() > 500000)  {
+        if (this.position.length() > 5000000)  {
             this.position.set(0, 0, 400);
             this.velocity.set(0, 0, 0);
         }
@@ -209,7 +209,7 @@ class Plane {
 
     setEngineInput(value) {
         if (value < 0) value = 0;
-        else if (value > 1.2) value = 1.2;
+        else if (value > 100) value = 100;
         this.desiredEngineInput = value;
     }
 

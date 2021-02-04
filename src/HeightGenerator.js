@@ -8,6 +8,9 @@ class HeightGenerator {
     }
 
     getHeightAtLocation(x, y) {
+
+        return Module.cwrap('getAltitudeAtLocation', 'double', ['double', 'double'])(x, y);
+
         let scale = .01;
         let scale2 = .001;
         let scale3 = .0003;

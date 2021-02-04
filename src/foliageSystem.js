@@ -4,21 +4,25 @@ import {GLTFLoader} from "../threejs/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from './resourceManager.js'
 
+
+
+
+
 const gltfLoader = new GLTFLoader();
 
 
 let meshGroups = [];
 let instCount = 0;
-//let testGaom = new THREE.BoxGeometry(100, 2000, 100);
+const sectionRange = 3;
 
 class FoliageType {
     constructor() {
         this.minLOD = 0;
-        this.maxLOD = 2;
+        this.maxLOD = 1;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 20;
+        this.density = 200;
 
         //RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
          //   if (child.isMesh) {
@@ -30,12 +34,19 @@ class FoliageType {
         //});
     }
 
+
+
     generate(heightGenerator, nodeLevel, position, size) {
 
+        let meshs = [];
+
+        let CppStart = performance.now();
         if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 
+        /*
         let instances = [];
         let spacing = size / this.density;
+
 
         // Generate instances coordinates
         for (let x = 0; x < this.density; ++x) {
@@ -44,7 +55,6 @@ class FoliageType {
                 let posX = x * spacing - size / 2 + position.x + Math.random() * spacing;
                 let posY = y * spacing - size / 2 + position.y + Math.random() * spacing;
                 let posZ = heightGenerator.getHeightAtLocation(posX, posY) + 4;
-                if (posZ < 30 || posZ > 250) continue;
 
                 let matrix = new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(Math.PI / 2, Math.random() * 100, 0));
                 matrix.scale(this.scale);
@@ -52,8 +62,9 @@ class FoliageType {
                 instances.push(matrix);
             }
         }
+
         // generate meshs
-        let meshs = [];
+
         for (let group of meshGroups) {
             let mesh = new THREE.InstancedMesh(group.geometry, group.material, instances.length);
             mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
@@ -64,12 +75,41 @@ class FoliageType {
             }
             meshs.push(mesh);
         }
+
+         */
+
+
+
+        const treeCount = this.density * this.density;
+        let memory = Module._malloc(treeCount * 64);
+
+
+        let GenStart = performance.now();
+        Module.cwrap('applyMatrixData', 'number', ['number', 'number', 'number', 'number', 'number'])(memory, this.density, position.x, position.y, size);
+        let GenStop = performance.now();
+
+        let dataView = new Float32Array(Module.HEAP8.buffer, memory, treeCount * 16);
+        const data = new Float32Array(dataView);
+
+        for (let group of meshGroups) {
+            let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
+            mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+            mesh.setMatrixAt(0, new THREE.Matrix4().identity());
+            mesh.instanceMatrix.array = data;
+            meshs.push(mesh);
+        }
+
+        Module._free(memory);
+
+        let CppEnd = performance.now();
+
+        console.log('Cpp duration : ' + (CppEnd - CppStart) + ' build time : ' + (GenStop - GenStart));
+
+
         return meshs;
     }
 }
 
-
-const sectionRange = 3;
 
 class FoliageSystem {
 
@@ -210,22 +250,30 @@ class foliageSystemNode {
         if (this.generated) return;
         this.generated = true;
 
+        this.generateAsync();
+
+    }
+
+    async generateAsync() {
         this.foliages = [];
+        return new Promise(resolve => { setTimeout(() => {
 
-        for (let foliage of this.foliageSystem.foliageTypes) {
-            let foli = foliage.generate(this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
-            for (let inst of foli) {
-                if (inst.count) {
-                    this.instCount = inst.count;
-                    instCount += inst.count;
+            for (let foliage of this.foliageSystem.foliageTypes) {
+                let foli = foliage.generate(this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
+                for (let inst of foli) {
+                    if (inst.count) {
+                        this.instCount = inst.count;
+                        instCount += inst.count;
+                    }
                 }
+                this.foliages = this.foliages.concat(foli);
             }
-            this.foliages = this.foliages.concat(foli);
-        }
 
-        for (let foliage of this.foliages) {
-            this.foliageSystem.scene.add(foliage);
-        }
+            for (let foliage of this.foliages) {
+                this.foliageSystem.scene.add(foliage);
+            }
+            resolve();
+        }); });
     }
 
     destroy() {

@@ -7,7 +7,7 @@ import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
 
-let clock, stats, renderer, world, camera, controller, debugUI;
+let clock, stats, renderer, world, camera, controller, debugUI, background;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
@@ -35,6 +35,8 @@ function loadResources() {
 
 function init() {
 
+    Module.cwrap('init')();
+
     // Setup renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.autoClear = false;
@@ -42,14 +44,15 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(new THREE.Color(.6,.8,1),  1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    document.body.appendChild(renderer.domElement);
+    background = document.getElementById('game');
+    background.appendChild(renderer.domElement);
 
     // Setup clock
     clock = new THREE.Clock();
 
     // Register stat window
     stats = new Stats();
-    document.body.appendChild( stats.dom );
+    background.appendChild( stats.dom );
 
     // Set resize delegate
     window.addEventListener( 'resize', function () {
@@ -59,7 +62,7 @@ function init() {
     });
 
     // Create camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 20000);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
     // build impostors
     RESOURCE_MANAGER.model_tree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
@@ -84,7 +87,7 @@ function init() {
     let plane = world.addPlane(rootNode);
 
     // Add global controller
-    controller = new PlaneController(renderer.domElement, plane, camera, world.landscape);
+    controller = new PlaneController(background, plane, camera, world.landscape);
     new SaveGame(controller);
 
     debugUI = new PlaneDebugUI(controller);

@@ -22,22 +22,18 @@ class PlaneDebugUI {
         velocity.add(this.planeInformations, 'velx', -300, 300).name('X').listen();
         velocity.add(this.planeInformations, 'vely', -300, 300).name('Y').listen();
         velocity.add(this.planeInformations, 'velz', -300, 300).name('Z').listen();
-        velocity.open();
         let Relvelocity = this.gui.addFolder('relative velocity');
         Relvelocity.add(this.planeInformations, 'velrelx', -50, 300).name('X').listen();
         Relvelocity.add(this.planeInformations, 'velrely', -50, 300).name('Y').listen();
         Relvelocity.add(this.planeInformations, 'velrelz', -50, 300).name('Z').listen();
-        Relvelocity.open();
         let inputs = this.gui.addFolder('Inputs');
         inputs.add(this.controller.plane, 'rollInput', -1.0, 1.0).name('Roll').listen();
         inputs.add(this.controller.plane, 'pitchInput', -1.0, 1.0).name('Pitch').listen();
         inputs.add(this.controller.plane, 'yawInput', -1.0, 1.0).name('Yaw').listen();
         inputs.add(this.controller.plane, 'engineInput', 0.0, 1.2).name('Throttle').listen();
-        inputs.open();
         let flightState = this.gui.addFolder('Flight state');
         flightState.add(this.controller.plane, 'rightLift', -10.0, 10.0).name('Lift Y').listen();
         flightState.add(this.controller.plane, 'upLift', -50.0, 50.0).name('Lift Z').listen();
-        flightState.open();
 
     }
 

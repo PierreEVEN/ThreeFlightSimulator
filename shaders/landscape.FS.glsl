@@ -52,21 +52,21 @@ void main() {
 	Final merge
 	*/
 	//Merge snow
-	vec3 finalColor = mix(plainColor, snowColor, max(0.0, min(1.0, (pPosition.z - 300.0 + texture2D(noise, pPosition.xy * 0.0003).x * 50.0) / 20.0)));
+	vec3 finalColor = mix(plainColor, snowColor, max(0.0, min(1.0, (pPosition.z - 2500.0 + texture2D(noise, pPosition.xy * 0.0001).x * 800.0) / 100.0)));
 	// Merge sand
-	finalColor = mix(sandColor, finalColor, max(0.0, min(1.0, (pPosition.z - 25.0 + texture2D(noise, pPosition.xy * 0.0003).x * 5.0) / 5.0)));
+	finalColor = mix(sandColor, finalColor, max(0.0, min(1.0, (pPosition.z - 5.0 + texture2D(noise, pPosition.xy * 0.0003).x * 5.0) / 5.0)));
 
 	float foam =
 	texture2D(waterDisp, pPosition.xy * 0.02 + vec2(time, time) * 0.02).x *
 	texture2D(waterDisp, pPosition.xy * 0.008 + vec2(time, -time) * 0.015).x *
 	texture2D(waterDisp, pPosition.xy * 0.002 + vec2(-time, -time) * 0.01).x;
 
-	vec3 oceanColor = mix(vec3(.25, .55, .8), vec3(.9, .9, 1), foam * max(0.0, (1.0 - pDepth / 20.0))) * max(0.2, (1.0 - pDepth / 50.0));
+	vec3 oceanColor = mix(vec3(.25, .55, .8), vec3(.9, .9, 1), foam * max(0.0, (1.0 - pDepth / 20.0))) * max(0.2, (1.0 - pow(pDepth, 0.5) / 20.0));
 
 	/*
 	Handle oceans
 	*/
-	finalColor = mix(finalColor, oceanColor, max(0.0, min(1.0, (pDepth))));
+	finalColor = pPosition.z < 0.1 ? oceanColor : finalColor;
 
 
 	gl_FragColor = vec4(finalColor, 1);

@@ -6,7 +6,7 @@ export { Landscape }
 
 const CellsPerChunk = 20;
 const SectionWidth = 20000;
-const ViewDistance = 3;
+const ViewDistance = 6;
 
 class Landscape {
 

@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
 	<head>
-		
+
 		<title>Three flight simulator</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" href="style.css">
-		<script type="module" src="src/Main.js"></script>
 		<script type="module" src="src/ui/mainMenu.js"></script>
+		<script type="module" src="src/Main.js"></script>
+
+		<script src="./src/wasm/bin/tfsWasm.js"></script>
 	</head>
 
 	<body>
+		<div id="game">
+		</div>
 		<div id="interface">
 		</div>
 	</body>

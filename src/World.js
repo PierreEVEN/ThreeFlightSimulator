@@ -5,6 +5,14 @@ import {Plane} from "./plane.js";
 import {HeightGenerator} from "./HeightGenerator.js";
 import {FoliageSystem} from "./FoliageSystem.js";
 
+
+
+
+
+
+
+
+
 class World {
 	constructor(renderer, camera) {
 		this.renderer = renderer;
@@ -37,7 +45,7 @@ class World {
 		for (let plane of this.planes) {
 			plane.update(deltaTime);
 			if (plane.position.z < this.heightGenerator.getHeightAtLocation(plane.position.x, plane.position.y)) {
-				plane.position.set(0, 0, 400);
+				plane.position.set(0, 0, this.heightGenerator.getHeightAtLocation(0, 0) + 400);
 				plane.velocity.set(0, 0, 0);
 			}
 		}

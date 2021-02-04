@@ -6,9 +6,9 @@ varying float pDepth;
 void main() {
 	pNormal = normal;
 	pColor = color;
-	pDepth = min(20.0, -position.z) + 20.0;
+	pDepth = max(0.0, -position.z);
 
-	vec3 finalPosition = vec3(position.x, position.y, max(20.0, position.z));
+	vec3 finalPosition = vec3(position.x, position.y, max(0.0, position.z));
 
 	gl_Position = projectionMatrix *
 					modelViewMatrix *

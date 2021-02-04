@@ -27,11 +27,9 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.minYaw = -180;
     this.maxYaw = 180;
 
-    this.shiftPressed = false;
-
     this.isFPS = false;
-
     this.mouseSensitivity = 0.5;
+    let test = document.getElementById('game');
     if ( domElement === undefined ) {
 
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
