@@ -45,7 +45,7 @@ Une seconde approche (utilisée dans l'Unreal engine 4) serait de déformer le t
 
 Une troisième, peu être moins intuitive (utilisée dans Flight simulator 2020 par exemple), consiste à laisser 'dépasser les bords de la nape'.
 Il se trouve que rajouter quelques polygones a un cout relativement faible. Au lieu de générer une grille de nxn sommets, on génère une grille de (n + 2) x (n + 2).
-On se retrouve alors avec une 'nappe' qui déborde d'une cran de trop de chaque coté de la section. Il suffit alors de rabattre les bords vers le bas afin de cacher les éventuels trous. Cette approche est sans doute légèrement moins optimisée coté CPU, elle a l'avantage d'être très simple à mettre en place et d'avoir un cout très faible pour le CPU.
+On se retrouve alors avec une 'nappe' qui déborde d'une cran de trop de chaque coté de la section. Il suffit alors de rabattre les bords vers le bas afin de cacher les éventuels trous. Cette approche est sans doute légèrement moins optimisée coté GPU, elle a l'avantage d'être très simple à mettre en place et d'avoir un cout très faible pour le CPU.
 
 Comme nous travaillons sur un langage interprété, donc relativement lent, j'ai opté pour la 3e méthode. (aussi par sa simplicité).
 
