@@ -15,6 +15,7 @@ import {FoliageSystem} from "./FoliageSystem.js";
 
 class World {
 	constructor(renderer, camera) {
+		
 		this.renderer = renderer;
 		// Create scene
 		this.scene = new THREE.Scene();

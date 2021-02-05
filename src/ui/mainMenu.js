@@ -1,6 +1,23 @@
 
+let menuInstance = null;
+
+const myWorker = new Worker("./src/TestWorker.js");
+
+myWorker.onmessage = function(e) {
+    console.log('Message received from worker : ' + e.data);
+}
+
+function test() {
+
+    console.log('execute');
+    myWorker.postMessage([10, 15]);
+
+}
+
+
 class MainMenu {
     constructor() {
+        menuInstance = this;
         this.uiBackground = document.getElementById('interface');
 
         this.uiBackground.innerHTML = [
@@ -27,11 +44,11 @@ class MainMenu {
             '</div>'
         ];
 
-        document.getElementById('solo-button').onclick = this.play;
+        document.getElementById('solo-button').onclick = menuInstance.play;
         document.getElementById('multiplayer-button').disabled = true;
-        document.getElementById('option-button').onclick = this.showServerPage;
-        document.getElementById('option-button').onclick = this.showOptions;
-        document.getElementById('credits-button').onclick = this.showCredits;
+        document.getElementById('option-button').onclick = menuInstance.showServerPage;
+        document.getElementById('option-button').onclick = menuInstance.showOptions;
+        document.getElementById('credits-button').onclick = menuInstance.showCredits;
     }
 
     play() {
@@ -43,12 +60,11 @@ class MainMenu {
     }
 
     showCredits() {
-
+        test();
     }
 
 
     showOptions() {
-        console.log('test');
         let menuBackground = document.getElementById('menuBar');
 
         menuBackground.innerHTML = [
@@ -61,17 +77,14 @@ class MainMenu {
             '</div>'
         ];
 
-        document.getElementById('graphics-button').onclick = this.graphicsOptions;
-        document.getElementById('controls-option').onclick = this.controlsOptions;
-        document.getElementById('audio-button').onclick = this.audioOptions;
-        document.getElementById('back-button').onclick = this.mainMenu;
-        console.log('bind');
+        document.getElementById('graphics-button').onclick = menuInstance.graphicsOptions;
+        document.getElementById('controls-option').onclick = menuInstance.controlsOptions;
+        document.getElementById('audio-button').onclick = menuInstance.audioOptions;
+        document.getElementById('back-button').onclick = menuInstance.mainMenu;
     }
 
 
     graphicsOptions() {
-
-        console.log('testZzefs');
     }
 
     controlsOptions() {

@@ -13,7 +13,10 @@
 
 #include "types/Matrix.h"
 
+#include "jobs/JobSystem.h"
+
 #include <iostream>
+
 
 extern "C" {	
 	double getAltitudeAtLocation(double posX, double posY);
@@ -22,6 +25,12 @@ extern "C" {
 }
 
 
+
+struct FoliageGenerationCommand {
+    FoliageGenerationCommand(double x, double y, double size, uint32_t density) {
+
+    }
+};
 
 void translateMatrix(float* data, float x, float y, float z) {
     SMatrix4 matrix;
@@ -33,6 +42,7 @@ void translateMatrix(float* data, float x, float y, float z) {
 
 uint64_t PROJECT_API applyMatrixData(float* data, int density, double posX, double posY, double size) {
 
+    
     double step = size / density;
     for (size_t x = 0; x < density; ++x) {
         for (size_t y = 0; y < density; ++y) {
@@ -47,26 +57,15 @@ uint64_t PROJECT_API applyMatrixData(float* data, int density, double posX, doub
 
 
 
-struct FoliageGenerationRequest {
-    FoliageGenerationRequest(double x, double y, double size, uint32_t density) {
-
-    }
-
-
-};
-
-
-
 
 FastNoiseLite noise(100);
 FastNoiseLite mountainLevelNoise(2000);
 FastNoiseLite hillLevelNoise(50000);
 
 
-
-
-
 void PROJECT_API init() {
+
+	
     noise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic);
     noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     noise.SetFractalOctaves(8);
