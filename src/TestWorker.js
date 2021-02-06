@@ -1,3 +1,4 @@
+// worker.js
 
 // Polyfill instantiateStreaming for browsers missing it
 if (!WebAssembly.instantiateStreaming) {
@@ -14,13 +15,37 @@ let wasmReady = new Promise((resolve) => {
     wasmResolve = resolve;
 })
 
+function _setTempRet0($i) {
+    setTempRet0($i | 0)
+}
+
+function abortOnCannotGrowMemory(requestedSize) {
+    abort("Cannot enlarge memory arrays to size " + requestedSize + " bytes (OOM). Either (1) compile with  -s INITIAL_MEMORY=X  with X higher than the current value " + HEAP8.length + ", (2) compile with  -s ALLOW_MEMORY_GROWTH=1  which allows increasing the size at runtime, or (3) if you want malloc to return NULL (0) instead of this abort, compile with  -s ABORTING_MALLOC=0 ")
+}
+function _emscripten_resize_heap(requestedSize) {
+    requestedSize = requestedSize >>> 0;
+    abortOnCannotGrowMemory(requestedSize)
+}
+
 // Handle incoming messages
 self.addEventListener('message', function(event) {
 
     const { eventType, eventData, eventId } = event.data;
 
     if (eventType === "INITIALISE") {
-        WebAssembly.instantiateStreaming(fetch(eventData), {})
+
+        let imports = {};
+        imports.env = {
+            'memoryBase': 0,
+                'tableBase': 0,
+                'memory': new WebAssembly.Memory({initial: 256}),
+                'table': new WebAssembly.Table({initial: 256, element: 'anyfunc'}),
+                'emscripten_resize_heap': _emscripten_resize_heap,
+                'setTempRet0': _setTempRet0
+        }
+
+
+        WebAssembly.instantiateStreaming(fetch(eventData), imports)
             .then(instantiatedModule => {
                 const wasmExports = instantiatedModule.instance.exports;
 
@@ -56,37 +81,3 @@ self.addEventListener('message', function(event) {
     }
 
 }, false);
-
-
-
-
-
-onmessage = function(e) {
-
-
-    WebAssembly.instantiateStreaming(fetch('./wasm/bin/tfsWasm.wasm'), {})
-    .then(obj => {
-        // Call an exported function:
-        obj.instance.exports.exported_func();
-
-        // or access the buffer contents of an exported memory:
-        var i32 = new Uint32Array(obj.instance.exports.memory.buffer);
-
-        // or access the elements of an exported table:
-        var table = obj.instance.exports.table;
-        console.log(table.get(0)());
-    })
-
-
-    let Module = e.data[0];
-    //let memory = Module._malloc(100);
-    //Module._free(memory);
-
-
-    console.log("receive message");
-
-    console.log("done");
-
-    var workerResult = 'Result: ' + (e.data[1]);
-    postMessage(workerResult);
-}

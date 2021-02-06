@@ -8,11 +8,6 @@ import {FoliageSystem} from "./FoliageSystem.js";
 
 
 
-
-
-
-
-
 class World {
 	constructor(renderer, camera) {
 		
@@ -38,6 +33,7 @@ class World {
 		this.scene.add(camera);
 
 		this.planes = [];
+
 	}
 
 	tick(deltaTime) {

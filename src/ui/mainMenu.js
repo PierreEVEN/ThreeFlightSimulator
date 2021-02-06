@@ -1,20 +1,6 @@
 
 let menuInstance = null;
 
-const myWorker = new Worker("./src/TestWorker.js");
-
-myWorker.onmessage = function(e) {
-    console.log('Message received from worker : ' + e.data);
-}
-
-function test() {
-
-    console.log('execute');
-    myWorker.postMessage([10, 15]);
-
-}
-
-
 class MainMenu {
     constructor() {
         menuInstance = this;
@@ -60,7 +46,6 @@ class MainMenu {
     }
 
     showCredits() {
-        test();
     }
 
 
