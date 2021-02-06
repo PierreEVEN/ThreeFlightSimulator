@@ -3,7 +3,7 @@ import * as THREE from '../threejs/build/three.module.js';
 import {Landscape} from './landscape.js'
 import {Plane} from "./plane.js";
 import {HeightGenerator} from "./HeightGenerator.js";
-import {FoliageSystem} from "./FoliageSystem.js";
+import {FoliageSystem} from "./foliageSystem.js";
 
 
 
