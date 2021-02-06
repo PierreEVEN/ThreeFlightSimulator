@@ -8,22 +8,40 @@
 
 #include <cstdint>
 #include <cmath>
+#include <stdio.h>
+#include <string>
 
 #include "libs/FastNoiseLite.h"
-
 #include "types/Matrix.h"
-
 #include "jobs/JobSystem.h"
 
-#include <iostream>
-
+void log(const std::string& text) {
+    emscripten_run_script(("console.log('" + text + "')").c_str());
+}
 
 extern "C" {	
 	double getAltitudeAtLocation(double posX, double posY);
 	void init();
-    uint64_t applyMatrixData(float* data, int density, double posX, double posY, double size);
+    int applyMatrixData(int commandID, float* data, int density, double posX, double posY, double size);
+    void A();
+    void B(int a);
+    int C();
+    int D(int a);
 }
 
+void PROJECT_API A() {
+}
+
+void PROJECT_API B(int a) {
+}
+
+int PROJECT_API C() {
+    return 4;
+}
+
+int PROJECT_API D(int a) {
+    return 5;
+}
 
 
 struct FoliageGenerationCommand {
@@ -40,7 +58,7 @@ void translateMatrix(float* data, float x, float y, float z) {
     std::memcpy(data, matrix.coords, 16 * sizeof(float));
 }
 
-uint64_t PROJECT_API applyMatrixData(float* data, int density, double posX, double posY, double size) {
+int PROJECT_API applyMatrixData(int commandID, float* data, int density, double posX, double posY, double size) {
 
     
     double step = size / density;
@@ -52,7 +70,7 @@ uint64_t PROJECT_API applyMatrixData(float* data, int density, double posX, doub
         }
     }
 
-    return density * density;
+    return commandID;
 }
 
 
@@ -79,6 +97,8 @@ void PROJECT_API init() {
 
     hillLevelNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
     mountainLevelNoise.SetFractalOctaves(3);
+
+    log("Wasm module initialized");
 }
 
 double getMountainLevel(double posX, double posY) {

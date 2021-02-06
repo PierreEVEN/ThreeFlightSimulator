@@ -1,4 +1,4 @@
-// main.js
+export {WASM_INSTANCE}
 
 function wasmWorker(modulePath) {
 
@@ -59,21 +59,9 @@ function wasmWorker(modulePath) {
 
 }
 
-wasmWorker("./wasm/bin/tfsWasm.wasm").then((wasmProxyInstance) => {
-    wasmProxyInstance.cwrap("test", 'number', [])();
-    wasmProxyInstance.add(2, 3)
-        .then((result) => {
-            console.log(result); // 5
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+let WASM_INSTANCE = undefined;
 
-    wasmProxyInstance.divide(100, 10)
-        .then((result) => {
-            console.log(result); // 10
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+wasmWorker("./wasm/bin/tfsWasm.wasm").then((wasmProxyInstance) => {
+    wasmProxyInstance.init();
+    WASM_INSTANCE = wasmProxyInstance;
 });

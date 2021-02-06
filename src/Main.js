@@ -35,8 +35,6 @@ function loadResources() {
 
 function init() {
 
-    Module.cwrap('init')();
-
     // Setup renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.autoClear = false;

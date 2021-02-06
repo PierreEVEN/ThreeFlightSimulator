@@ -1,47 +1,89 @@
 export {FoliageSystem}
 
-import {GLTFLoader} from "../threejs/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from '../threejs/build/three.module.js';
-import {RESOURCE_MANAGER} from './resourceManager.js'
+import {RESOURCE_MANAGER} from './resourceManager.js';
+import {WASM_INSTANCE} from './TFSWasmWorker.js';
 
 
 let meshGroups = [];
 let instCount = 0;
 const sectionRange = 3;
 
+
+
+Module.cwrap('init')();
+
+let currentBuildCommand = 0;
+let commands = {};
+
 class FoliageType {
     constructor() {
 
         this.minLOD = 0;
-        this.maxLOD = 1;
+        this.maxLOD = 0;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 10;
+        this.density = 1;
 
-        //RESOURCE_MANAGER.model_tree.scene.traverse(function(child) {
-         //   if (child.isMesh) {
-                meshGroups.push({
-                    geometry:new THREE.PlaneGeometry(10, 10),//child.geometry,
-                    material:RESOURCE_MANAGER.TreeImpostor.material
-                });
-        //    }
-        //});
+        meshGroups.push({
+            geometry: new THREE.PlaneGeometry(10, 10),//child.geometry,
+            material: RESOURCE_MANAGER.TreeImpostor.material
+        });
     }
 
 
-
-    generate(heightGenerator, nodeLevel, position, size) {
-
-        let meshs = [];
+    generateAsync(section, heightGenerator, nodeLevel, position, size) {
+        const buildCommandID = currentBuildCommand++;
 
         if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 
 
         const treeCount = this.density * this.density;
+        commands[buildCommandID] = {
+            memory: Module._malloc(treeCount * 64),
+            section: section,
+            treeCount: treeCount
+        };
+
+        if (WASM_INSTANCE) {
+            WASM_INSTANCE.applyMatrixData(buildCommandID, commands[buildCommandID].memory, this.density, position.x, position.y, size).then((commandID) => {
+
+                const command = commands[commandID];
+
+                let meshs = [];
+                let dataView = new Float32Array(Module.HEAP8.buffer, command.memory, command.treeCount * 16);
+                const data = new Float32Array(dataView);
+
+                for (let group of meshGroups) {
+                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
+                    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+                    mesh.setMatrixAt(0, new THREE.Matrix4().identity());
+                    mesh.instanceMatrix.array = data;
+                    meshs.push(mesh);
+                }
+
+                Module._free(command.memory);
+
+                command.section.postBuild(meshs);
+
+            }).catch((error) => {
+                console.log('error : ' + error);
+            })
+        }
+
+        return buildCommandID;
+    }
+
+    generate(heightGenerator, nodeLevel, position, size) {
+        let meshs = [];
+
+        if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
+
+        const treeCount = this.density * this.density;
         let memory = Module._malloc(treeCount * 64);
 
-        Module.cwrap('applyMatrixData', 'number', ['number', 'number', 'number', 'number', 'number'])(memory, this.density, position.x, position.y, size);
+        Module.cwrap('applyMatrixData', 'number', ['number', 'number', 'number', 'number', 'number', 'number'])(0, memory, this.density, position.x, position.y, size);
 
         let dataView = new Float32Array(Module.HEAP8.buffer, memory, treeCount * 16);
         const data = new Float32Array(dataView);
@@ -199,31 +241,22 @@ class foliageSystemNode {
         if (this.generated) return;
         this.generated = true;
 
-        this.generateAsync();
 
-    }
 
-    async generateAsync() {
         this.foliages = [];
-        return new Promise(resolve => { setTimeout(() => {
-
-            for (let foliage of this.foliageSystem.foliageTypes) {
-                let foli = foliage.generate(this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
-                for (let inst of foli) {
-                    if (inst.count) {
-                        this.instCount = inst.count;
-                        instCount += inst.count;
-                    }
-                }
-                this.foliages = this.foliages.concat(foli);
-            }
-
-            for (let foliage of this.foliages) {
-                this.foliageSystem.scene.add(foliage);
-            }
-            resolve();
-        }); });
+        for (let foliage of this.foliageSystem.foliageTypes) {
+            foliage.generateAsync(this, this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
+        }
     }
+
+    postBuild(generatedFoliages) {
+        this.foliages = this.foliages.concat(generatedFoliages);
+
+        for (let foliage of this.foliages) {
+            this.foliageSystem.scene.add(foliage);
+        }
+    }
+
 
     destroy() {
         if (this.instCount) instCount -= this.instCount;
