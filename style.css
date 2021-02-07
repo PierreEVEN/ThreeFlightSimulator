@@ -1,63 +1,136 @@
+/** Global layout */
+
 body {
-    position: absolute;
     margin: 0px;
-    /*
     width: 100%;
     height: 100%;
-    */
-    display: flex;
 }
 
 div#game {
+    position: absolute;
     margin: 0px;
     padding: 0px;
-    position:absolute;
     display: flex;
 }
 
 div#interface {
     position:absolute;
     display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
 }
 
-div#menuBar {
-    color:white;
-    font-family: Calibri;
+
+img#background {
+    width: 100%;
+    height:100%;
+    object-fit: cover;
+    position: absolute;
+    z-index: -10;
+}
+
+div#top-bar {
     background-color: rgba(0.1, 0.1, 0.1, 0.7);
     display: flex;
-    min-width: 350px;
-    width: 30%;
-    height: 80%;
-    flex-direction: column;
+    width: 100%;
+    height: 70px;
+    align-items: center;
+    justify-content: right;
+}
+
+div#bottom-bar {
+    background-color: rgba(0.1, 0.1, 0.1, 0.7);
+    display: flex;
+    width: 100%;
+    height: 70px;
     align-items: center;
 }
 
-div#menuBackground {
+div#content-page {
+    color:white;
     display: flex;
-    width: 70%;
-    height: 100%;
+    flex-grow: 1;
+    height: 50%;
+    flex-flow: nowrap;
 }
 
+/** Menu layouts */
 
-div#menuButtons {
-    height: 100%;
+
+div.content-cell {
     display: flex;
-    align-items: center;
+    margin: 50px 10px;
+    background-color: rgba(0.1, 0.1, 0.1, 0.6);
+    flex-grow: 1;
+}
+div.content-cell > img {
+    object-fit: cover;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 10px;
     flex-direction: column;
-    margin-top: 50px;
 }
 
-.disabled {
-    color: gray;
-}
-
-.game-button {
+div.content-cell > div.description {
+    font-size: 20px;
     display: flex;
-    width: 200px;
-    height: 40px;
+    bottom: 10px;
+    width: 100%;
+    position: absolute;
+    background-color: rgba(0.1, 0.1, 0.1, 0.4);
     justify-content: center;
     align-items: center;
-    margin: 10px;
+}
+
+@media only screen and (max-device-width : 640px) {
+    div#content-page {
+        flex-direction: column;
+    }
+    div.content-cell {
+        height:40%;
+        width: auto;
+        margin: 10px 50px;
+    }
+}
+
+/** Settings */
+
+img#settingsButton {
+    margin-right: 20px;
+    width: 30px;
+    height: 30px;
+    transition: all 200ms;
+}
+img#settingsButton:hover {
+    transform: rotate(100deg) scale(1.2);
+    cursor: pointer;
+}
+
+
+img#backButton {
+    margin-left: 25px;
+    width: 30px;
+    height: 30px;
+    transition: all 200ms;
+}
+img#backButton:hover {
+    margin-left: 20px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/** animations */
+
+.clickable_content {
+    transform: scale(0.95);
+    transition: all 100ms;
+}
+
+.clickable_content:hover {
+    transform: scale(1);
+    cursor: pointer;
 }
