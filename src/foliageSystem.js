@@ -46,7 +46,7 @@ class FoliageType {
             treeCount: treeCount
         };
 
-        if (WASM_INSTANCE) {
+        if (WASM_INSTANCE && false) {
 
             let memory = {
                 isMemory: true,
