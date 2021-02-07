@@ -2,7 +2,7 @@ export {FoliageSystem}
 
 import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from './resourceManager.js';
-import {WASM_INSTANCE} from './TFSWasmWorker.js';
+import {WASM_INSTANCE} from './TFSWorkerInterface.js';
 
 
 let meshGroups = [];
@@ -41,29 +41,38 @@ class FoliageType {
 
         const treeCount = this.density * this.density;
         commands[buildCommandID] = {
-            memory: Module._malloc(treeCount * 64),
+            memory: null,
             section: section,
             treeCount: treeCount
         };
 
         if (WASM_INSTANCE) {
-            WASM_INSTANCE.applyMatrixData(buildCommandID, commands[buildCommandID].memory, this.density, position.x, position.y, size).then((commandID) => {
 
-                const command = commands[commandID];
+            let memory = {
+                isMemory: true,
+                size: treeCount * 64
+            }
+
+            WASM_INSTANCE.applyMatrixData(buildCommandID, memory, this.density, position.x, position.y, size).then((commandID) => {
 
                 let meshs = [];
+                /* retrieve command */
+                const command = commands[commandID];
+                if (!command) return;
+                commands[commandID] = undefined;
+
+                /* copy result memory */
                 let dataView = new Float32Array(Module.HEAP8.buffer, command.memory, command.treeCount * 16);
                 const data = new Float32Array(dataView);
 
                 for (let group of meshGroups) {
+                    /* generate meshes and assign matrices */
                     let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
                     mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-                    mesh.setMatrixAt(0, new THREE.Matrix4().identity());
                     mesh.instanceMatrix.array = data;
+                    console.log(data)
                     meshs.push(mesh);
                 }
-
-                Module._free(command.memory);
 
                 command.section.postBuild(meshs);
 
@@ -74,7 +83,7 @@ class FoliageType {
 
         return buildCommandID;
     }
-
+    /*
     generate(heightGenerator, nodeLevel, position, size) {
         let meshs = [];
 
@@ -99,6 +108,8 @@ class FoliageType {
 
         return meshs;
     }
+
+     */
 }
 
 

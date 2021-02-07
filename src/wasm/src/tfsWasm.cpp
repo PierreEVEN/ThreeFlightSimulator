@@ -2,65 +2,58 @@
 #if defined __has_include && __has_include("emscripten.h")
 #include <emscripten.h>
 #define PROJECT_API EMSCRIPTEN_KEEPALIVE
+#define WITH_EMSCRIPTEN true
 #else
+#define WITH_EMSCRIPTEN false
 #define PROJECT_API
 #endif
 
 #include <cstdint>
 #include <cmath>
-#include <stdio.h>
+#include <fstream>
 #include <string>
 
 #include "libs/FastNoiseLite.h"
 #include "types/Matrix.h"
-#include "jobs/JobSystem.h"
 
 void log(const std::string& text) {
+#if WITH_EMSCRIPTEN
     emscripten_run_script(("console.log('" + text + "')").c_str());
+#endif
 }
 
 extern "C" {	
 	double getAltitudeAtLocation(double posX, double posY);
 	void init();
     int applyMatrixData(int commandID, float* data, int density, double posX, double posY, double size);
-    void A();
-    void B(int a);
-    int C();
-    int D(int a);
+    int allocMemory(int size);
+    void freeMemory(void* memory);
 }
 
-void PROJECT_API A() {
+uint8_t* lastMem = 0;
+
+uint8_t* randMem;
+
+int PROJECT_API allocMemory(int size) {
+    uint8_t* mem = new uint8_t[size];
+    lastMem = mem;
+    return (int)lastMem;
 }
 
-void PROJECT_API B(int a) {
+void PROJECT_API freeMemory(void* memory) {
+    free(memory);
 }
 
-int PROJECT_API C() {
-    return 4;
-}
-
-int PROJECT_API D(int a) {
-    return 5;
-}
-
-
-struct FoliageGenerationCommand {
-    FoliageGenerationCommand(double x, double y, double size, uint32_t density) {
-
-    }
-};
 
 void translateMatrix(float* data, float x, float y, float z) {
     SMatrix4 matrix;
-
     matrix.Translate(SVector(x, y, z));
 
     std::memcpy(data, matrix.coords, 16 * sizeof(float));
 }
 
 int PROJECT_API applyMatrixData(int commandID, float* data, int density, double posX, double posY, double size) {
-
-    
+    data = (float*)allocMemory(density * 64);
     double step = size / density;
     for (size_t x = 0; x < density; ++x) {
         for (size_t y = 0; y < density; ++y) {
@@ -70,7 +63,13 @@ int PROJECT_API applyMatrixData(int commandID, float* data, int density, double 
         }
     }
 
-    return commandID;
+    data[0] = 1;
+    data[1] = 10564;
+    data[3] = 874789;
+    data[5] = 9789744;
+    data[9] = 25744254;
+
+    return (int)lastMem;
 }
 
 
@@ -83,7 +82,6 @@ FastNoiseLite hillLevelNoise(50000);
 
 void PROJECT_API init() {
 
-	
     noise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic);
     noise.SetFractalType(FastNoiseLite::FractalType_Ridged);
     noise.SetFractalOctaves(8);
