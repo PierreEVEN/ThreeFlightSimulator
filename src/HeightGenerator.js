@@ -8,7 +8,7 @@ class HeightGenerator {
     }
 
     getHeightAtLocation(x, y) {
-        return Module.cwrap('getAltitudeAtLocation', 'double', ['double', 'double'])(x, y);
+        return Module.cwrap('GetAltitudeAtLocation', 'double', ['double', 'double'])(x, y);
     }
 
     getBiomeAtLocation(x, y) {

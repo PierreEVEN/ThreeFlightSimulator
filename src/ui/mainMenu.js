@@ -46,4 +46,3 @@ function mainMenu() {
 }
 
 mainMenu();
-singleplayer();

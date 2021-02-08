@@ -2,7 +2,6 @@ export {FoliageSystem}
 
 import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from './resourceManager.js';
-import {WASM_INSTANCE} from './TFSWorkerInterface.js';
 
 
 let meshGroups = [];
@@ -10,11 +9,9 @@ let instCount = 0;
 const sectionRange = 3;
 
 
-
-Module.cwrap('init')();
-
 let currentBuildCommand = 0;
 let commands = {};
+
 
 class FoliageType {
     constructor() {
@@ -46,40 +43,27 @@ class FoliageType {
             treeCount: treeCount
         };
 
-        if (WASM_INSTANCE && false) {
+        Module.cwrap("BuildFoliage", 'number', ['number', 'number', 'number', 'number'])(this.density, position.x, position.y, size);
 
-            let memory = {
-                isMemory: true,
-                size: treeCount * 64
+        /*
+            let meshs = [];
+            const command = commands[commandID];
+            if (!command) return;
+            commands[commandID] = undefined;
+
+            let dataView = new Float32Array(Module.HEAP8.buffer, command.memory, command.treeCount * 16);
+            const data = new Float32Array(dataView);
+
+            for (let group of meshGroups) {
+                let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
+                mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+                mesh.instanceMatrix.array = data;
+                console.log(data)
+                meshs.push(mesh);
             }
 
-            WASM_INSTANCE.applyMatrixData(buildCommandID, memory, this.density, position.x, position.y, size).then((commandID) => {
-
-                let meshs = [];
-                /* retrieve command */
-                const command = commands[commandID];
-                if (!command) return;
-                commands[commandID] = undefined;
-
-                /* copy result memory */
-                let dataView = new Float32Array(Module.HEAP8.buffer, command.memory, command.treeCount * 16);
-                const data = new Float32Array(dataView);
-
-                for (let group of meshGroups) {
-                    /* generate meshes and assign matrices */
-                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
-                    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-                    mesh.instanceMatrix.array = data;
-                    console.log(data)
-                    meshs.push(mesh);
-                }
-
-                command.section.postBuild(meshs);
-
-            }).catch((error) => {
-                console.log('error : ' + error);
-            })
-        }
+            command.section.postBuild(meshs);
+            */
 
         return buildCommandID;
     }
