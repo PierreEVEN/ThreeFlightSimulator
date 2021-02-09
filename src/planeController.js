@@ -5,6 +5,22 @@ import {RESOURCE_MANAGER} from "./resourceManager.js";
 export {PlaneController};
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
 
     this.distance = 40;
@@ -191,12 +207,6 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
             this.camera.position.addScaledVector(this.forwardVector, -this.distance);
         }
     }
-
-
-
-    domElement.addEventListener('click', function () {
-        domElement.requestPointerLock();
-    });
 
     this.addGamepad = function ( gamepad ) {
         this.gamepads.push(gamepad);

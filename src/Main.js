@@ -6,6 +6,7 @@ import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
+import {initializeInputs, updateInputs} from "./io/inputManager.js";
 
 let clock, stats, renderer, world, camera, controller, debugUI, background;
 
@@ -48,6 +49,7 @@ function init() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     background = document.getElementById('game');
     background.appendChild(renderer.domElement);
+    initializeInputs(background);
 
     // Setup clock
     clock = new THREE.Clock();
@@ -110,6 +112,8 @@ function preInit() {
 
 function animate() {
     requestAnimationFrame(animate);
+
+    updateInputs();
 
     // Get delta time
     let deltaTime = clock.getDelta();

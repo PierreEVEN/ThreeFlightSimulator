@@ -1,44 +1,65 @@
-export {init, nextFrame, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybinds}
+export {initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction}
 
 
 
 let domElement;
 const gamepads = [];
-const keybinds = [];
+const keybinds = {};
 const pressedKeyStates = {};
 const mouseButtonStates = {};
-const mouseAxisStates = { deltaX:0, deltaY:0 }
+const mouseAxisStates = {
+    posX: 0, lastPosX: 0, deltaX:0,
+    posY: 0, lastPosY: 0, deltaY:0,
+    wheel: 0, lastWheel: 0, deltaWheel: 0
+};
 
-function init(dom) {
+function initializeInputs(dom) {
 
     if ( dom === undefined ) {
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
         dom = document;
     }
+    domElement = dom;
+    if ( domElement ) domElement.setAttribute( 'tabindex', - 1 );
+
+    domElement.addEventListener('click', function () {
+        domElement.requestPointerLock();
+    });
 }
 
-function nextFrame() {
-    if (!mouseAxisStates.posX) mouseAxisStates.posX = 0;
-    if (!mouseAxisStates.posY) mouseAxisStates.posY = 0;
-    if (!mouseAxisStates.lastPosX) mouseAxisStates.lastPosX = 0;
-    if (!mouseAxisStates.lastPosY) mouseAxisStates.lastPosY = 0;
+function updateInputs() {
 
     mouseAxisStates.deltaX = mouseAxisStates.posX - mouseAxisStates.lastPosX;
     mouseAxisStates.deltaY = mouseAxisStates.posY - mouseAxisStates.lastPosY;
+    mouseAxisStates.deltaWheel = mouseAxisStates.wheel - mouseAxisStates.lastWheel;
 
     mouseAxisStates.lastPosX = mouseAxisStates.posX;
     mouseAxisStates.lastPosY = mouseAxisStates.posY;
+    mouseAxisStates.lastWheel = mouseAxisStates.wheel;
+
+    for (const [key, value] of Object.entries(keybinds)) {
+        updateInputValue(value);
+    }
 }
 
 
 function registerInput(inputID) {
-    if (!keybinds[inputID]) keybinds[inputID] = {inputs: []}
+    if (!keybinds[inputID]) keybinds[inputID] = {
+        inputs: [],
+        defaults: [],
+        value: 0,
+        pressedEvents: [],
+        releasedEvents: [],
+        pressed: false,
+    }
+
+
 }
 
 
 function addKeyInput(inputId, key, pressedValue, releasedValue) {
     registerInput(inputId);
-    keybinds[inputId].inputs.add({
+    keybinds[inputId].inputs.push({
         key: key,
         pressedValue: pressedValue,
         releasedValue: releasedValue,
@@ -47,7 +68,7 @@ function addKeyInput(inputId, key, pressedValue, releasedValue) {
 
 function addMouseButtonInput(inputId, button, pressedValue, releasedValue) {
     registerInput(inputId);
-    keybinds[inputId].inputs.add({
+    keybinds[inputId].inputs.push({
         mouseButton: button,
         pressedValue: pressedValue,
         releasedValue: releasedValue,
@@ -56,7 +77,7 @@ function addMouseButtonInput(inputId, button, pressedValue, releasedValue) {
 
 function addMouseAxisInput(inputId, axis, multiplier) {
     registerInput(inputId);
-    keybinds[inputId].inputs.add({
+    keybinds[inputId].inputs.push({
         mouseAxis: axis,
         multiplier: multiplier,
     });
@@ -64,19 +85,22 @@ function addMouseAxisInput(inputId, axis, multiplier) {
 
 function addGamepadAxisInput(inputId, gamepad, axis, multiplier) {
     registerInput(inputId);
-    keybinds[inputId].inputs.add({
+    keybinds[inputId].inputs.push({
         gamepad: gamepad,
         gamepadAxis: axis,
         multiplier: multiplier,
     });
 }
 
-function getKeybinds() {
-    return keybinds;
+function getKeybindValue(inputId) {
+    return keybinds[inputId].value;
 }
 
-function getInputValue(keybind) {
+function addInputPressAction(inputId, action) { keybinds[inputId].pressedEvents.push(action); }
 
+function addInputReleaseAction(inputId, action) { keybinds[inputId].releasedEvents.push(action); }
+
+function updateInputValue(keybind) {
     let value = 0;
 
     for (const input of keybind.inputs) {
@@ -90,16 +114,30 @@ function getInputValue(keybind) {
                 case 1:
                     value += mouseAxisStates.deltaY * input.multiplier;
                     break;
+                case 2:
+                    value += mouseAxisStates.deltaWheel * input.multiplier;
+                    break;
             }
         }
     }
 
+    if (value > 0.5 && !keybind.pressed) {
+        for (const event of keybind.pressedEvents) event();
+        keybind.pressed = true;
+    }
+    else if (value <= 0 && keybind.pressed) {
+        for (const event of keybind.releasedEvents) event();
+        keybind.pressed = false;
+    }
 
-    return value;
+    keybind.value = value;
 }
 
 
 
+function getInputValue(inputId) {
+    return keybinds[inputId].value;
+}
 
 
 
@@ -126,29 +164,24 @@ function removeGamepad(gamepad) {
 function contextmenu( event ) { event.preventDefault(); }
 
 function mousemove( event ) {
-    this.pitch += -event.movementY * this.mouseSensitivity;
-    this.yaw += -event.movementX * this.mouseSensitivity;
-
-    this.pitch = Math.max(this.minPitch, Math.min(this.maxPitch, this.pitch));
-    if (this.isFPS) this.yaw = Math.max(this.minYaw, Math.min(this.maxYaw, this.yaw + 90)) - 90;
-    this.updateMouse();
+    mouseAxisStates.posX += event.movementX;
+    mouseAxisStates.posY += event.movementY;
 }
 
+function mouseWheel(event) {
+    mouseAxisStates.wheel += event.deltaY;
+}
 
 document.addEventListener('pointerlockchange', function() {
     if (document.pointerLockElement === domElement) {
         document.addEventListener( 'contextmenu', contextmenu );
-        document.addEventListener( 'mousemove', _mousemove );
-        document.addEventListener( 'mousedown', _mousedown );
-        document.addEventListener( 'mouseup', _mouseup );
-        document.addEventListener( 'wheel', _mouseWheel );
+        document.addEventListener( 'mousemove', mousemove );
+        document.addEventListener( 'wheel', mouseWheel );
     }
     else {
         document.removeEventListener( 'contextmenu', contextmenu );
         document.removeEventListener( 'mousemove', mousemove );
-        document.removeEventListener( 'mousedown', _mousedown );
-        document.removeEventListener( 'mouseup', _mouseup );
-        document.removeEventListener( 'wheel', _mouseWheel );
+        document.removeEventListener( 'wheel', mouseWheel );
     }
 });
 window.addEventListener( 'keydown', (event) => pressedKeyStates[event.code] = true);

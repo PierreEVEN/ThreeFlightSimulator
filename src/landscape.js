@@ -129,43 +129,45 @@ class OctreeNode {
     }
 
     subdivide() {
-        /*let childBuilt = this.ChildNodes.length > 0;
+
+        if (this.ChildNodes.length === 0) {
+
+            this.ChildNodes.push(new OctreeNode(
+                this.Landscape,
+                this.NodeLevel + 1,
+                new THREE.Vector3(this.Position.x - this.Scale / 4, this.Position.y - this.Scale / 4, this.Position.z),
+                this.Scale / 2)
+            );
+            this.ChildNodes.push(new OctreeNode(
+                this.Landscape,
+                this.NodeLevel + 1,
+                new THREE.Vector3(this.Position.x + this.Scale / 4, this.Position.y - this.Scale / 4, this.Position.z),
+                this.Scale / 2)
+            );
+            this.ChildNodes.push(new OctreeNode(
+                this.Landscape,
+                this.NodeLevel + 1,
+                new THREE.Vector3(this.Position.x + this.Scale / 4, this.Position.y + this.Scale / 4, this.Position.z),
+                this.Scale / 2)
+            );
+            this.ChildNodes.push(new OctreeNode(
+                this.Landscape,
+                this.NodeLevel + 1,
+                new THREE.Vector3(this.Position.x - this.Scale / 4, this.Position.y + this.Scale / 4, this.Position.z),
+                this.Scale / 2)
+            );
+        }
+
+        let childBuilt = true;
         for (const child of this.ChildNodes) {
             if (!child.Mesh) {
                 childBuilt = false;
                 return;
             }
         }
-        if (childBuilt) {*/
+        if (childBuilt) {
             this.destroyGeometry();
-        //}
-
-        if (this.ChildNodes.length !== 0) return;
-
-        this.ChildNodes.push(new OctreeNode(
-            this.Landscape,
-            this.NodeLevel + 1,
-            new THREE.Vector3(this.Position.x - this.Scale / 4, this.Position.y - this.Scale / 4, this.Position.z),
-            this.Scale / 2)
-        );
-        this.ChildNodes.push(new OctreeNode(
-            this.Landscape,
-            this.NodeLevel + 1,
-            new THREE.Vector3(this.Position.x + this.Scale / 4, this.Position.y - this.Scale / 4, this.Position.z),
-            this.Scale / 2)
-        );
-        this.ChildNodes.push(new OctreeNode(
-            this.Landscape,
-            this.NodeLevel + 1,
-            new THREE.Vector3(this.Position.x + this.Scale / 4, this.Position.y + this.Scale / 4, this.Position.z),
-            this.Scale / 2)
-        );
-        this.ChildNodes.push(new OctreeNode(
-            this.Landscape,
-            this.NodeLevel + 1,
-            new THREE.Vector3(this.Position.x - this.Scale / 4, this.Position.y + this.Scale / 4, this.Position.z),
-            this.Scale / 2)
-        );
+        }
     }
 
     unSubdivide() {
@@ -182,20 +184,25 @@ class OctreeNode {
     destroyGeometry() {
         if (this.Mesh) {
             this.Landscape.Scene.remove(this.Mesh);
-            delete this.Mesh;
-            this.built = false;
         }
-        this.built = false;
-        this.cancelled = true;
+        this.displayed = false;
     }
     buildGeometry() {
         this.cancelled = false;
-        if (this.built) return;
-        this.built = true;
+
+        if (this.Mesh) {
+            if (!this.displayed) {
+                this.displayed = true;
+                this.Landscape.Scene.add(this.Mesh);
+            }
+            return;
+        }
+        if (this.isBuilding) return;
+        this.isBuilding = true;
 
         runCommand("BuildLandscapeSection",['number', 'number', 'number', 'number'], [CellsPerChunk, this.Position.x, this.Position.y, this.Scale], this).then( (data) => {
 
-            if (data.context.cancelled) return;
+            this.isBuilding = false;
 
             const memoryView = new Int32Array(Module.HEAP8.buffer, data.Data, 2)
             const memory = new Int32Array(memoryView);
@@ -254,7 +261,6 @@ class OctreeNode {
             Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
             this.Mesh = new THREE.Mesh(Geometry, this.Landscape.LandscapeMaterial);
-            this.Landscape.Scene.add(this.Mesh);
         });
     }
 

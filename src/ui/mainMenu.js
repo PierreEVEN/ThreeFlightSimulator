@@ -1,4 +1,10 @@
-import {getInputValue, getKeybinds, addKeyInput} from "../io/inputManager.js";
+import {
+    getInputValue,
+    addKeyInput,
+    addMouseAxisInput,
+    addInputPressAction,
+    addInputReleaseAction
+} from "../io/inputManager.js";
 
 export {mainMenu, buildMenu}
 import {displaySettings} from "./settings.js";
@@ -49,19 +55,3 @@ function mainMenu() {
 
 mainMenu();
 
-
-
-addKeyInput("test", "keyV", 1, 0);
-
-
-function test() {
-
-
-    requestAnimationFrame(test);
-
-    for (const [key, value] of Object.entries(getKeybinds())) {
-        console.log("input : " + key + " : " + getInputValue(value));
-    }
-}
-
-test();
