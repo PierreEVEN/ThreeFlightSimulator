@@ -1,6 +1,7 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {Quaternion, Vector3} from "../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "./resourceManager.js";
+import {runCommand} from "./wasm/wasmInterface.js";
 
 export { Landscape }
 
@@ -24,6 +25,7 @@ class Landscape {
                 this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
             }
         }
+        this.render(0);
     }
 
     render(deltaTime) {
@@ -127,7 +129,16 @@ class OctreeNode {
     }
 
     subdivide() {
-        this.destroyGeometry();
+        /*let childBuilt = this.ChildNodes.length > 0;
+        for (const child of this.ChildNodes) {
+            if (!child.Mesh) {
+                childBuilt = false;
+                return;
+            }
+        }
+        if (childBuilt) {*/
+            this.destroyGeometry();
+        //}
 
         if (this.ChildNodes.length !== 0) return;
 
@@ -169,98 +180,82 @@ class OctreeNode {
     }
 
     destroyGeometry() {
-        if (this.Mesh === null) return;
-
-        this.Landscape.Scene.remove(this.Mesh);
-        this.Mesh = null;
+        if (this.Mesh) {
+            this.Landscape.Scene.remove(this.Mesh);
+            delete this.Mesh;
+            this.built = false;
+        }
+        this.built = false;
+        this.cancelled = true;
     }
     buildGeometry() {
-        if (this.Mesh !== null) return;
+        this.cancelled = false;
+        if (this.built) return;
+        this.built = true;
 
-        const Indices = [];
-        const vertices = new Float32Array(((CellsPerChunk + 3) * (CellsPerChunk + 3)) * 3);
-        const color = new Float32Array(((CellsPerChunk + 3) * (CellsPerChunk + 3)) * 3);
+        runCommand("BuildLandscapeSection",['number', 'number', 'number', 'number'], [CellsPerChunk, this.Position.x, this.Position.y, this.Scale], this).then( (data) => {
 
-        let Width = this.Scale;
-        let CellSize = Width / CellsPerChunk;
+            if (data.context.cancelled) return;
 
-        // Generate vertices
-        let VerticesPerChunk = CellsPerChunk + 3;
-        for (let x = 0; x < VerticesPerChunk; ++x) {
-            for (let y = 0; y < VerticesPerChunk; ++y) {
+            const memoryView = new Int32Array(Module.HEAP8.buffer, data.Data, 2)
+            const memory = new Int32Array(memoryView);
 
-                let posX = (x - 1) * CellSize + this.Position.x - Width / 2;
-                let posY = (y - 1) * CellSize + this.Position.y - Width / 2;
+            const VerticesCount = memory[0];
+            const IndiceCount = memory[1];
 
-                vertices.set(
-                    [posX, posY, this.Landscape.heightGenerator.getHeightAtLocation(posX, posY)],
-                    (x + y * VerticesPerChunk) * 3
-                );
-                color.set(
-                    [this.Landscape.heightGenerator.getBiomeAtLocation(posX, posY), 0, 0],
-                    (x + y * VerticesPerChunk) * 3
-                );
+            const indicesView = new Int32Array(Module.HEAP8.buffer, data.Data + 2 * 4, IndiceCount);
+            const indices = new Int32Array(indicesView);
+            const verticesView = new Float32Array(Module.HEAP8.buffer, data.Data + (2 + IndiceCount) * 4, VerticesCount);
+            const vertices = new Float32Array(verticesView);
+            const colorView = new Float32Array(Module.HEAP8.buffer, data.Data + (2 + IndiceCount + VerticesCount) * 4, VerticesCount);
+            const color = new Float32Array(colorView);
+
+            let Width = this.Scale;
+            let CellSize = Width / CellsPerChunk;
+
+            let Geometry = new THREE.BufferGeometry();
+            Geometry.setIndex(Array.from(indices));
+            Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
+            Geometry.setAttribute( 'color', new THREE.BufferAttribute( color, 3 ) );
+            Geometry.computeVertexNormals();
+            /**
+             * Move the "borders of the tablecloth" down to avoid seams holes
+             */
+
+            let VerticesPerChunk = CellsPerChunk + 3;
+            // North seams
+            for (let i = 0; i < VerticesPerChunk; ++i) {
+                // Align Y to zero
+                vertices[i * 3 + 1] += CellSize;
+                vertices[i * 3 + 2] -= CellSize;
             }
-        }
-
-        // Build faces
-        let FaceLength = CellsPerChunk + 2;
-        for (let x = 0; x < FaceLength; ++x) {
-            for (let y = 0; y < FaceLength; ++y) {
-                Indices.push(
-                    (x + y * VerticesPerChunk),
-                    (x + 1 + y * VerticesPerChunk),
-                    (x + 1 + (y + 1) * VerticesPerChunk),
-
-                    (x + y * VerticesPerChunk),
-                    (x + 1 + (y + 1) * VerticesPerChunk),
-                    (x + (y + 1) * VerticesPerChunk)
-                )
+            // South seams
+            const maxSouth = VerticesPerChunk * VerticesPerChunk;
+            for (let i = VerticesPerChunk * (VerticesPerChunk - 1); i < maxSouth; ++i) {
+                // Align Y to zero
+                vertices[i * 3 + 1] -= CellSize;
+                vertices[i * 3 + 2] -= CellSize;
             }
-        }
+            // West seams
+            const maxWest = VerticesPerChunk * (VerticesPerChunk);
+            for (let i = 0; i < maxWest; i += VerticesPerChunk) {
+                // Align Y to zero
+                vertices[i * 3] += CellSize;
+                vertices[i * 3 + 2] -= CellSize;
+            }
+            // East seams
+            const maxEast = VerticesPerChunk * VerticesPerChunk - 1;
+            for (let i = VerticesPerChunk - 1; i < maxEast; i += VerticesPerChunk) {
+                // Align Y to zero
+                vertices[i * 3] -= CellSize;
+                vertices[i * 3 + 2] -= CellSize;
+            }
 
-        let Geometry = new THREE.BufferGeometry();
-        Geometry.setIndex(Indices);
-        Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-        Geometry.setAttribute( 'color', new THREE.BufferAttribute( color, 3 ) );
-        Geometry.computeVertexNormals();
+            Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 
-        /**
-         * Move the "borders of the tablecloth" down to avoid seams holes
-         */
-
-        // North seams
-        for (let i = 0; i < VerticesPerChunk; ++i) {
-            // Align Y to zero
-            vertices[i * 3 + 1] += CellSize;
-            vertices[i * 3 + 2] -= CellSize;
-        }
-        // South seams
-        const maxSouth = VerticesPerChunk * VerticesPerChunk;
-        for (let i = VerticesPerChunk * (VerticesPerChunk - 1); i < maxSouth; ++i) {
-            // Align Y to zero
-            vertices[i * 3 + 1] -= CellSize;
-            vertices[i * 3 + 2] -= CellSize;
-        }
-        // West seams
-        const maxWest = VerticesPerChunk * (VerticesPerChunk);
-        for (let i = 0; i < maxWest; i += VerticesPerChunk) {
-            // Align Y to zero
-            vertices[i * 3] += CellSize;
-            vertices[i * 3 + 2] -= CellSize;
-        }
-        // East seams
-        const maxEast = VerticesPerChunk * VerticesPerChunk - 1;
-        for (let i = VerticesPerChunk - 1; i < maxEast; i += VerticesPerChunk) {
-            // Align Y to zero
-            vertices[i * 3] -= CellSize;
-            vertices[i * 3 + 2] -= CellSize;
-        }
-
-        Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-
-        this.Mesh = new THREE.Mesh(Geometry, this.Landscape.LandscapeMaterial);
-        this.Landscape.Scene.add(this.Mesh);
+            this.Mesh = new THREE.Mesh(Geometry, this.Landscape.LandscapeMaterial);
+            this.Landscape.Scene.add(this.Mesh);
+        });
     }
 
     destroy() {

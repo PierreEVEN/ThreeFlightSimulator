@@ -2691,6 +2691,9 @@ var _Init = Module["_Init"] = createExportWrapper("Init");
 var _BuildFoliage = Module["_BuildFoliage"] = createExportWrapper("BuildFoliage");
 
 /** @type {function(...*):?} */
+var _BuildLandscapeSection = Module["_BuildLandscapeSection"] = createExportWrapper("BuildLandscapeSection");
+
+/** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = createExportWrapper("__errno_location");
 
 /** @type {function(...*):?} */

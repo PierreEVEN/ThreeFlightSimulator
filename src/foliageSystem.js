@@ -6,13 +6,8 @@ import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from './resourceManager.js';
 
 
-let meshGroups = [];
-let instCount = 0;
+const meshGroups = [];
 const sectionRange = 3;
-
-
-let currentBuildCommand = 0;
-let commands = {};
 
 
 class FoliageType {
@@ -26,7 +21,7 @@ class FoliageType {
         this.density = 100;
 
         meshGroups.push({
-            geometry: new THREE.PlaneGeometry(10, 10),//child.geometry,
+            geometry: new THREE.PlaneGeometry(15, 15),//child.geometry,
             material: RESOURCE_MANAGER.TreeImpostor.material
         });
     }
@@ -39,13 +34,10 @@ class FoliageType {
 
             runCommand("BuildFoliage",['number', 'number', 'number', 'number'], [this.density, position.x, position.y, size], section).then( (data) => {
 
+                if (data.context.cancelled) return [];
+
                 let dataView = new Float32Array(Module.HEAP8.buffer, data.Data, data.Size / 4);
                 const array = new Float32Array(dataView);
-
-                if (!data.context) {
-                    console.log("invalid context");
-                    return [];
-                }
 
                 let meshes = [];
 
@@ -72,7 +64,7 @@ class FoliageSystem {
         this.heightGenerator = heightGenerator;
         this.foliageTypes = [new FoliageType()];
 
-        this.sectionSize = 4000;
+        this.sectionSize = 6000;
 
         this.sections = [];
     }
@@ -200,6 +192,7 @@ class foliageSystemNode {
     }
 
     generate() {
+        this.cancelled = false;
         if (this.generated) return;
         this.generated = true;
 
@@ -208,8 +201,6 @@ class foliageSystemNode {
         this.foliages = [];
         for (let foliage of this.foliageSystem.foliageTypes) {
             foliage.generateAsync(this, this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize).then((data) => {
-
-                console.log("ADDED FOLAIGES");
 
                 this.foliages = this.foliages.concat(data);
 
@@ -223,7 +214,7 @@ class foliageSystemNode {
 
 
     destroy() {
-        if (this.instCount) instCount -= this.instCount;
+        this.cancelled = true;
         for (let child of this.childs) {
             child.destroy();
         }
@@ -231,8 +222,6 @@ class foliageSystemNode {
         for (let foliage of this.foliages) {
             this.foliageSystem.scene.remove(foliage);
         }
-
-        //this.foliageSystem.scene.remove(this.mesh);
     }
 
     getDesiredNodeLevel() {

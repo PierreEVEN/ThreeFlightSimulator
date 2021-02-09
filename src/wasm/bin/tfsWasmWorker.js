@@ -1752,6 +1752,10 @@ var ASM_CONSTS = {
       return demangleAll(js);
     }
 
+  function _abort() {
+      abort();
+    }
+
   function _emscripten_get_heap_size() {
       return HEAPU8.length;
     }
@@ -2619,6 +2623,7 @@ function intArrayToString(array) {
 
 
 var asmLibraryArg = {
+  "abort": _abort,
   "emscripten_resize_heap": _emscripten_resize_heap,
   "emscripten_worker_respond": _emscripten_worker_respond
 };
@@ -2631,6 +2636,9 @@ var _main = Module["_main"] = createExportWrapper("main");
 
 /** @type {function(...*):?} */
 var _BuildFoliage = Module["_BuildFoliage"] = createExportWrapper("BuildFoliage");
+
+/** @type {function(...*):?} */
+var _BuildLandscapeSection = Module["_BuildLandscapeSection"] = createExportWrapper("BuildLandscapeSection");
 
 /** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = createExportWrapper("malloc");
