@@ -1,3 +1,5 @@
+import {getKeybinds} from "./io/inputManager.js";
+
 export {World};
 import * as THREE from '../threejs/build/three.module.js';
 import {Landscape} from './landscape.js'
@@ -37,6 +39,9 @@ class World {
 	}
 
 	tick(deltaTime) {
+
+
+
 		this.landscape.render(deltaTime);
 		this.foliageSystem.update();
 		for (let plane of this.planes) {
