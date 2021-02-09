@@ -1,4 +1,4 @@
-export {initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction}
+export {keybinds, initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction, isPressed}
 
 
 
@@ -102,19 +102,18 @@ function addInputReleaseAction(inputId, action) { keybinds[inputId].releasedEven
 
 function updateInputValue(keybind) {
     let value = 0;
-
     for (const input of keybind.inputs) {
         if (input.key) value += pressedKeyStates[input.key] ? input.pressedValue : input.releasedValue;
         if (input.mouseButton) value += mouseButtonStates[input.mouseButton] ? input.pressedValue : input.releasedValue;
         if (input.mouseAxis) {
             switch (input.mouseAxis) {
-                case 0:
+                case 1:
                     value += mouseAxisStates.deltaX * input.multiplier;
                     break;
-                case 1:
+                case 2:
                     value += mouseAxisStates.deltaY * input.multiplier;
                     break;
-                case 2:
+                case 3:
                     value += mouseAxisStates.deltaWheel * input.multiplier;
                     break;
             }
@@ -139,6 +138,9 @@ function getInputValue(inputId) {
     return keybinds[inputId].value;
 }
 
+function isPressed(inputId) {
+    return keybinds[inputId].pressed;
+}
 
 
 

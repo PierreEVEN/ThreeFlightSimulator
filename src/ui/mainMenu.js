@@ -1,10 +1,3 @@
-import {
-    getInputValue,
-    addKeyInput,
-    addMouseAxisInput,
-    addInputPressAction,
-    addInputReleaseAction
-} from "../io/inputManager.js";
 
 export {mainMenu, buildMenu}
 import {displaySettings} from "./settings.js";
@@ -54,4 +47,5 @@ function mainMenu() {
 }
 
 mainMenu();
+displaySettings();
 

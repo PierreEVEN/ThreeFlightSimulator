@@ -1,24 +1,14 @@
 import {Euler, EventDispatcher, Matrix4, Quaternion, Vector3} from "../threejs/build/three.module.js";
 import {MathUtils} from "../threejs/src/math/MathUtils.js";
 import {RESOURCE_MANAGER} from "./resourceManager.js";
+import {
+    addInputPressAction,
+    addKeyInput,
+    addMouseAxisInput,
+    getInputValue
+} from "./io/inputManager.js";
 
 export {PlaneController};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
@@ -45,7 +35,7 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
 
     this.isFPS = false;
     this.mouseSensitivity = 0.5;
-    let test = document.getElementById('game');
+
     if ( domElement === undefined ) {
 
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
@@ -59,88 +49,23 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.plane = inPlane;
     this.camera = inCamera;
 
-    this.keyup = function ( event ) {
-        switch (event.code) {
-            case 'KeyW':
-                this.plane.setPitchInput(0);
-                break;
-            case 'KeyS':
-                this.plane.setPitchInput(0);
-                break;
-            case 'KeyA':
-                this.plane.setYawInput(0);
-                break;
-            case 'KeyD':
-                this.plane.setYawInput(0);
-                break;
-            case 'KeyQ':
-                this.plane.setRollInput(0);
-                break;
-            case 'KeyE':
-                this.plane.setRollInput(0);
-                break;
-        }
-    }
-
-    this.keydown = function ( event ) {
-        switch (event.code) {
-            case 'F1':
-                this.landscape.LandscapeMaterial.wireframe = !this.landscape.LandscapeMaterial.wireframe;
-                RESOURCE_MANAGER.TreeImpostor.material.wireframe = this.landscape.LandscapeMaterial.wireframe;
-                break;
-            case 'KeyV':
-                this.isFPS = !this.isFPS;
-                break;
-            case 'KeyP':
-                this.plane.pause = !this.plane.pause;
-                break;
-            case 'KeyW':
-                this.plane.setPitchInput(1);
-                break;
-            case 'KeyS':
-                this.plane.setPitchInput(-1);
-                break;
-            case 'KeyA':
-                this.plane.setYawInput(1);
-                break;
-            case 'KeyD':
-                this.plane.setYawInput(-1);
-                break;
-            case 'KeyQ':
-                this.plane.setRollInput(-1);
-                break;
-            case 'KeyE':
-                this.plane.setRollInput(1);
-                break;
-        }
-    }
+    addInputPressAction("Wireframe", () => {
+        this.landscape.LandscapeMaterial.wireframe = !this.landscape.LandscapeMaterial.wireframe;
+        RESOURCE_MANAGER.TreeImpostor.material.wireframe = this.landscape.LandscapeMaterial.wireframe;
+    })
+    addInputPressAction("Pause", () => { this.plane.pause = !this.plane.pause; })
+    addInputPressAction("FpsView", () => { this.isFPS = !this.isFPS; })
 
     this.mousedown = function ( event ) {}
     this.mouseup = function ( event ) {}
 
     this.mousemove = function ( event ) {
-        this.pitch += -event.movementY * this.mouseSensitivity;
-        this.yaw += -event.movementX * this.mouseSensitivity;
-
-        this.pitch = Math.max(this.minPitch, Math.min(this.maxPitch, this.pitch));
-        if (this.isFPS) this.yaw = Math.max(this.minYaw, Math.min(this.maxYaw, this.yaw + 90)) - 90;
-        this.updateMouse();
     }
 
     this.updateMouse = function() {
-        // Update camera rotation
         this.eulerRotation.set(MathUtils.degToRad(this.pitch + 90), 0, MathUtils.degToRad(this.yaw), 'ZYX');
     }
     this.updateMouse();
-
-    this.mouseWheel = function (event) {
-        if (this.isFPS || true) {
-            this.plane.setEngineInput(this.plane.engineInput - event.deltaY * 0.02);
-        }
-        else {
-            this.distance += event.deltaY;
-        }
-    }
 
     this.forwardVector = new Vector3();
     this.internOffset = new Vector3();
@@ -150,6 +75,21 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
 
     this.updateControlers = function() {
 
+        this.plane.setRollInput(getInputValue("Roll"));
+        this.plane.setPitchInput(getInputValue("Pitch"));
+        this.plane.setYawInput(getInputValue("Yaw"));
+        this.plane.setEngineInput(this.plane.engineInput - getInputValue("Throttle"));
+
+
+
+        this.pitch += getInputValue("LookUp") * this.mouseSensitivity;
+        this.yaw += getInputValue("LookRight") * this.mouseSensitivity;
+
+        this.pitch = Math.max(this.minPitch, Math.min(this.maxPitch, this.pitch));
+        if (this.isFPS) this.yaw = Math.max(this.minYaw, Math.min(this.maxYaw, this.yaw + 90)) - 90;
+        this.updateMouse();
+
+        /*
         for (let j = 0; j < this.gamepads.length; ++j) {
             let controller = this.gamepads[j].gamepad;
             if (!controller || !controller.buttons) continue;
@@ -183,6 +123,7 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
                 //4 : roll;
             }
         }
+         */
     }
 
     this.update = function(deltaTime) {
@@ -207,69 +148,7 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
             this.camera.position.addScaledVector(this.forwardVector, -this.distance);
         }
     }
-
-    this.addGamepad = function ( gamepad ) {
-        this.gamepads.push(gamepad);
-        console.log('connected controller ');
-    }
-
-    this.removeGamepad = function ( gamepad ) {
-        for (let i = this.gamepads.length - 1; i >= 0; --i) {
-            this.gamepads.splice(i, 1);
-        }
-        console.log('disconnected controller');
-    }
-
-    let _keydown = bind( this, this.keydown );
-    let _keyup = bind( this, this.keyup );
-    let _mouseWheel = bind( this, this.mouseWheel );
-    let _mousedown = bind( this, this.mousedown );
-    let _mouseup = bind( this, this.mouseup );
-    let _mousemove = bind( this, this.mousemove );
-    let _gamepadConnected = bind( this, this.addGamepad );
-    let _gamepadDisconnected = bind( this, this.removeGamepad );
-
-    this.lock = function() {
-        domElement.requestPointerLock();
-    }
-
-    this.unlock = function() {
-        domElement.exitPointerLock();
-    }
-
-    function bind( scope, fn ) {
-        return function () {
-            fn.apply( scope, arguments );
-        };
-    }
-    function contextmenu( event ) {
-        event.preventDefault();
-    }
-
-    document.addEventListener('pointerlockchange', function() {
-        if (document.pointerLockElement === domElement) {
-            document.addEventListener( 'contextmenu', contextmenu );
-            document.addEventListener( 'mousemove', _mousemove );
-            document.addEventListener( 'mousedown', _mousedown );
-            document.addEventListener( 'mouseup', _mouseup );
-            document.addEventListener( 'wheel', _mouseWheel );
-        }
-        else {
-            document.removeEventListener( 'contextmenu', contextmenu );
-            document.removeEventListener( 'mousemove', _mousemove );
-            document.removeEventListener( 'mousedown', _mousedown );
-            document.removeEventListener( 'mouseup', _mouseup );
-            document.removeEventListener( 'wheel', _mouseWheel );
-        }
-    });
-
-    window.addEventListener( 'keydown', _keydown );
-    window.addEventListener( 'keyup', _keyup );
-
-    window.addEventListener("gamepadconnected", _gamepadConnected);
-    window.addEventListener("gamepaddisconnected", _gamepadDisconnected);
 }
-
 
 PlaneController.prototype = Object.create( EventDispatcher.prototype );
 PlaneController.prototype.constructor = PlaneController;

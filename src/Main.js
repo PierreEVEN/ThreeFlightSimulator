@@ -6,7 +6,7 @@ import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
-import {initializeInputs, updateInputs} from "./io/inputManager.js";
+import {addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
 
 let clock, stats, renderer, world, camera, controller, debugUI, background;
 
@@ -34,6 +34,21 @@ function loadResources() {
     RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_NORM.jpg', 'texture_waterNorm');
 }
 
+
+
+addKeyInput("Wireframe", "F1", 1, 0);
+addKeyInput("FpsView", "KeyV", 1, 0);
+addKeyInput("Pause", "KeyP", 1, 0);
+
+addKeyInput("Pitch", "KeyW", 1, 0);
+addKeyInput("Pitch", "KeyS", -1, 0);
+addKeyInput("Roll", "KeyE", 1, 0);
+addKeyInput("Roll", "KeyQ", -1, 0);
+addKeyInput("Yaw", "KeyA", 1, 0);
+addKeyInput("Yaw", "KeyD", -1, 0);
+addMouseAxisInput("Throttle", 3, 1);
+addMouseAxisInput("LookUp", 2, -1);
+addMouseAxisInput("LookRight", 1, -1);
 
 
 

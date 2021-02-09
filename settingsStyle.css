@@ -1,0 +1,57 @@
+
+div#control-bindings {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.control-button {
+    display:flex;
+    align-content: center;
+    justify-content: center;
+    background-color: rgba(0.1,0.1,0.1, 0.3);
+    color: white;
+}
+
+.control-button > img {
+    width: 30px;
+    height: 30px;
+}
+
+.control-button > p {
+    margin-right: auto;
+}
+
+.control-button > progress {
+    width: 50%;
+}
+
+.control-button > progress {
+    height: 25px;
+    appearance: none;
+    margin: 20px;
+}
+
+div.control-type {
+    display: flex;
+    flex-direction: row;
+}
+div.control-parameters {
+    display: flex;
+    flex-direction: column;
+}
+div.control-parameters-advanced {
+    display: flex;
+    flex-direction: row;
+}
+
+input[type=range] {
+    padding: 0;                   /* nécessaire pour IE */
+    font: inherit;                /* même rendu suivant font document */
+    outline: none;
+    color: aqua;
+    background: transparent;             /* sert pour couleur de fond de la zone de déplacement */
+    box-sizing: border-box;       /* même modèle de boîte pour tous */
+    transition: opacity .2s;
+    cursor: ew-resize;
+}
