@@ -1,5 +1,5 @@
 
-options = -O0 -s WASM=1 -s ASSERTIONS=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap", "addFunction", "removeFunction"]' -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1
+options = -O0 -s WASM=1 -s ASSERTIONS=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap", "ccall", "addFunction", "removeFunction"]' -s ALLOW_MEMORY_GROWTH=1 -s ALLOW_TABLE_GROWTH=1
 cxx = emcc
 output = bin
 global_sources = src/thirdParty/emscriptenInterface.cpp src/generators/heightGenerator.cpp

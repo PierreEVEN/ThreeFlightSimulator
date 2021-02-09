@@ -1,3 +1,5 @@
+import {runCommand} from "./wasm/wasmInterface.js";
+
 export {FoliageSystem}
 
 import * as THREE from '../threejs/build/three.module.js';
@@ -17,11 +19,11 @@ class FoliageType {
     constructor() {
 
         this.minLOD = 0;
-        this.maxLOD = 0;
+        this.maxLOD = 2;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 1;
+        this.density = 100;
 
         meshGroups.push({
             geometry: new THREE.PlaneGeometry(10, 10),//child.geometry,
@@ -31,69 +33,34 @@ class FoliageType {
 
 
     generateAsync(section, heightGenerator, nodeLevel, position, size) {
-        const buildCommandID = currentBuildCommand++;
 
-        if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
+        return new Promise((resolve, abort) => {
+            if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 
+            runCommand("BuildFoliage",['number', 'number', 'number', 'number'], [this.density, position.x, position.y, size], section).then( (data) => {
 
-        const treeCount = this.density * this.density;
-        commands[buildCommandID] = {
-            memory: null,
-            section: section,
-            treeCount: treeCount
-        };
+                let dataView = new Float32Array(Module.HEAP8.buffer, data.Data, data.Size / 4);
+                const array = new Float32Array(dataView);
 
-        Module.cwrap("BuildFoliage", 'number', ['number', 'number', 'number', 'number'])(this.density, position.x, position.y, size);
+                if (!data.context) {
+                    console.log("invalid context");
+                    return [];
+                }
 
-        /*
-            let meshs = [];
-            const command = commands[commandID];
-            if (!command) return;
-            commands[commandID] = undefined;
+                let meshes = [];
 
-            let dataView = new Float32Array(Module.HEAP8.buffer, command.memory, command.treeCount * 16);
-            const data = new Float32Array(dataView);
+                for (let group of meshGroups) {
+                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, this.density * this.density);
+                    mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
+                    mesh.instanceMatrix.array = array;
+                    meshes.push(mesh);
+                }
 
-            for (let group of meshGroups) {
-                let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
-                mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-                mesh.instanceMatrix.array = data;
-                console.log(data)
-                meshs.push(mesh);
-            }
+                resolve(meshes);
+            });
+        })
 
-            command.section.postBuild(meshs);
-            */
-
-        return buildCommandID;
     }
-    /*
-    generate(heightGenerator, nodeLevel, position, size) {
-        let meshs = [];
-
-        if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
-
-        const treeCount = this.density * this.density;
-        let memory = Module._malloc(treeCount * 64);
-
-        Module.cwrap('applyMatrixData', 'number', ['number', 'number', 'number', 'number', 'number', 'number'])(0, memory, this.density, position.x, position.y, size);
-
-        let dataView = new Float32Array(Module.HEAP8.buffer, memory, treeCount * 16);
-        const data = new Float32Array(dataView);
-
-        for (let group of meshGroups) {
-            let mesh = new THREE.InstancedMesh(group.geometry, group.material, treeCount);
-            mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
-            mesh.setMatrixAt(0, new THREE.Matrix4().identity());
-            mesh.instanceMatrix.array = data;
-            meshs.push(mesh);
-        }
-        Module._free(memory);
-
-        return meshs;
-    }
-
-     */
 }
 
 
@@ -240,17 +207,19 @@ class foliageSystemNode {
 
         this.foliages = [];
         for (let foliage of this.foliageSystem.foliageTypes) {
-            foliage.generateAsync(this, this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize);
+            foliage.generateAsync(this, this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize).then((data) => {
+
+                console.log("ADDED FOLAIGES");
+
+                this.foliages = this.foliages.concat(data);
+
+                for (let foliage of this.foliages) {
+                    this.foliageSystem.scene.add(foliage);
+                }
+            });
         }
     }
 
-    postBuild(generatedFoliages) {
-        this.foliages = this.foliages.concat(generatedFoliages);
-
-        for (let foliage of this.foliages) {
-            this.foliageSystem.scene.add(foliage);
-        }
-    }
 
 
     destroy() {

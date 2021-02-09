@@ -24,6 +24,8 @@ void Init(const char* WorkerPath, WorkerMessageCallback Callback) {
 
 int BuildFoliage(int Density, double PosX, double PosY, double Size) {
 
+	CallID++;
+	
 	/** Pack data into a custom structure */
 	struct {
 		int Density;
@@ -38,12 +40,9 @@ int BuildFoliage(int Density, double PosX, double PosY, double Size) {
 		"BuildFoliage",
 		reinterpret_cast<char*>(&Foliage),
 		sizeof(Foliage),
-		[](char* Data, int Size, void* Args){
-			emprint("received : " + std::to_string(reinterpret_cast<float*>(Data)[0]) + std::string(" / ") + std::to_string(Size));
-			WorkerCallback(reinterpret_cast<int>(Args), reinterpret_cast<int>(Data), Size);
-		},
+		[](char* Data, int Size, void* Args){ WorkerCallback(reinterpret_cast<int>(Args), reinterpret_cast<int>(Data), Size); },
 		reinterpret_cast<void*>(CallID));
 
 	/** Increment call count */
-	return static_cast<int>(CallID++);
+	return static_cast<int>(CallID);
 }

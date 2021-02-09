@@ -33,26 +33,11 @@ function loadResources() {
     RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_NORM.jpg', 'texture_waterNorm');
 }
 
-function callback(id, Data, Size) {
-    console.log("FINISHED : id=" + id + " Data=" + Data + " Size=" + Size);
 
 
-    let dataView = new Float32Array(Module.HEAP8.buffer, Data, Size);
-    const data = new Float32Array(dataView);
-
-    console.log(data);
-
-
-}
 
 
 function init() {
-
-    // Load wasm worker
-
-    let callbackPtr = Module.addFunction(callback, 'viii');
-
-    Module.cwrap("Init", 'void', ['string', 'number'])("./src/wasm/bin/tfsWasmWorker.js", callbackPtr);
 
     // Setup renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
