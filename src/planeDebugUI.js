@@ -3,8 +3,9 @@ import {GUI} from "../threejs/examples/jsm/libs/dat.gui.module.js";
 
 
 class PlaneDebugUI {
-    constructor(planeController) {
+    constructor(planeController, world) {
         this.controller = planeController;
+        this.landscape = world.landscape;
 
         this.planeInformations = {
             velocity: 0,

@@ -109,7 +109,7 @@ function init() {
     controller = new PlaneController(background, plane, camera, world.landscape);
     new SaveGame(controller);
 
-    debugUI = new PlaneDebugUI(controller);
+    debugUI = new PlaneDebugUI(controller, world);
 }
 
 function preInit() {

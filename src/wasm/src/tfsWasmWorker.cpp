@@ -32,6 +32,8 @@ void BuildFoliage(char* Data, int Size) {
 		double PosY;
 		double Size;
 	} Foliage = *reinterpret_cast<FoliageStr*>(Data);
+
+	size_t MatrixCount = 0;
 	
     const int DataLength = Foliage.Density * Foliage.Density * 16;
     float* Matrices = new float[DataLength];
@@ -39,13 +41,36 @@ void BuildFoliage(char* Data, int Size) {
     double step = Foliage.Size / Foliage.Density;
     for (size_t x = 0; x < Foliage.Density; ++x) {
         for (size_t y = 0; y < Foliage.Density; ++y) {
-            double realX = Foliage.PosX + x * step - Foliage.Size / 2 + (rand() * 10000 % 10000) / 10000.0 * step;
-            double realY = Foliage.PosY + y * step - Foliage.Size / 2 + (rand() * 10000 % 10000) / 10000.0 * step;
-            translateMatrix(&Matrices[(x + y * Foliage.Density) * 16], realX, realY, generator.GetAltitudeAtLocation(realX, realY) + 6);
+			double realX = Foliage.PosX + x * step - Foliage.Size / 2 + (rand() * 10000 % 10000) / 10000.0 * step;
+			double realY = Foliage.PosY + y * step - Foliage.Size / 2 + (rand() * 10000 % 10000) / 10000.0 * step;
+			double altitude0 = generator.GetAltitudeAtLocation(realX, realY);
+        	
+			if (altitude0 < 15 || altitude0 > 2500) continue;
+        	
+			double altitude1 = generator.GetAltitudeAtLocation(realX + 1, realY);
+			double altitude2 = generator.GetAltitudeAtLocation(realX, realY + 1);
+
+			SVector Forward(1, 0, altitude0 - altitude1);
+			Forward.Normalize();
+
+        	SVector Right(SVector(0, 1, altitude0 - altitude2));
+			Right.Normalize();
+
+			SVector Result = SVector::Cross(Forward, Right);
+        	Result.Normalize();
+
+
+			double proba = 1 - ((rand() % 10000) / 10000.0) / 20;
+        	
+			if (Result.z > proba) continue;
+        	
+        	
+            translateMatrix(&Matrices[MatrixCount * 16], realX, realY, altitude0 + 6);
+			MatrixCount++;
         }
     }
 	
-    emscripten_worker_respond(reinterpret_cast<char*>(Matrices), DataLength * sizeof(float));
+    emscripten_worker_respond(reinterpret_cast<char*>(Matrices), MatrixCount * 16 * sizeof(float));
 }
 
 size_t counter = 0;

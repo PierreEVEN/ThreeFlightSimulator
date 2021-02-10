@@ -18,7 +18,7 @@ class FoliageType {
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density =0;
+        this.density = 100;
 
         meshGroups.push({
             geometry: new THREE.PlaneGeometry(15, 15),//child.geometry,
@@ -42,7 +42,7 @@ class FoliageType {
                 let meshes = [];
 
                 for (let group of meshGroups) {
-                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, this.density * this.density);
+                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, data.Size / 64);
                     mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
                     mesh.instanceMatrix.array = array;
                     meshes.push(mesh);

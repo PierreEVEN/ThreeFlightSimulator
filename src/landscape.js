@@ -1,14 +1,29 @@
 import * as THREE from '../threejs/build/three.module.js';
-import {Quaternion, Vector3} from "../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "./resourceManager.js";
 import {runCommand} from "./wasm/wasmInterface.js";
+import {addInputPressAction, addKeyInput, getInputValue} from "./io/inputManager.js";
 
 export { Landscape }
 
-const CellsPerChunk = 20;
-const SectionWidth = 20000;
-const ViewDistance = 6;
+/*
+LANDSCAPE SETTINGS
+ */
+const ViewDistance = 6; // Section loading range
+const CellsPerChunk = 20; // Wireframe resolution
+const SectionWidth = 20000; // Section width
 
+/*
+CONSTANTS
+ */
+const cameraGroundLocation = new THREE.Vector3();
+
+addKeyInput('Debug', 'KeyG', 1, 0);
+let TEST;
+
+/**
+ * Represent a whole landscape system
+ * It contains a grid of landscape section automatically loaded in a desired range (=ViewDistance)
+ */
 class Landscape {
 
     constructor(inScene, inCamera, heightGenerator) {
@@ -19,29 +34,35 @@ class Landscape {
         this.time = 0;
 
         this.LandscapeMaterial = this.createShaderMaterial();
-
-        for (let x = -ViewDistance; x <= ViewDistance; ++x) {
-            for (let y = -ViewDistance; y <= ViewDistance; ++y) {
-                this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
-            }
-        }
+        this.rebuildLandscape();
         this.render(0);
+
+        TEST = this;
+        addInputPressAction('Debug', function() {
+            TEST.rebuildLandscape();
+            console.log("call");
+        });
     }
 
     render(deltaTime) {
         this.time += deltaTime;
         this.LandscapeMaterial.uniforms.time.value = this.time;
 
-        for (let section of this.Sections) {
-            section.update();
-        }
+        for (let section of this.Sections) section.update();
     }
 
-    createTexture(path) {
-        let texture = new THREE.TextureLoader().load(path);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        return texture;
+    rebuildLandscape() {
+        for (const section of this.Sections) {
+            section.destroy();
+        }
+
+        this.Sections = [];
+
+        for (let x = -ViewDistance; x <= ViewDistance; ++x) {
+            for (let y = -ViewDistance; y <= ViewDistance; ++y) {
+                this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
+            }
+        }
     }
 
     createShaderMaterial() {
@@ -80,6 +101,10 @@ class Landscape {
     }
 }
 
+
+/**
+ * The landscape is split in multiple landscape sections (= A quadtree of landscape Node)
+ */
 class LandscapeSection {
 
     constructor(inLandscape, inPos, inScale) {
@@ -102,8 +127,13 @@ class LandscapeSection {
     }
 }
 
-class OctreeNode {
 
+/**
+ * A node of the section's octree.
+ * Each node can be subdivided in 4 smaller nodes depending on the camera location
+ * The node also contains the generated mesh data
+ */
+class OctreeNode {
     constructor(inLandscape, inNodeLevel, inPosition, inScale) {
         this.NodeLevel = inNodeLevel;
         this.ChildNodes = [];
@@ -111,21 +141,18 @@ class OctreeNode {
         this.Scale = inScale;
         this.Mesh = null;
         this.Landscape = inLandscape;
-        this.cameraGroundLocation = new Vector3();
+
+        this.createMesh();
     }
 
     update() {
-        let RequiredNodeLevel = this.computeDesiredLODLevel();
-        if (RequiredNodeLevel > this.NodeLevel) {
-            this.subdivide();
-        }
-        else {
-            this.unSubdivide();
-        }
+        /*
+        Either we wants to subdivide this node if he is to close, either we wants to display its mesh section
+         */
+        if (this.computeDesiredLODLevel() > this.NodeLevel) this.subdivide();
+        else this.unSubdivide();
 
-        for (let child of this.ChildNodes) {
-            child.update();
-        }
+        for (let child of this.ChildNodes) child.update();
     }
 
     subdivide() {
@@ -166,43 +193,40 @@ class OctreeNode {
             }
         }
         if (childBuilt) {
-            this.destroyGeometry();
+            this.hideGeometry();
+        }
+        else {
         }
     }
 
     unSubdivide() {
-        this.buildGeometry();
+        this.showGeometry();
 
+        /*
+        Destroy child if not destroyed
+         */
         if (this.ChildNodes.length === 0) return;
-
-        for (let child of this.ChildNodes) {
-            child.destroy();
-        }
+        for (let child of this.ChildNodes) child.destroy();
         this.ChildNodes = [];
     }
 
-    destroyGeometry() {
-        if (this.Mesh) {
+    hideGeometry() {
+        if (this.displayed) {
             this.Landscape.Scene.remove(this.Mesh);
+            this.displayed = false;
         }
-        this.displayed = false;
     }
-    buildGeometry() {
-        this.cancelled = false;
-
+    showGeometry() {
         if (this.Mesh) {
             if (!this.displayed) {
                 this.displayed = true;
                 this.Landscape.Scene.add(this.Mesh);
             }
-            return;
         }
-        if (this.isBuilding) return;
-        this.isBuilding = true;
+    }
 
+    createMesh() {
         runCommand("BuildLandscapeSection",['number', 'number', 'number', 'number'], [CellsPerChunk, this.Position.x, this.Position.y, this.Scale], this).then( (data) => {
-
-            this.isBuilding = false;
 
             const memoryView = new Int32Array(Module.HEAP8.buffer, data.Data, 2)
             const memory = new Int32Array(memoryView);
@@ -225,9 +249,8 @@ class OctreeNode {
             Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
             Geometry.setAttribute( 'color', new THREE.BufferAttribute( color, 3 ) );
             Geometry.computeVertexNormals();
-            /**
-             * Move the "borders of the tablecloth" down to avoid seams holes
-             */
+
+            // Move the "borders of the tablecloth" down to avoid seams holes
 
             let VerticesPerChunk = CellsPerChunk + 3;
             // North seams
@@ -258,23 +281,22 @@ class OctreeNode {
                 vertices[i * 3 + 2] -= CellSize;
             }
 
-            Geometry.setAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-
             this.Mesh = new THREE.Mesh(Geometry, this.Landscape.LandscapeMaterial);
         });
     }
 
     destroy() {
         this.unSubdivide();
-        this.destroyGeometry();
+        this.hideGeometry();
+        if (this.Mesh) delete this.Mesh;
     }
 
     computeDesiredLODLevel() {
         // Height correction
-        this.cameraGroundLocation.x = this.Landscape.camera.position.x;
-        this.cameraGroundLocation.y = this.Landscape.camera.position.y;
-        this.cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.heightGenerator.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
-        let Level = 8 - Math.min(8, (this.cameraGroundLocation.distanceTo(this.Position) - this.Scale)  / 500.0);
+        cameraGroundLocation.x = this.Landscape.camera.position.x;
+        cameraGroundLocation.y = this.Landscape.camera.position.y;
+        cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.heightGenerator.getHeightAtLocation(cameraGroundLocation.x, cameraGroundLocation.y);
+        let Level = 8 - Math.min(8, (cameraGroundLocation.distanceTo(this.Position) - this.Scale)  / 500.0);
         return Math.trunc(Level);
     }
 }

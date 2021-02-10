@@ -5,7 +5,7 @@ import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
 
-let clock, stats, renderer, world, camera, controller, debugUI, impostorTest;
+let clock, stats, renderer, world, camera, controller, impostorTest;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_tree');
@@ -24,7 +24,6 @@ function loadResources() {
 
 
 function init() {
-
     // Setup renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);

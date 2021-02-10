@@ -11,6 +11,7 @@ function addAudio() {
     return '';
 }
 
+
 function addKeyInput(input) {
     return '<div class="control-type">keyboard' +
             '<div class="control-parameters">' +
@@ -66,10 +67,18 @@ function generateInputContent(input) {
 }
 
 function generateInput(name, binding) {
-    return '<button class="control-button id="input_key_' + name + '">' + '<img src="./textures/icons/back-icon.png"><p>' + name + '</p><progress value="0.5"></progress> 0 </button>' +
-        '<div class="control-buttonContent">' +
-        generateInputContent(binding) +
-        '</div>';
+
+    let headingID = "headingControlAccordion" + name;
+    let collapseID = "collapseControlAccordion" + name;
+
+    return '' +
+            '<button id="' + headingID + '" class="control-button" data-toggle="collapse" data-target="#' + collapseID + '" aria-expanded="true" aria-controls="' + collapseID + '">' +
+                '<p>' + name + '</p>' +
+                '<progress value="0.5"></progress> 0 ' +
+            '</button>' +
+        '<div id="' + collapseID + '" class="show" aria-labelledby="' + headingID + '" data-parent="#control-list-accordion">' +
+            generateInputContent(binding) +
+        '</div>'
 }
 
 function update() {
@@ -80,14 +89,11 @@ update();
 
 function addControls() {
 
-    let inputText =
-        '<div id="control-bindings">'
+    let inputText = '<div id="control-list-accordion" class="control-bindings">'
 
-    for (const [key, binding] of Object.entries(keybinds)) {
-        inputText += generateInput(key, binding);
-    }
-    inputText +=
-        '</div>';
+    for (const [key, binding] of Object.entries(keybinds)) { inputText += generateInput(key, binding); }
+
+    inputText += '</div>';
 
     return inputText;
 }
@@ -101,16 +107,15 @@ function displaySettings() {
 
     document.getElementById('content-page').innerHTML =
         '<div class="content-cell">' +
-            '<div>' +
-                addGraphics() +
-            '</div>' +
+            '<h1>Graphics</h1>' +
+            addGraphics() +
         '</div>' +
         '<div class="content-cell">' +
-                addControls() +
+            '<h1>Controls</h1>' +
+            addControls() +
         '</div>' +
         '<div class="content-cell">' +
-            '<div>' +
-                addAudio() +
-            '</div>' +
-        '</div>'
+            '<h1>Controls</h1>' +
+            addAudio() +
+        '</div>';
 }

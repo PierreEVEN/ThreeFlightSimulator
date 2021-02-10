@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../libs/FastNoiseLite.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 class HeightGenerator
 {
@@ -45,9 +47,10 @@ public:
 
 private:
 
-    FastNoiseLite noise = FastNoiseLite(100);
-    FastNoiseLite mountainLevelNoise = FastNoiseLite(2000);
-    FastNoiseLite hillLevelNoise = FastNoiseLite(50000);
+    FastNoiseLite noise = FastNoiseLite(8);
+    FastNoiseLite mountainLevelNoise = FastNoiseLite(37);
+    FastNoiseLite hillLevelNoise = FastNoiseLite(123);
+    FastNoiseLite cliffNoise = FastNoiseLite(254);
 
 
     double getMountainLevel(double posX, double posY) {
@@ -64,8 +67,10 @@ private:
     }
 
     double addBeaches(double posX, double posY, double currentAltitude) {
-        return currentAltitude > 5 ? currentAltitude + 20 : currentAltitude;
+
+        return currentAltitude;
     }
+	
 
 
 };

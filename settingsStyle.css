@@ -1,5 +1,5 @@
 
-div#control-bindings {
+div.control-bindings {
     display: flex;
     flex-direction: column;
     width: 100%;
