@@ -11,15 +11,17 @@ import {FoliageSystem} from "./foliageSystem.js";
 
 class World {
 	constructor(renderer, camera) {
-		
+		this.camera = camera;
 		this.renderer = renderer;
 		// Create scene
 		this.scene = new THREE.Scene();
 
 		// Light
-		this.ambiantLight = new THREE.AmbientLight(new THREE.Color(1, 1, 1));
+		const lightIntensity = 0.2;
+		this.ambiantLight = new THREE.AmbientLight(new THREE.Color(lightIntensity, lightIntensity, lightIntensity));
 		this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-		this.directionalLight.position.set(0, 1, 1);
+		this.directionalLight.target.position.set(0, 0, 0);
+		this.directionalLight.position.set(2000, 2000, 2000);
 		this.scene.add(this.ambiantLight);
 		this.scene.add(this.directionalLight);
 
@@ -34,9 +36,12 @@ class World {
 		this.scene.add(camera);
 
 		this.planes = [];
+
+
 	}
 
 	tick(deltaTime) {
+
 		this.landscape.render(deltaTime);
 		this.foliageSystem.update();
 		for (let plane of this.planes) {

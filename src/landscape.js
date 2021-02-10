@@ -45,8 +45,10 @@ class Landscape {
     }
 
     render(deltaTime) {
-        this.time += deltaTime;
-        this.LandscapeMaterial.uniforms.time.value = this.time;
+        if (this.LandscapeMaterial.uniforms) {
+            this.time += deltaTime;
+            this.LandscapeMaterial.uniforms.time.value = this.time;
+        }
 
         for (let section of this.Sections) section.update();
     }
@@ -66,26 +68,10 @@ class Landscape {
     }
 
     createShaderMaterial() {
-        let uniforms = {
-            time: { value: 0 },
-            noise: { type: 't', value: RESOURCE_MANAGER.texture_noise },
-            grass1: { type: 't', value: RESOURCE_MANAGER.texture_grass1 },
-            grass2: { type: 't', value: RESOURCE_MANAGER.texture_grass2 },
-            rock1: { type: 't', value: RESOURCE_MANAGER.texture_rock1 },
-            rock2: { type: 't', value: RESOURCE_MANAGER.texture_rock2 },
-            snow1: { type: 't', value: RESOURCE_MANAGER.texture_snow1 },
-            sand1: { type: 't', value: RESOURCE_MANAGER.texture_sand1 },
-            waterDisp: { type: 't', value: RESOURCE_MANAGER.texture_waterDisp },
-            waterNorm: { type: 't', value: RESOURCE_MANAGER.texture_waterNorm },
-        };
 
-        let material =  new THREE.ShaderMaterial( {
-            uniforms: uniforms,
-            wireframe:false,
-            vertexColors: true,
-            vertexShader: RESOURCE_MANAGER.vertexShader_landscape,
-            fragmentShader: RESOURCE_MANAGER.fragmentShader_landscape
-        });
+
+
+        const material = new THREE.MeshPhysicalMaterial();
 
         material.noise = RESOURCE_MANAGER.texture_noise;
         material.grass1 = RESOURCE_MANAGER.texture_grass1;
@@ -96,6 +82,45 @@ class Landscape {
         material.sand1 = RESOURCE_MANAGER.texture_sand1;
         material.waterDisp = RESOURCE_MANAGER.texture_waterDisp;
         material.waterNorm = RESOURCE_MANAGER.texture_waterNorm;
+
+        material.reflectivity = 0.2;
+
+        material.onBeforeCompile = shader => {
+            if (shader.shaderName !== "MeshPhysicalMaterial") return;
+
+
+            shader.uniforms.time = { value: 0 },
+            shader.uniforms.noise = { type: 't', value: RESOURCE_MANAGER.texture_noise },
+            shader.uniforms.grass1 = { type: 't', value: RESOURCE_MANAGER.texture_grass1 },
+            shader.uniforms.grass2 = { type: 't', value: RESOURCE_MANAGER.texture_grass2 },
+            shader.uniforms.rock1 = { type: 't', value: RESOURCE_MANAGER.texture_rock1 },
+            shader.uniforms.rock2 = { type: 't', value: RESOURCE_MANAGER.texture_rock2 },
+            shader.uniforms.snow1 = { type: 't', value: RESOURCE_MANAGER.texture_snow1 },
+            shader.uniforms.sand1= { type: 't', value: RESOURCE_MANAGER.texture_sand1 },
+            shader.uniforms.waterDisp = { type: 't', value: RESOURCE_MANAGER.texture_waterDisp },
+            shader.uniforms.waterNorm= { type: 't', value: RESOURCE_MANAGER.texture_waterNorm },
+
+
+
+
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <common>',
+                '#include <common>\n' + RESOURCE_MANAGER.vertexShader_landscape_a);
+
+            shader.vertexShader = shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                '#include <begin_vertex>\n' + RESOURCE_MANAGER.vertexShader_landscape_b);
+
+            shader.fragmentShader = shader.fragmentShader.replace(
+                '#include <common>',
+                '#include <common>\n' + RESOURCE_MANAGER.fragmentShader_landscape_a);
+
+            shader.fragmentShader = shader.fragmentShader.replace(
+                '#include <color_fragment>',
+                '#include <color_fragment>\n' + RESOURCE_MANAGER.fragmentShader_landscape_b);
+        }
+
+
 
         return material;
     }

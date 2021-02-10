@@ -1,27 +1,5 @@
-varying vec3 pNormal;
-varying vec3 pColor;
-varying vec2 pUv;
-varying vec3 pPosition;
-varying float pDepth;
 
-uniform sampler2D noise;
-
-uniform sampler2D grass1;
-uniform sampler2D grass2;
-
-uniform sampler2D rock1;
-uniform sampler2D rock2;
-
-uniform sampler2D snow1;
-uniform sampler2D sand1;
-
-uniform sampler2D waterDisp;
-uniform sampler2D waterNorm;
-
-uniform float time;
-
-void main() {
-	float slope = dot(abs(pNormal), vec3(0,0,1));
+	float slope = dot(abs(worldNormal), vec3(0,0,1));
 
 	/*
 	Plains texture
@@ -52,9 +30,9 @@ void main() {
 	Final merge
 	*/
 	//Merge snow
-	vec3 finalColor = mix(plainColor, snowColor, max(0.0, min(1.0, (pPosition.z - 2500.0 + texture2D(noise, pPosition.xy * 0.0001).x * 800.0) / 100.0)));
+	vec3 groundColor = mix(plainColor, snowColor, max(0.0, min(1.0, (pPosition.z - 2500.0 + texture2D(noise, pPosition.xy * 0.0001).x * 800.0) / 100.0)));
 	// Merge sand
-	finalColor = mix(sandColor, finalColor, max(0.0, min(1.0, (pPosition.z - 5.0 + texture2D(noise, pPosition.xy * 0.0003).x * 5.0) / 5.0)));
+	groundColor = mix(sandColor, groundColor, max(0.0, min(1.0, (pPosition.z - 5.0 + texture2D(noise, pPosition.xy * 0.0003).x * 5.0) / 5.0)));
 
 	float foam =
 	texture2D(waterDisp, pPosition.xy * 0.02 + vec2(time, time) * 0.02).x *
@@ -66,8 +44,7 @@ void main() {
 	/*
 	Handle oceans
 	*/
-	finalColor = pPosition.z < 0.1 ? oceanColor : finalColor;
+	groundColor = pPosition.z < 0.1 ? oceanColor : groundColor;
 
 
-	gl_FragColor = vec4(finalColor, 1);
-}
+	diffuseColor.xyz *= groundColor * 0.4;

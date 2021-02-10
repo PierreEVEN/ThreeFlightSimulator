@@ -28,7 +28,6 @@ class FoliageType {
 
 
     generateAsync(section, heightGenerator, nodeLevel, position, size) {
-
         return new Promise((resolve, abort) => {
             if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 

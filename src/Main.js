@@ -16,8 +16,10 @@ function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/tree.glb', 'model_tree');
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.VS.glsl', 'vertexShader_landscape');
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.FS.glsl', 'fragmentShader_landscape');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.VS.glsl', 'vertexShader_landscape_a');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.VS.glsl', 'vertexShader_landscape_b');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.FS.glsl', 'fragmentShader_landscape_a');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.FS.glsl', 'fragmentShader_landscape_b');
     RESOURCE_MANAGER.loadFileResource('./shaders/impostors.VS.glsl', 'vertexShader_impostors');
     RESOURCE_MANAGER.loadFileResource('./shaders/impostors.FS.glsl', 'fragmentShader_impostors');
     RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
@@ -96,10 +98,14 @@ function init() {
     let rootNode = null;
     RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
         if (child.isMesh) {
+            child.material.metalness = 0.95;
+            child.material.roughness = 0.01;
             if (rootNode === null) {
                 rootNode = new THREE.Mesh(child.geometry, child.material);
+                console.log(child.material)
             } else {
-                rootNode.attach(new THREE.Mesh(child.geometry, child.material));
+                let NewMesh = new THREE.Mesh(child.geometry, child.material);
+                rootNode.attach(NewMesh);
             }
         }
     });
