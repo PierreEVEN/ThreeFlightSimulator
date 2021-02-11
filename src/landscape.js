@@ -1,7 +1,7 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from "./resourceManager.js";
 import {runCommand} from "./wasm/wasmInterface.js";
-import {addInputPressAction, addKeyInput, getInputValue} from "./io/inputManager.js";
+import {addInputPressAction, addKeyInput} from "./io/inputManager.js";
 
 export { Landscape }
 
@@ -68,9 +68,6 @@ class Landscape {
     }
 
     createShaderMaterial() {
-
-
-
         const material = new THREE.MeshPhysicalMaterial();
 
         material.noise = RESOURCE_MANAGER.texture_noise;
@@ -121,6 +118,7 @@ class Landscape {
         }
 
 
+        addInputPressAction("Wireframe", () => {this.LandscapeMaterial.wireframe = !this.LandscapeMaterial.wireframe});
 
         return material;
     }

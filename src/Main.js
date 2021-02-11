@@ -7,7 +7,7 @@ import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
 import {
-    addGamepadAxisInput,
+    addGamepadAxisInput, addInputPressAction,
     addKeyInput,
     addMouseAxisInput,
     initializeInputs,
@@ -51,7 +51,8 @@ function loadResources() {
 
 
 
-addKeyInput("Wireframe", "F1", 1, 0);
+addKeyInput("Wireframe", "F2", 1, 0);
+addKeyInput("DetachCamera", "KeyT", 1, 0);
 addKeyInput("FpsView", "KeyV", 1, 0);
 addKeyInput("Pause", "KeyP", 1, 0);
 
@@ -103,6 +104,7 @@ function init() {
     RESOURCE_MANAGER.model_detailedTree.scene.rotation.z += -Math.PI / 2;
     RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
     RESOURCE_MANAGER.TreeImpostor.render(renderer);
+    addInputPressAction("Wireframe", () => { RESOURCE_MANAGER.TreeImpostor.material.wireframe = !RESOURCE_MANAGER.TreeImpostor.material.wireframe; });
 
     // Initialize world
     world = new World(renderer, camera);

@@ -1,6 +1,7 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {Quaternion, Vector3, Matrix4} from "../threejs/build/three.module.js";
 import { ArrowHelper } from "../threejs/src/helpers/ArrowHelper.js";
+import {addInputPressAction} from "./io/inputManager.js";
 
 export { Plane }
 
@@ -71,6 +72,9 @@ class Plane {
         this.rightLiftCoefficient = 0.002;
 
         this.update(0);
+
+
+        addInputPressAction("Pause", () => { this.pause = !this.pause; });
     }
 
     updateRotations(deltaTime) {

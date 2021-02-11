@@ -1,20 +1,13 @@
 
-import {ImprovedNoise} from "../threejs/examples/jsm/maths/ImprovedNoise.js";
+function getHeightAtLocation(x, y) {
+    return Module.cwrap('GetAltitudeAtLocation', 'double', ['double', 'double'])(x, y);
+}
 
 class HeightGenerator {
-
-    constructor() {
-        this.Noise = new ImprovedNoise();
-    }
 
     getHeightAtLocation(x, y) {
         return Module.cwrap('GetAltitudeAtLocation', 'double', ['double', 'double'])(x, y);
     }
-
-    getBiomeAtLocation(x, y) {
-        let scale = .0001;
-        return Math.pow(this.Noise.noise(x * scale, y * scale, 0), 5) * 500;
-    }
 }
 
-export {HeightGenerator}
+export {HeightGenerator, getHeightAtLocation}

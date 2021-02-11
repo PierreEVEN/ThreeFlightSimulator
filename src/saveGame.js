@@ -51,7 +51,6 @@ class SaveGame {
         if (this.getCookie('cameraYaw')) this.controller.yaw = parseFloat(this.getCookie('cameraYaw'));
         if (this.getCookie('isFps')) this.controller.isFPS = this.getCookie('isFps') === 'true';
         if (this.getCookie('isPaused')) this.plane.pause = this.getCookie('isPaused') === 'true';
-        this.controller.updateMouse();
     }
 }
 

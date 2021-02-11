@@ -160,7 +160,7 @@ function isPressed(inputId) {
 
 function addGamepad(gamepad) {
     gamepads.push(gamepad);
-    console.log('added controller "' + gamepad + '"');
+    console.log('added controller "' + gamepad.gamepad.id + '"');
 }
 
 function removeGamepad(gamepad) {
