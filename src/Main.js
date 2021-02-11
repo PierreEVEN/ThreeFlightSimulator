@@ -6,13 +6,20 @@ import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
-import {addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
+import {
+    addGamepadAxisInput,
+    addKeyInput,
+    addMouseAxisInput,
+    initializeInputs,
+    updateInputs
+} from "./io/inputManager.js";
 import {EffectComposer} from "../threejs/examples/jsm/postprocessing/EffectComposer.js";
 import {RenderPass} from "../threejs/examples/jsm/postprocessing/RenderPass.js";
 import {BloomPass} from "../threejs/examples/jsm/postprocessing/BloomPass.js";
 import {UnrealBloomPass} from "../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
 import {Vector2} from "../threejs/build/three.module.js";
 import {TAARenderPass} from "../threejs/examples/jsm/postprocessing/TAARenderPass.js";
+import {SMAAPass} from "../threejs/examples/jsm/postprocessing/SMAAPass.js";
 
 let clock, stats, renderer, world, camera, controller, debugUI, background, composer, skyColor;
 
@@ -59,6 +66,10 @@ addMouseAxisInput("LookUp", 2, -1);
 addMouseAxisInput("LookRight", 1, -1);
 
 
+addGamepadAxisInput("Roll", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 0, 1);
+addGamepadAxisInput("Pitch", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 6, -1);
+addGamepadAxisInput("Yaw", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 5, -1);
+addGamepadAxisInput("Throttle", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 1, 1);
 
 
 function init() {
@@ -69,7 +80,7 @@ function init() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     const skyIntensity = 0.8;
-    skyColor = new THREE.Color(.6 * skyIntensity,.8 * skyIntensity,1 * skyIntensity);
+    skyColor = new THREE.Color(.6 * skyIntensity,.8 * skyIntensity,skyIntensity);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     background = document.getElementById('game');
     background.appendChild(renderer.domElement);
@@ -84,14 +95,6 @@ function init() {
     stats = new Stats();
     background.appendChild( stats.dom );
 
-    // Set resize delegate
-    window.addEventListener( 'resize', function () {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        composer.setSize(window.innerWidth, window.innerHeight)
-    });
-
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
@@ -105,8 +108,19 @@ function init() {
     world = new World(renderer, camera);
 
     composer.addPass(new RenderPass(world.scene, camera));
-    composer.addPass(new TAARenderPass(world.scene, camera, background, 1));
+    const AAPass = new SMAAPass(window.innerWidth, window.innerHeight)
+    composer.addPass(AAPass);
     composer.addPass(new UnrealBloomPass(new Vector2( 256, 256 ), 0.23));
+
+    // Set resize delegate
+    window.addEventListener( 'resize', function () {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        AAPass.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        composer.setSize(window.innerWidth, window.innerHeight)
+    });
+
 
     // Create default plane
     let rootNode = null;
@@ -116,7 +130,6 @@ function init() {
             child.material.roughness = 0.01;
             if (rootNode === null) {
                 rootNode = new THREE.Mesh(child.geometry, child.material);
-                console.log(child.material)
             } else {
                 let NewMesh = new THREE.Mesh(child.geometry, child.material);
                 rootNode.attach(NewMesh);
@@ -126,7 +139,7 @@ function init() {
     let plane = world.addPlane(rootNode);
 
     // Add global controller
-    controller = new PlaneController(background, plane, camera, world.landscape);
+    controller = new PlaneController(plane, camera, world.landscape);
     new SaveGame(controller);
 
     debugUI = new PlaneDebugUI(controller, world);

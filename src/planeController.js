@@ -11,7 +11,7 @@ import {
 export {PlaneController};
 
 
-let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
+let PlaneController = function ( inPlane, inCamera, inLandscape) {
 
     this.distance = 40;
     this.pitch = 0;
@@ -36,15 +36,6 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
     this.isFPS = false;
     this.mouseSensitivity = 0.5;
 
-    if ( domElement === undefined ) {
-
-        console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
-        domElement = document;
-    }
-
-    this.domElement = domElement;
-
-    if ( domElement ) this.domElement.setAttribute( 'tabindex', - 1 );
 
     this.plane = inPlane;
     this.camera = inCamera;
@@ -88,42 +79,6 @@ let PlaneController = function ( domElement, inPlane, inCamera, inLandscape) {
         this.pitch = Math.max(this.minPitch, Math.min(this.maxPitch, this.pitch));
         if (this.isFPS) this.yaw = Math.max(this.minYaw, Math.min(this.maxYaw, this.yaw + 90)) - 90;
         this.updateMouse();
-
-        /*
-        for (let j = 0; j < this.gamepads.length; ++j) {
-            let controller = this.gamepads[j].gamepad;
-            if (!controller || !controller.buttons) continue;
-            for (var i = 0; i < controller.axes.length; i++) {
-                //var b = buttons[i];
-                let val = controller.axes[i];
-                //console.log(val);//'axe : ' + i + ' value = ' + val.value);
-                if (j == 0) {
-                    switch (i) {
-                        case 0:
-                            this.plane.setRollInput(val);
-                            break;
-                        case 1:
-                            this.plane.setEngineInput(1.2 - (val / 2 + 0.5) * 1.2);
-                            break;
-                        case 6:
-                            this.plane.setPitchInput(val * -1);
-                            break;
-                        case 5:
-                            this.plane.setYawInput(val * -1);
-                            break;
-                    }
-                }
-                else {
-                    switch(i) {
-                        case 1: this.pitch = val * 500;
-                        case 3: this.yaw = -val * 500 - 90;
-                    }
-                }
-                // 2: yaw;
-                //4 : roll;
-            }
-        }
-         */
     }
 
     this.update = function(deltaTime) {

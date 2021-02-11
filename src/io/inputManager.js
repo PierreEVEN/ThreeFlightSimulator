@@ -83,7 +83,7 @@ function addMouseAxisInput(inputId, axis, multiplier) {
     });
 }
 
-function addGamepadAxisInput(inputId, gamepad, axis, multiplier) {
+function addGamepadAxisInput(inputId, gamepad, axis, multiplier, add) {
     registerInput(inputId);
     keybinds[inputId].inputs.push({
         gamepad: gamepad,
@@ -102,6 +102,7 @@ function addInputReleaseAction(inputId, action) { keybinds[inputId].releasedEven
 
 function updateInputValue(keybind) {
     let value = 0;
+
     for (const input of keybind.inputs) {
         if (input.key) value += pressedKeyStates[input.key] ? input.pressedValue : input.releasedValue;
         if (input.mouseButton) value += mouseButtonStates[input.mouseButton] ? input.pressedValue : input.releasedValue;
@@ -116,6 +117,14 @@ function updateInputValue(keybind) {
                 case 3:
                     value += mouseAxisStates.deltaWheel * input.multiplier;
                     break;
+            }
+        }
+        if (input.gamepad) {
+            for (let gamepad of gamepads) {
+                if (gamepad.gamepad.id === input.gamepad) {
+                    if (input.gamepadAxis < gamepad.gamepad.axes.length && input.gamepadAxis >= 0)
+                        value += gamepad.gamepad.axes[input.gamepadAxis] * input.multiplier;
+                }
             }
         }
     }
@@ -151,7 +160,7 @@ function isPressed(inputId) {
 
 function addGamepad(gamepad) {
     gamepads.push(gamepad);
-    console.log('connected controller ');
+    console.log('added controller "' + gamepad + '"');
 }
 
 function removeGamepad(gamepad) {
