@@ -18,7 +18,7 @@ class FoliageType {
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 100;
+        this.density = 10;
 
         meshGroups.push({
             geometry: new THREE.PlaneGeometry(15, 15),//child.geometry,

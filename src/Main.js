@@ -7,8 +7,14 @@ import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
 import {ImpostorRenderer} from "./impostorRenderer.js";
 import {addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
+import {EffectComposer} from "../threejs/examples/jsm/postprocessing/EffectComposer.js";
+import {RenderPass} from "../threejs/examples/jsm/postprocessing/RenderPass.js";
+import {BloomPass} from "../threejs/examples/jsm/postprocessing/BloomPass.js";
+import {UnrealBloomPass} from "../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
+import {Vector2} from "../threejs/build/three.module.js";
+import {TAARenderPass} from "../threejs/examples/jsm/postprocessing/TAARenderPass.js";
 
-let clock, stats, renderer, world, camera, controller, debugUI, background;
+let clock, stats, renderer, world, camera, controller, debugUI, background, composer, skyColor;
 
 
 function loadResources() {
@@ -58,15 +64,18 @@ addMouseAxisInput("LookRight", 1, -1);
 function init() {
 
     // Setup renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.autoClear = false;
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(.6,.8,1),  1);
+    const skyIntensity = 0.8;
+    skyColor = new THREE.Color(.6 * skyIntensity,.8 * skyIntensity,1 * skyIntensity);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     background = document.getElementById('game');
     background.appendChild(renderer.domElement);
     initializeInputs(background);
+
+    composer = new EffectComposer(renderer);
 
     // Setup clock
     clock = new THREE.Clock();
@@ -80,6 +89,7 @@ function init() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize( window.innerWidth, window.innerHeight );
+        composer.setSize(window.innerWidth, window.innerHeight)
     });
 
     // Create camera
@@ -93,6 +103,10 @@ function init() {
 
     // Initialize world
     world = new World(renderer, camera);
+
+    composer.addPass(new RenderPass(world.scene, camera));
+    composer.addPass(new TAARenderPass(world.scene, camera, background, 1));
+    composer.addPass(new UnrealBloomPass(new Vector2( 256, 256 ), 0.23));
 
     // Create default plane
     let rootNode = null;
@@ -145,9 +159,13 @@ function animate() {
 
     renderer.setRenderTarget( null );
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(.6,.8,1), 1);
-    renderer.clear();
-    renderer.render(world.scene, camera);
+    renderer.setClearColor(skyColor, 1);
+
+    composer.render();
+
+
+    //renderer.clear();
+    //renderer.render(world.scene, camera);
     stats.update();
 }
 
