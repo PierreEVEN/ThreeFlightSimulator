@@ -14,7 +14,7 @@ class FoliageType {
     constructor() {
 
         this.minLOD = 0;
-        this.maxLOD = 2;
+        this.maxLOD = 3;
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
