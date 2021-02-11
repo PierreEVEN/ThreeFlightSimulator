@@ -13,7 +13,7 @@ let clock, stats, renderer, world, camera, controller, debugUI, background;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
-    RESOURCE_MANAGER.loadMeshResource('./models/tree.glb', 'model_tree');
+    //RESOURCE_MANAGER.loadMeshResource('./models/tree.glb', 'model_tree');
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.VS.glsl', 'vertexShader_landscape_a');
@@ -86,9 +86,9 @@ function init() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
     // build impostors
-    RESOURCE_MANAGER.model_tree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
-    RESOURCE_MANAGER.model_tree.scene.rotation.z += -Math.PI / 2;
-    RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_tree.scene);
+    RESOURCE_MANAGER.model_detailedTree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
+    RESOURCE_MANAGER.model_detailedTree.scene.rotation.z += -Math.PI / 2;
+    RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
     RESOURCE_MANAGER.TreeImpostor.render(renderer);
 
     // Initialize world

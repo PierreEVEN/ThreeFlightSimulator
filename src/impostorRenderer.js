@@ -90,7 +90,7 @@ class ImpostorRenderer {
             resolution,
             {
                 minFilter: THREE.LinearFilter,
-                magFilter: THREE.NearestFilter,
+                magFilter: THREE.LinearMipMapLinearFilter,
                 format: format
             });
     }
