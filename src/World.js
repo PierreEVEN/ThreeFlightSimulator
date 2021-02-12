@@ -10,9 +10,8 @@ import {FoliageSystem} from "./foliageSystem.js";
 
 
 class World {
-	constructor(renderer, camera) {
+	constructor(camera) {
 		this.camera = camera;
-		this.renderer = renderer;
 		// Create scene
 		this.scene = new THREE.Scene();
 

@@ -5,25 +5,10 @@ import {PlaneDebugUI} from './planeDebugUI.js'
 import {SaveGame} from './saveGame.js'
 import {RESOURCE_MANAGER} from './resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
-import {ImpostorRenderer} from "./impostorRenderer.js";
-import {
-    addGamepadAxisInput, addInputPressAction,
-    addKeyInput,
-    addMouseAxisInput,
-    initializeInputs,
-    updateInputs
-} from "./io/inputManager.js";
-import {EffectComposer} from "../threejs/examples/jsm/postprocessing/EffectComposer.js";
-import {RenderPass} from "../threejs/examples/jsm/postprocessing/RenderPass.js";
-import {BloomPass} from "../threejs/examples/jsm/postprocessing/BloomPass.js";
-import {UnrealBloomPass} from "../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
-import {DepthTexture, ShaderMaterial, Vector2} from "../threejs/build/three.module.js";
-import {TAARenderPass} from "../threejs/examples/jsm/postprocessing/TAARenderPass.js";
-import {SMAAPass} from "../threejs/examples/jsm/postprocessing/SMAAPass.js";
-import {ShaderPass} from "../threejs/examples/jsm/postprocessing/ShaderPass.js";
+import {addGamepadAxisInput, addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
 import {GameRenderer} from "./rendering/gameRenderer.js";
 
-let clock, stats, renderer, world, camera, controller, debugUI, background, composer, skyColor, sceneTarget, overScene, PPMat, gameRenderer;
+let clock, stats, world, camera, controller, debugUI, gameRenderer;
 
 
 function loadResources() {
@@ -85,7 +70,7 @@ addGamepadAxisInput("Throttle", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Con
 
 function init() {
 
-    background = document.getElementById('game');
+    const background = document.getElementById('game');
     initializeInputs(background);
 
     // Setup clock
@@ -99,8 +84,9 @@ function init() {
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
     gameRenderer = new GameRenderer(null, document.getElementById('game'), camera);
+
     // Initialize world
-    world = new World(renderer, camera);
+    world = new World(camera);
 
     // Create default plane
     let rootNode = null;
@@ -150,7 +136,6 @@ function animate() {
     world.tick(deltaTime);
     controller.update(deltaTime);
     debugUI.tick(deltaTime);
-
 
     gameRenderer.render(world, camera);
 

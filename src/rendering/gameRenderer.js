@@ -54,6 +54,8 @@ class GameRenderer {
             uniforms: {
                 cameraNear: {value: camera.near},
                 cameraFar: {value: camera.far},
+                projectionInverseMatrix : {value: null},
+                cameraWorldInverseMatrix: {value: null},
                 tDiffuse: {value: this.sceneRenderTarget.texture},
                 tDepth: {value: this.sceneRenderTarget.depthTexture}
             },
@@ -83,10 +85,13 @@ class GameRenderer {
             gameRenderer.composer.setSize(window.innerWidth, window.innerHeight);
             gameRenderer.sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
         });
-
     }
 
     render = function(renderedWorld, camera) {
+
+        this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = camera.projectionMatrixInverse;
+        this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = camera.matrixWorld;
+
 
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
