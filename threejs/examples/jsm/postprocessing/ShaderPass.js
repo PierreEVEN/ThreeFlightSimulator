@@ -7,7 +7,6 @@ import { Pass } from '../postprocessing/Pass.js';
 var ShaderPass = function ( shader, textureID ) {
 
 	Pass.call( this );
-
 	this.textureID = ( textureID !== undefined ) ? textureID : 'tDiffuse';
 
 	if ( shader instanceof ShaderMaterial ) {

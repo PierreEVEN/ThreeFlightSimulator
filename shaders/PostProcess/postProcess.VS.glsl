@@ -1,10 +1,6 @@
-#version 120
-
-uniform sampler2D colorMap;
-uniform sampler2D depthMap;
-
-varying vec2 viewportCoordinates;
+varying vec2 vUv;
 
 void main() {
-
+    vUv = uv;
+    gl_Position = vec4( position, 1.0 );
 }

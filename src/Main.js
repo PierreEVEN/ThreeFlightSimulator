@@ -17,18 +17,21 @@ import {EffectComposer} from "../threejs/examples/jsm/postprocessing/EffectCompo
 import {RenderPass} from "../threejs/examples/jsm/postprocessing/RenderPass.js";
 import {BloomPass} from "../threejs/examples/jsm/postprocessing/BloomPass.js";
 import {UnrealBloomPass} from "../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
-import {Vector2} from "../threejs/build/three.module.js";
+import {DepthTexture, ShaderMaterial, Vector2} from "../threejs/build/three.module.js";
 import {TAARenderPass} from "../threejs/examples/jsm/postprocessing/TAARenderPass.js";
 import {SMAAPass} from "../threejs/examples/jsm/postprocessing/SMAAPass.js";
+import {ShaderPass} from "../threejs/examples/jsm/postprocessing/ShaderPass.js";
+import {GameRenderer} from "./rendering/gameRenderer.js";
 
-let clock, stats, renderer, world, camera, controller, debugUI, background, composer, skyColor;
+let clock, stats, renderer, world, camera, controller, debugUI, background, composer, skyColor, sceneTarget, overScene, PPMat, gameRenderer;
 
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
-    //RESOURCE_MANAGER.loadMeshResource('./models/tree.glb', 'model_tree');
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 
+    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.FS.glsl', 'fragmentShader_postProcess');
+    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.VS.glsl', 'vertexShader_postProcess');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.VS.glsl', 'vertexShader_landscape_a');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.VS.glsl', 'vertexShader_landscape_b');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.FS.glsl', 'fragmentShader_landscape_a');
@@ -82,19 +85,8 @@ addGamepadAxisInput("Throttle", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Con
 
 function init() {
 
-    // Setup renderer
-    renderer = new THREE.WebGLRenderer({ antialias: false });
-    renderer.autoClear = false;
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    const skyIntensity = 0.8;
-    skyColor = new THREE.Color(.6 * skyIntensity,.8 * skyIntensity,skyIntensity);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
     background = document.getElementById('game');
-    background.appendChild(renderer.domElement);
     initializeInputs(background);
-
-    composer = new EffectComposer(renderer);
 
     // Setup clock
     clock = new THREE.Clock();
@@ -106,30 +98,9 @@ function init() {
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
-    // build impostors
-    RESOURCE_MANAGER.model_detailedTree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
-    RESOURCE_MANAGER.model_detailedTree.scene.rotation.z += -Math.PI / 2;
-    RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
-    RESOURCE_MANAGER.TreeImpostor.render(renderer);
-    addInputPressAction("Wireframe", () => { RESOURCE_MANAGER.TreeImpostor.material.wireframe = !RESOURCE_MANAGER.TreeImpostor.material.wireframe; });
-
+    gameRenderer = new GameRenderer(null, document.getElementById('game'), camera);
     // Initialize world
     world = new World(renderer, camera);
-
-    composer.addPass(new RenderPass(world.scene, camera));
-    const AAPass = new SMAAPass(window.innerWidth, window.innerHeight)
-    composer.addPass(AAPass);
-    composer.addPass(new UnrealBloomPass(new Vector2( 256, 256 ), 0.23));
-
-    // Set resize delegate
-    window.addEventListener( 'resize', function () {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        AAPass.setSize(window.innerWidth, window.innerHeight);
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        composer.setSize(window.innerWidth, window.innerHeight)
-    });
-
 
     // Create default plane
     let rootNode = null;
@@ -152,6 +123,7 @@ function init() {
     new SaveGame(controller);
 
     debugUI = new PlaneDebugUI(controller, world);
+
 }
 
 function preInit() {
@@ -179,15 +151,9 @@ function animate() {
     controller.update(deltaTime);
     debugUI.tick(deltaTime);
 
-    renderer.setRenderTarget( null );
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(skyColor, 1);
 
-    composer.render();
+    gameRenderer.render(world, camera);
 
-
-    //renderer.clear();
-    //renderer.render(world.scene, camera);
     stats.update();
 }
 
