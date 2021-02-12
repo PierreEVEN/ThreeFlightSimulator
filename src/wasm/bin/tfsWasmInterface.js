@@ -2577,6 +2577,7 @@ var ASM_CONSTS = {
   
   function emscripten_realloc_buffer(size) {
       try {
+        console.log("realloc interface : " + size);
         // round size grow request up to wasm page size (fixed 64KB per spec)
         wasmMemory.grow((size - buffer.byteLength + 65535) >>> 16); // .grow() takes a delta compared to the previous size
         updateGlobalBufferAndViews(wasmMemory.buffer);
@@ -2588,6 +2589,7 @@ var ASM_CONSTS = {
       // anyhow)
     }
   function _emscripten_resize_heap(requestedSize) {
+    console.log("interface resize heap : " + size);
       requestedSize = requestedSize >>> 0;
       var oldSize = _emscripten_get_heap_size();
       // With pthreads, races can happen (another thread might increase the size in between), so return a failure, and let the caller retry.
@@ -3153,7 +3155,6 @@ if (Module['noInitialRun']) shouldRunNow = false;
 noExitRuntime = true;
 
 run();
-
 
 
 

@@ -1,4 +1,4 @@
-import {runCommand} from "./wasm/wasmInterface.js";
+import {addCommand} from "./wasm/wasmInterface.js";
 
 export {FoliageSystem}
 
@@ -31,7 +31,7 @@ class FoliageType {
         return new Promise((resolve, abort) => {
             if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 
-            runCommand("BuildFoliage",['number', 'number', 'number', 'number'], [this.density, position.x, position.y, size], section).then( (data) => {
+            addCommand(10, "BuildFoliage",['number', 'number', 'number', 'number'], [this.density, position.x, position.y, size], section).then( (data) => {
 
                 if (data.context.cancelled) return [];
 

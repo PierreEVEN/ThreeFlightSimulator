@@ -1762,6 +1762,9 @@ var ASM_CONSTS = {
   
   function emscripten_realloc_buffer(size) {
       try {
+
+        console.log("realloc worker : " + size);
+
         // round size grow request up to wasm page size (fixed 64KB per spec)
         wasmMemory.grow((size - buffer.byteLength + 65535) >>> 16); // .grow() takes a delta compared to the previous size
         updateGlobalBufferAndViews(wasmMemory.buffer);
@@ -1773,6 +1776,7 @@ var ASM_CONSTS = {
       // anyhow)
     }
   function _emscripten_resize_heap(requestedSize) {
+    console.log("worker resize heap : " + size);
       requestedSize = requestedSize >>> 0;
       var oldSize = _emscripten_get_heap_size();
       // With pthreads, races can happen (another thread might increase the size in between), so return a failure, and let the caller retry.
@@ -2638,6 +2642,9 @@ var _main = Module["_main"] = createExportWrapper("main");
 var _BuildFoliage = Module["_BuildFoliage"] = createExportWrapper("BuildFoliage");
 
 /** @type {function(...*):?} */
+var _free = Module["_free"] = createExportWrapper("free");
+
+/** @type {function(...*):?} */
 var _BuildLandscapeSection = Module["_BuildLandscapeSection"] = createExportWrapper("BuildLandscapeSection");
 
 /** @type {function(...*):?} */
@@ -2672,9 +2679,6 @@ var _emscripten_stack_get_free = Module["_emscripten_stack_get_free"] = function
 var _emscripten_stack_get_end = Module["_emscripten_stack_get_end"] = function() {
   return (_emscripten_stack_get_end = Module["_emscripten_stack_get_end"] = Module["asm"]["emscripten_stack_get_end"]).apply(null, arguments);
 };
-
-/** @type {function(...*):?} */
-var _free = Module["_free"] = createExportWrapper("free");
 
 
 

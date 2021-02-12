@@ -1,6 +1,6 @@
 import * as THREE from '../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from "./resourceManager.js";
-import {runCommand} from "./wasm/wasmInterface.js";
+import {addCommand} from "./wasm/wasmInterface.js";
 import {addInputPressAction, addKeyInput} from "./io/inputManager.js";
 
 export { Landscape }
@@ -249,7 +249,7 @@ class OctreeNode {
     }
 
     createMesh() {
-        runCommand("BuildLandscapeSection",['number', 'number', 'number', 'number'], [CellsPerChunk, this.Position.x, this.Position.y, this.Scale], this).then( (data) => {
+        addCommand(100, "BuildLandscapeSection",['number', 'number', 'number', 'number'], [CellsPerChunk, this.Position.x, this.Position.y, this.Scale], this).then( (data) => {
 
             const memoryView = new Int32Array(Module.HEAP8.buffer, data.Data, 2)
             const memory = new Int32Array(memoryView);

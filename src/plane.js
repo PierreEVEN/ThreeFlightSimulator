@@ -213,7 +213,7 @@ class Plane {
 
     setEngineInput(value) {
         if (value < 0) value = 0;
-        else if (value > 100) value = 100;
+        else if (value > 1.2) value = 1.2;
         this.desiredEngineInput = value;
     }
 

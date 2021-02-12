@@ -71,6 +71,8 @@ void BuildFoliage(char* Data, int Size) {
     }
 	
     emscripten_worker_respond(reinterpret_cast<char*>(Matrices), MatrixCount * 16 * sizeof(float));
+
+	free(Matrices);
 }
 
 size_t counter = 0;
@@ -142,4 +144,6 @@ void BuildLandscapeSection(char* Data, int Size) {
 	}	
 
 	emscripten_worker_respond(reinterpret_cast<char*>(VertexData), DataSize);
+	
+	free(VertexData);
 }

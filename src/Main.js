@@ -66,6 +66,13 @@ addMouseAxisInput("Throttle", 3, 1);
 addMouseAxisInput("LookUp", 2, -1);
 addMouseAxisInput("LookRight", 1, -1);
 
+addKeyInput("MoveForward", "KeyW", 1, 0);
+addKeyInput("MoveForward", "KeyS", -1, 0);
+addKeyInput("MoveRight", "KeyE", 1, 0);
+addKeyInput("MoveRight", "KeyQ", -1, 0);
+addKeyInput("MoveUp", "KeyA", 1, 0);
+addKeyInput("MoveUp", "KeyD", -1, 0);
+addMouseAxisInput("MoveSpeed", 3, 1);
 
 addGamepadAxisInput("Roll", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 0, 1);
 addGamepadAxisInput("Pitch", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 6, -1);

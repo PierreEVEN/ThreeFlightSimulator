@@ -74,21 +74,21 @@ let PlaneController = function ( inPlane, inCamera, inLandscape) {
         // X
         this.camera.quaternion.identity().multiply(this.cameraRotationQuaternion);
         this.camera.getWorldDirection(this.cameraForwardVector);
-        this.velocity.addScaledVector(this.cameraForwardVector, getInputValue("Pitch") * this.acceleration);
+        this.velocity.addScaledVector(this.cameraForwardVector, getInputValue("MoveForward") * this.acceleration);
 
         // Y
         this.cameraForwardVector.z = 0;
         this.cameraForwardVector.normalize();
         this.cameraForwardVector.applyAxisAngle(this.upVector, Math.PI / 2);
         this.rightVector.clone(this.cameraForwardVector);
-        this.velocity.addScaledVector(this.cameraForwardVector, getInputValue("Yaw") * this.acceleration);
+        this.velocity.addScaledVector(this.cameraForwardVector, getInputValue("MoveUp") * this.acceleration);
 
         // Z
         this.camera.getWorldDirection(this.upVector);
         this.upVector.z = 0;
         this.upVector.normalize();
         this.upVector.applyAxisAngle(this.cameraForwardVector, -Math.PI / 2);
-        this.velocity.addScaledVector(this.upVector, getInputValue("Roll") * this.acceleration);
+        this.velocity.addScaledVector(this.upVector, getInputValue("MoveRight") * this.acceleration);
 
         this.camera.position.addScaledVector(this.velocity, deltaTime);
         this.velocity.multiplyScalar(1 - deltaTime * 3);
@@ -123,7 +123,7 @@ let PlaneController = function ( inPlane, inCamera, inLandscape) {
             this.velocity.set(0,0,0);
         }
         else {
-            this.acceleration = Math.max(2.0, this.acceleration + getInputValue("Throttle") * -0.15);
+            this.acceleration = Math.max(2.0, this.acceleration + getInputValue("MoveSpeed") * -0.5);
         }
 
         this.updateCameraLocation(deltaTime);

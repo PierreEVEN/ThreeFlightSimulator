@@ -197,5 +197,5 @@ document.addEventListener('pointerlockchange', function() {
 });
 window.addEventListener( 'keydown', (event) => pressedKeyStates[event.code] = true);
 window.addEventListener( 'keyup', (event) => pressedKeyStates[event.code] = false);
-window.addEventListener("gamepadconnected", addGamepad)
+window.addEventListener("gamepadconnected", addGamepad);
 window.addEventListener("gamepaddisconnected", removeGamepad);
