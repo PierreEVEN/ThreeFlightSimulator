@@ -18,7 +18,7 @@ class GameRenderer {
 
         gameRenderer = this;
 
-        this.clearColor = clearColor ? clearColor : new THREE.Color(.6 * 0.8, .8 * 0.8, 0.8);
+        this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);//new THREE.Color(.6 * 0.8, .8 * 0.8, 0.8);
 
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});

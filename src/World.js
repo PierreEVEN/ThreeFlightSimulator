@@ -1,3 +1,4 @@
+import {Sphere} from "../threejs/build/three.module.js";
 
 export {World};
 import * as THREE from '../threejs/build/three.module.js';
@@ -28,10 +29,15 @@ class World {
 		this.heightGenerator = new HeightGenerator();
 
 		// Create foliage system
-		this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
+		//this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
+
+
+		const planet = new THREE.Mesh(new THREE.SphereGeometry(50, 30, 30), new THREE.MeshLambertMaterial());
+		planet.position.z = 50;
+		this.scene.add(planet);
 
 		// Create landscape
-		this.landscape = new Landscape(this.scene, camera, this.heightGenerator);
+		//this.landscape = new Landscape(this.scene, camera, this.heightGenerator);
 		this.scene.add(camera);
 
 		this.planes = [];
@@ -41,8 +47,8 @@ class World {
 
 	tick(deltaTime) {
 
-		this.landscape.render(deltaTime);
-		this.foliageSystem.update();
+		//this.landscape.render(deltaTime);
+		//this.foliageSystem.update();
 		for (let plane of this.planes) {
 			plane.update(deltaTime);
 			if (plane.position.z < this.heightGenerator.getHeightAtLocation(plane.position.x, plane.position.y)) {

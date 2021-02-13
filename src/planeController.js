@@ -6,7 +6,7 @@ import {getHeightAtLocation} from "./HeightGenerator.js";
 export {PlaneController};
 
 
-let PlaneController = function ( inPlane, inCamera, inLandscape) {
+let PlaneController = function ( inPlane, inCamera) {
 
     /*
     Camera settings
@@ -47,7 +47,6 @@ let PlaneController = function ( inPlane, inCamera, inLandscape) {
      */
     this.plane = inPlane;
     this.camera = inCamera;
-    this.landscape = inLandscape;
 
     addInputPressAction("FpsView", () => { this.isFPS = !this.isFPS; });
     addInputPressAction("DetachCamera", () => { this.attached = !this.attached; });

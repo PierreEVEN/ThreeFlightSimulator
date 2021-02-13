@@ -105,7 +105,7 @@ function init() {
     let plane = world.addPlane(rootNode);
 
     // Add global controller
-    controller = new PlaneController(plane, camera, world.landscape);
+    controller = new PlaneController(plane, camera);
     new SaveGame(controller);
 
     debugUI = new PlaneDebugUI(controller, world);
