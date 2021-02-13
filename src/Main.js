@@ -27,8 +27,8 @@ function loadResources() {
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.VS.glsl', 'vertexShader_landscape_b');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.FS.glsl', 'fragmentShader_landscape_a');
     RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.FS.glsl', 'fragmentShader_landscape_b');
-    RESOURCE_MANAGER.loadFileResource('./shaders/impostors.VS.glsl', 'vertexShader_impostors');
-    RESOURCE_MANAGER.loadFileResource('./shaders/impostors.FS.glsl', 'fragmentShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.VS.glsl', 'vertexShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.FS.glsl', 'fragmentShader_impostors');
     RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
     RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
 
@@ -87,7 +87,7 @@ function init() {
     background.appendChild( stats.dom );
 
     // Initialize world
-    gamemode = new DefaultGamemode();
+    gamemode = new DevGamemode();
     gameRenderer = new GameRenderer(null, document.getElementById('game'), gamemode);
 
     // build impostors

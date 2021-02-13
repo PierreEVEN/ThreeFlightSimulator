@@ -1,4 +1,4 @@
-export {keybinds, initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction, isPressed}
+export {keybinds, initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction, isPressed, enableMouseCapture, disableMouseCapture}
 
 
 
@@ -22,9 +22,15 @@ function initializeInputs(dom) {
     domElement = dom;
     if ( domElement ) domElement.setAttribute( 'tabindex', - 1 );
 
+}
+
+function enableMouseCapture() {
     domElement.addEventListener('click', function () {
         domElement.requestPointerLock();
     });
+}
+function disableMouseCapture() {
+    domElement.removeEventListener('click');
 }
 
 function updateInputs() {

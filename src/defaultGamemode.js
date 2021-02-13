@@ -5,6 +5,7 @@ import {Plane} from "./objects/plane.js";
 import {SaveGame} from "./io/saveGame.js";
 import {FoliageSystem} from "./rendering/foliageSystem.js";
 import {Landscape} from "./rendering/landscape.js";
+import {enableMouseCapture} from "./io/inputManager.js";
 
 
 export { DefaultGamemode }
@@ -31,6 +32,8 @@ function createPlane(scene) {
 class DefaultGamemode {
 
     constructor() {
+        enableMouseCapture();
+
         this.sunDirectionVector = new THREE.Vector3(0, 0, -1);
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
