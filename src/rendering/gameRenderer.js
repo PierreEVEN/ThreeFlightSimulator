@@ -5,8 +5,8 @@ import {RenderPass} from "../../threejs/examples/jsm/postprocessing/RenderPass.j
 import {SMAAPass} from "../../threejs/examples/jsm/postprocessing/SMAAPass.js";
 import {UnrealBloomPass} from "../../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
 import {Vector2} from "../../threejs/build/three.module.js";
-import {RESOURCE_MANAGER} from "../resourceManager.js";
-import {ImpostorRenderer} from "../impostorRenderer.js";
+import {RESOURCE_MANAGER} from "../io/resourceManager.js";
+import {ImpostorRenderer} from "./impostorRenderer.js";
 import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 
 export {GameRenderer}
@@ -15,11 +15,11 @@ let rendererInstance = null;
 
 class GameRenderer {
 
-    constructor(clearColor, domElement, camera, sunDirectionVector) {
+    constructor(clearColor, domElement, gamemode) {
 
         rendererInstance = this;
 
-        this.sunDirectionVector = sunDirectionVector;
+        this.sunDirectionVector = gamemode.sunDirectionVector;
 
         this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);//new THREE.Color(.6 * 0.8, .8 * 0.8, 0.8);
 
@@ -30,14 +30,6 @@ class GameRenderer {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);
-
-
-        // build impostors
-        RESOURCE_MANAGER.model_detailedTree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
-        RESOURCE_MANAGER.model_detailedTree.scene.rotation.z += -Math.PI / 2;
-        RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
-        RESOURCE_MANAGER.TreeImpostor.render(this.renderer);
-        addInputPressAction("Wireframe", () => { RESOURCE_MANAGER.TreeImpostor.material.wireframe = !RESOURCE_MANAGER.TreeImpostor.material.wireframe; });
 
         // Create world render target
         this.sceneRenderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
@@ -55,8 +47,8 @@ class GameRenderer {
         this.renderTargetScene = new THREE.Scene();
         this.renderTargetMaterial = new THREE.ShaderMaterial({
             uniforms: {
-                cameraNear: {value: camera.near},
-                cameraFar: {value: camera.far},
+                cameraNear: {value: gamemode.camera.near},
+                cameraFar: {value: gamemode.camera.far},
                 projectionInverseMatrix : {value: null},
                 cameraWorldInverseMatrix: {value: null},
                 tDiffuse: {value: this.sceneRenderTarget.texture},
@@ -81,7 +73,7 @@ class GameRenderer {
 
         // Create composer
         this.composer = new EffectComposer(this.renderer);
-        this.composer.addPass(new RenderPass(this.renderTargetScene, camera));
+        this.composer.addPass(new RenderPass(this.renderTargetScene, gamemode.camera));
         this.AAPass = new SMAAPass(window.innerWidth, window.innerHeight)
         this.composer.addPass(this.AAPass);
         this.composer.addPass(new UnrealBloomPass(new Vector2(256, 256), 0.23));
@@ -89,8 +81,8 @@ class GameRenderer {
 
         // Set resize delegate
         window.addEventListener('resize', function () {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+            gamemode.camera.aspect = window.innerWidth / window.innerHeight;
+            gamemode.camera.updateProjectionMatrix();
             rendererInstance.AAPass.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.renderer.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.composer.setSize(window.innerWidth, window.innerHeight);
@@ -117,7 +109,7 @@ class GameRenderer {
         atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
     }
 
-    render = function(renderedWorld, camera) {
+    render = function(gamemode) {
 
         let scatterR = Math.pow(400 / this.scatterValues.x, 4) * this.scatteringStrength;
         let scatterG = Math.pow(400 / this.scatterValues.y, 4) * this.scatteringStrength;
@@ -128,15 +120,15 @@ class GameRenderer {
         this.renderTargetMaterial.uniforms.scatterCoefficients.value.set(scatterR, scatterG, scatterB);
 
 
-        this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = camera.projectionMatrixInverse;
-        this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = camera.matrixWorld;
+        this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = gamemode.camera.projectionMatrixInverse;
+        this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = gamemode.camera.matrixWorld;
 
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
         this.renderer.setRenderTarget( this.sceneRenderTarget );
         this.renderer.clear();
-        this.renderer.render(renderedWorld.scene, camera);
+        this.renderer.render(gamemode.scene, gamemode.camera);
 
         this.composer.render();
     }

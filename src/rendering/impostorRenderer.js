@@ -1,7 +1,7 @@
-import {RESOURCE_MANAGER} from "./resourceManager.js";
+import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 
 export {ImpostorRenderer}
-import * as THREE from '../threejs/build/three.module.js';
+import * as THREE from '../../threejs/build/three.module.js';
 
 /*
 Create normal material
@@ -90,7 +90,7 @@ class ImpostorRenderer {
             resolution,
             {
                 minFilter: THREE.LinearFilter,
-                magFilter: THREE.LinearMipMapLinearFilter,
+                magFilter: THREE.LinearFilter,
                 format: format
             });
     }
@@ -114,10 +114,6 @@ class ImpostorRenderer {
         return material;
     }
 
-    setLightDirection() {
-
-    }
-
     renderItem(w, posX, posY, renderer, scene) {
         length = Math.sqrt(posX * posX + posY * posY);
         const normPosX = posX / length;
@@ -132,7 +128,6 @@ class ImpostorRenderer {
 
         let x = (posX - 0.5 + this.captureRadius) * notch;
         let y = (posY - 0.5 + this.captureRadius) * notch;
-
         renderer.setViewport(x, y, notch, notch);
         renderer.render(scene, this.camera);
     }
@@ -157,7 +152,6 @@ class ImpostorRenderer {
         renderer.setRenderTarget(this.colorTarget);
         renderer.clear();
         this.runCapture(renderer, this.baseScene);
-
         renderer.setRenderTarget(this.normalTarget);
         renderer.clear();
         this.runCapture(renderer, this.normalScene);

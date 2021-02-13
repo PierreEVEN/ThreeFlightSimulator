@@ -1,7 +1,8 @@
-import * as THREE from '../threejs/build/three.module.js';
-import {RESOURCE_MANAGER} from "./resourceManager.js";
-import {addCommand} from "./wasm/wasmInterface.js";
-import {addInputPressAction, addKeyInput} from "./io/inputManager.js";
+import * as THREE from '../../threejs/build/three.module.js';
+import {RESOURCE_MANAGER} from "../io/resourceManager.js";
+import {addCommand} from "../wasm/wasmInterface.js";
+import {addInputPressAction, addKeyInput} from "../io/inputManager.js";
+import {getHeightAtLocation} from "./HeightGenerator.js";
 
 export { Landscape }
 
@@ -26,8 +27,7 @@ let TEST;
  */
 class Landscape {
 
-    constructor(inScene, inCamera, heightGenerator) {
-        this.heightGenerator = heightGenerator;
+    constructor(inScene, inCamera) {
         this.Scene = inScene;
         this.camera = inCamera;
         this.Sections = [];
@@ -35,7 +35,7 @@ class Landscape {
 
         this.LandscapeMaterial = this.createShaderMaterial();
         this.rebuildLandscape();
-        this.render(0);
+        this.update(0);
 
         TEST = this;
         addInputPressAction('Debug', function() {
@@ -44,7 +44,7 @@ class Landscape {
         });
     }
 
-    render(deltaTime) {
+    update(deltaTime) {
         if (this.LandscapeMaterial.uniforms) {
             this.time += deltaTime;
             this.LandscapeMaterial.uniforms.time.value = this.time;
@@ -96,9 +96,6 @@ class Landscape {
             shader.uniforms.sand1= { type: 't', value: RESOURCE_MANAGER.texture_sand1 },
             shader.uniforms.waterDisp = { type: 't', value: RESOURCE_MANAGER.texture_waterDisp },
             shader.uniforms.waterNorm= { type: 't', value: RESOURCE_MANAGER.texture_waterNorm },
-
-
-
 
             shader.vertexShader = shader.vertexShader.replace(
                 '#include <common>',
@@ -318,7 +315,7 @@ class OctreeNode {
         // Height correction
         cameraGroundLocation.x = this.Landscape.camera.position.x;
         cameraGroundLocation.y = this.Landscape.camera.position.y;
-        cameraGroundLocation.z = this.Landscape.camera.position.z - this.Landscape.heightGenerator.getHeightAtLocation(cameraGroundLocation.x, cameraGroundLocation.y);
+        cameraGroundLocation.z = this.Landscape.camera.position.z - getHeightAtLocation(cameraGroundLocation.x, cameraGroundLocation.y);
         let Level = 8 - Math.min(8, (cameraGroundLocation.distanceTo(this.Position) - this.Scale)  / 500.0);
         return Math.trunc(Level);
     }

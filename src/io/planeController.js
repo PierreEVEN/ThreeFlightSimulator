@@ -1,7 +1,7 @@
-import * as THREE from "../threejs/build/three.module.js";
-import {MathUtils} from "../threejs/src/math/MathUtils.js";
-import {addInputPressAction, getInputValue} from "./io/inputManager.js";
-import {getHeightAtLocation} from "./HeightGenerator.js";
+import * as THREE from "../../threejs/build/three.module.js";
+import {MathUtils} from "../../threejs/src/math/MathUtils.js";
+import {addInputPressAction, getInputValue} from "./inputManager.js";
+import {getHeightAtLocation} from "../rendering/HeightGenerator.js";
 
 export {PlaneController};
 

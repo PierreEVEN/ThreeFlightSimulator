@@ -17081,8 +17081,7 @@ function WebGLProgram( renderer, cacheKey, parameters, bindingStates ) {
 			console.error( 'THREE.WebGLProgram: shader error: ', gl.getError(), '35715', gl.getProgramParameter( program, 35715 ), 'gl.getProgramInfoLog', programLog, vertexErrors, fragmentErrors );
 
 		} else if ( programLog !== '' ) {
-
-			console.warn( 'THREE.WebGLProgram: gl.getProgramInfoLog()', programLog );
+		    if (!programLog.includes('X3571')) console.warn( 'THREE.WebGLProgram: gl.getProgramInfoLog()', programLog );
 
 		} else if ( vertexLog === '' || fragmentLog === '' ) {
 

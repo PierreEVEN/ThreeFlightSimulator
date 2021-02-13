@@ -47,4 +47,4 @@
 	groundColor = pPosition.z < 0.1 ? oceanColor : groundColor;
 
 
-	diffuseColor.xyz *= groundColor * 0.4;
+	diffuseColor.xyz *= groundColor;

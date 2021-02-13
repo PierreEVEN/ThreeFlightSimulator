@@ -1,11 +1,9 @@
-import {Sphere} from "../threejs/build/three.module.js";
 
 export {World};
 import * as THREE from '../threejs/build/three.module.js';
-import {Landscape} from './landscape.js'
-import {Plane} from "./plane.js";
-import {HeightGenerator} from "./HeightGenerator.js";
-import {FoliageSystem} from "./foliageSystem.js";
+import {Landscape} from './rendering/landscape.js'
+import {Plane} from "./objects/plane.js";
+import {FoliageSystem} from "./rendering/foliageSystem.js";
 
 
 
@@ -37,6 +35,10 @@ class World {
 		this.planes = [];
 
 		this.sunDirection = sunDirectionVector;
+	}
+
+	add(object) {
+		this.scene.add(object);
 	}
 
 	tick(deltaTime) {

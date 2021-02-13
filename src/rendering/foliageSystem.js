@@ -1,9 +1,11 @@
-import {addCommand} from "./wasm/wasmInterface.js";
+
+import * as THREE from '../../threejs/build/three.module.js';
+import {RESOURCE_MANAGER} from '../io/resourceManager.js';
+import {getHeightAtLocation} from "./HeightGenerator.js";
+import {addCommand} from "../wasm/wasmInterface.js";
 
 export {FoliageSystem}
 
-import * as THREE from '../threejs/build/three.module.js';
-import {RESOURCE_MANAGER} from './resourceManager.js';
 
 
 const meshGroups = [];
@@ -21,13 +23,12 @@ class FoliageType {
         this.density = 100;
 
         meshGroups.push({
-            geometry: new THREE.PlaneGeometry(15, 15),//child.geometry,
-            material: RESOURCE_MANAGER.TreeImpostor.material
+            geometry: new THREE.PlaneGeometry(15, 15),
         });
     }
 
 
-    generateAsync(section, heightGenerator, nodeLevel, position, size) {
+    generateAsync(section, nodeLevel, position, size) {
         return new Promise((resolve, abort) => {
             if (this.minLOD > nodeLevel || this.maxLOD < nodeLevel) return [];
 
@@ -41,7 +42,7 @@ class FoliageType {
                 let meshes = [];
 
                 for (let group of meshGroups) {
-                    let mesh = new THREE.InstancedMesh(group.geometry, group.material, data.Size / 64);
+                    let mesh = new THREE.InstancedMesh(group.geometry, RESOURCE_MANAGER.TreeImpostor.material, data.Size / 64);
                     mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);
                     mesh.instanceMatrix.array = array;
                     meshes.push(mesh);
@@ -57,10 +58,9 @@ class FoliageType {
 
 class FoliageSystem {
 
-    constructor(scene, heightGenerator, foliageTypes, camera) {
+    constructor(scene, foliageTypes, camera) {
         this.scene = scene;
         this.camera = camera;
-        this.heightGenerator = heightGenerator;
         this.foliageTypes = [new FoliageType()];
 
         this.sectionSize = 6000;
@@ -199,7 +199,7 @@ class foliageSystemNode {
 
         this.foliages = [];
         for (let foliage of this.foliageSystem.foliageTypes) {
-            foliage.generateAsync(this, this.foliageSystem.heightGenerator, this.nodeLevel, this.nodePosition, this.nodeSize).then((data) => {
+            foliage.generateAsync(this, this.nodeLevel, this.nodePosition, this.nodeSize).then((data) => {
 
                 this.foliages = this.foliages.concat(data);
 
@@ -227,7 +227,7 @@ class foliageSystemNode {
         // Height correction
         this.cameraGroundLocation.x = this.foliageSystem.camera.position.x;
         this.cameraGroundLocation.y = this.foliageSystem.camera.position.y;
-        this.cameraGroundLocation.z = this.foliageSystem.camera.position.z - this.foliageSystem.heightGenerator.getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
+        this.cameraGroundLocation.z = this.foliageSystem.camera.position.z - getHeightAtLocation(this.cameraGroundLocation.x, this.cameraGroundLocation.y);
         let Level = 3 - Math.min(3, (this.cameraGroundLocation.distanceTo(this.nodePosition) - this.nodeSize * 2)  / 200.0);
         return Math.trunc(Level);
     }

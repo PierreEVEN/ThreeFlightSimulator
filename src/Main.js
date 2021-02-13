@@ -1,14 +1,20 @@
-import {World} from "./World.js";
 import Stats from '../threejs/examples/jsm/libs/stats.module.js'
-import {PlaneController} from './planeController.js'
-import {PlaneDebugUI} from './planeDebugUI.js'
-import {SaveGame} from './saveGame.js'
-import {RESOURCE_MANAGER} from './resourceManager.js'
+import {RESOURCE_MANAGER} from './io/resourceManager.js'
 import * as THREE from '../threejs/build/three.module.js';
-import {addGamepadAxisInput, addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
+import {
+    addGamepadAxisInput,
+    addInputPressAction,
+    addKeyInput,
+    addMouseAxisInput,
+    initializeInputs,
+    updateInputs
+} from "./io/inputManager.js";
 import {GameRenderer} from "./rendering/gameRenderer.js";
+import {DefaultGamemode} from "./defaultGamemode.js";
+import {ImpostorRenderer} from "./rendering/impostorRenderer.js";
+import {DevGamemode} from "./devGamemode.js";
 
-let clock, stats, world, camera, controller, debugUI, gameRenderer, sunDirectionVector;
+let clock, stats, gamemode, gameRenderer;
 
 
 function loadResources() {
@@ -80,38 +86,16 @@ function init() {
     stats = new Stats();
     background.appendChild( stats.dom );
 
-    // Create camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-
-    sunDirectionVector = new THREE.Vector3(-1, -1, -1).normalize();
-
-    gameRenderer = new GameRenderer(null, document.getElementById('game'), camera, sunDirectionVector);
-
     // Initialize world
-    world = new World(camera, sunDirectionVector);
+    gamemode = new DefaultGamemode();
+    gameRenderer = new GameRenderer(null, document.getElementById('game'), gamemode);
 
-    // Create default plane
-    let rootNode = null;
-    RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
-        if (child.isMesh) {
-            child.material.metalness = 0.95;
-            child.material.roughness = 0.01;
-            if (rootNode === null) {
-                rootNode = new THREE.Mesh(child.geometry, child.material);
-            } else {
-                let NewMesh = new THREE.Mesh(child.geometry, child.material);
-                rootNode.attach(NewMesh);
-            }
-        }
-    });
-    let plane = world.addPlane(rootNode);
-
-    // Add global controller
-    controller = new PlaneController(plane, camera);
-    new SaveGame(controller);
-
-    debugUI = new PlaneDebugUI(controller, world);
-
+    // build impostors
+    RESOURCE_MANAGER.model_detailedTree.scene.traverse(function(child) { if (child.isMesh) child.material.metalness = 0; });
+    RESOURCE_MANAGER.model_detailedTree.scene.rotation.z += -Math.PI / 2;
+    RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
+    RESOURCE_MANAGER.TreeImpostor.render(gameRenderer.renderer);
+    addInputPressAction("Wireframe", () => { RESOURCE_MANAGER.TreeImpostor.material.wireframe = !RESOURCE_MANAGER.TreeImpostor.material.wireframe; });
 }
 
 function preInit() {
@@ -128,20 +112,15 @@ function preInit() {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    let deltaTime = clock.getDelta();
 
     updateInputs();
 
-    // Get delta time
-    let deltaTime = clock.getDelta();
-
-    world.tick(deltaTime);
-    controller.update(deltaTime);
-    debugUI.tick(deltaTime);
-
-    gameRenderer.render(world, camera);
-
+    gamemode.update(deltaTime);
+    gameRenderer.render(gamemode);
     stats.update();
+
+    requestAnimationFrame(animate);
 }
 
 loadResources();

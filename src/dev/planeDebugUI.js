@@ -1,6 +1,6 @@
-import {commandPool} from "./wasm/wasmInterface.js";
+import {commandPool} from "../wasm/wasmInterface.js";
 
-import {GUI} from "../threejs/examples/jsm/libs/dat.gui.module.js";
+import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 export {PlaneDebugUI}
 
 

@@ -1,7 +1,7 @@
-import * as THREE from '../threejs/build/three.module.js';
-import {Quaternion, Vector3, Matrix4} from "../threejs/build/three.module.js";
-import { ArrowHelper } from "../threejs/src/helpers/ArrowHelper.js";
-import {addInputPressAction} from "./io/inputManager.js";
+import * as THREE from '../../threejs/build/three.module.js';
+import {Quaternion, Vector3, Matrix4} from "../../threejs/build/three.module.js";
+import { ArrowHelper } from "../../threejs/src/helpers/ArrowHelper.js";
+import {addInputPressAction} from "../io/inputManager.js";
 
 export { Plane }
 
