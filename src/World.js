@@ -11,7 +11,7 @@ import {FoliageSystem} from "./foliageSystem.js";
 
 
 class World {
-	constructor(camera) {
+	constructor(camera, sunDirectionVector) {
 		this.camera = camera;
 		// Create scene
 		this.scene = new THREE.Scene();
@@ -20,8 +20,6 @@ class World {
 		const lightIntensity = 0.2;
 		this.ambiantLight = new THREE.AmbientLight(new THREE.Color(lightIntensity, lightIntensity, lightIntensity));
 		this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-		this.directionalLight.target.position.set(0, 0, 0);
-		this.directionalLight.position.set(2000, 2000, 2000);
 		this.scene.add(this.ambiantLight);
 		this.scene.add(this.directionalLight);
 
@@ -29,26 +27,26 @@ class World {
 		this.heightGenerator = new HeightGenerator();
 
 		// Create foliage system
-		//this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
+		this.foliageSystem = new FoliageSystem(this.scene, this.heightGenerator, null, camera);
 
-
-		const planet = new THREE.Mesh(new THREE.SphereGeometry(50, 30, 30), new THREE.MeshLambertMaterial());
-		planet.position.z = 50;
-		this.scene.add(planet);
 
 		// Create landscape
-		//this.landscape = new Landscape(this.scene, camera, this.heightGenerator);
+		this.landscape = new Landscape(this.scene, camera, this.heightGenerator);
 		this.scene.add(camera);
 
 		this.planes = [];
 
-
+		this.sunDirection = sunDirectionVector;
 	}
 
 	tick(deltaTime) {
 
-		//this.landscape.render(deltaTime);
-		//this.foliageSystem.update();
+
+		this.directionalLight.target.position.set(0, 0, 0);
+		this.directionalLight.position.set(0,0, 0).addScaledVector(this.sunDirection, -10000)
+
+		this.landscape.render(deltaTime);
+		this.foliageSystem.update();
 		for (let plane of this.planes) {
 			plane.update(deltaTime);
 			if (plane.position.z < this.heightGenerator.getHeightAtLocation(plane.position.x, plane.position.y)) {

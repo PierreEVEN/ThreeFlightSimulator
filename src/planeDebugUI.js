@@ -47,6 +47,8 @@ class PlaneDebugUI {
         generation.add(this.planeInformations, 'commandTotal', 0, 500).name('commands in process').listen();
         generation.add(this.planeInformations, 'memoryHeapSize', 0, 32000000).name('heap size').listen();
         generation.open();
+
+
         this.gui.hide();
     }
 

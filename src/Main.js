@@ -8,7 +8,7 @@ import * as THREE from '../threejs/build/three.module.js';
 import {addGamepadAxisInput, addKeyInput, addMouseAxisInput, initializeInputs, updateInputs} from "./io/inputManager.js";
 import {GameRenderer} from "./rendering/gameRenderer.js";
 
-let clock, stats, world, camera, controller, debugUI, gameRenderer;
+let clock, stats, world, camera, controller, debugUI, gameRenderer, sunDirectionVector;
 
 
 function loadResources() {
@@ -83,10 +83,12 @@ function init() {
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
 
-    gameRenderer = new GameRenderer(null, document.getElementById('game'), camera);
+    sunDirectionVector = new THREE.Vector3(-1, -1, -1).normalize();
+
+    gameRenderer = new GameRenderer(null, document.getElementById('game'), camera, sunDirectionVector);
 
     // Initialize world
-    world = new World(camera);
+    world = new World(camera, sunDirectionVector);
 
     // Create default plane
     let rootNode = null;

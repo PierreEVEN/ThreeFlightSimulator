@@ -7,16 +7,19 @@ import {UnrealBloomPass} from "../../threejs/examples/jsm/postprocessing/UnrealB
 import {Vector2} from "../../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "../resourceManager.js";
 import {ImpostorRenderer} from "../impostorRenderer.js";
+import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 
 export {GameRenderer}
 
-let gameRenderer = null;
+let rendererInstance = null;
 
 class GameRenderer {
 
-    constructor(clearColor, domElement, camera) {
+    constructor(clearColor, domElement, camera, sunDirectionVector) {
 
-        gameRenderer = this;
+        rendererInstance = this;
+
+        this.sunDirectionVector = sunDirectionVector;
 
         this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);//new THREE.Color(.6 * 0.8, .8 * 0.8, 0.8);
 
@@ -57,7 +60,15 @@ class GameRenderer {
                 projectionInverseMatrix : {value: null},
                 cameraWorldInverseMatrix: {value: null},
                 tDiffuse: {value: this.sceneRenderTarget.texture},
-                tDepth: {value: this.sceneRenderTarget.depthTexture}
+                tDepth: {value: this.sceneRenderTarget.depthTexture},
+                planetCenter: {value: new THREE.Vector3(0, 0, -9985946)},
+                atmosphereRadius: { value: 10000000},
+                planetRadius: {value : 4000},
+                atmosphereDensityFalloff: {value: 3.9},
+                scatterCoefficients: { value: new THREE.Vector3(700, 550, 460)},
+                NumScatterPoints: {value : 10},
+                NumOpticalDepthPoints: {value : 10},
+                sunDirection: {value: new THREE.Vector3(1, 1, 1).normalize()}
             },
             vertexShader: RESOURCE_MANAGER.vertexShader_postProcess,
             fragmentShader: RESOURCE_MANAGER.fragmentShader_postProcess,
@@ -80,18 +91,45 @@ class GameRenderer {
         window.addEventListener('resize', function () {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
-            gameRenderer.AAPass.setSize(window.innerWidth, window.innerHeight);
-            gameRenderer.renderer.setSize(window.innerWidth, window.innerHeight);
-            gameRenderer.composer.setSize(window.innerWidth, window.innerHeight);
-            gameRenderer.sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
+            rendererInstance.AAPass.setSize(window.innerWidth, window.innerHeight);
+            rendererInstance.renderer.setSize(window.innerWidth, window.innerHeight);
+            rendererInstance.composer.setSize(window.innerWidth, window.innerHeight);
+            rendererInstance.sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
         });
+
+        this.scatterValues = new THREE.Vector3(700, 530, 440);
+        this.scatteringStrength = 2.62;
+
+        this.gui = new GUI();
+        let atmosphereFolder = this.gui.addFolder('atmosphere');
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetCenter.value, 'z', -9985946 - 10000, -9985946 + 10000).name('planet z center').listen();
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetRadius, 'value', 100000, 10000000).name('planet radius').listen();
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereDensityFalloff, 'value', 0.01, 10.0).name('density falloff').listen()
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.NumScatterPoints, 'value', 0, 20).name('Num scatter points').listen();
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.NumOpticalDepthPoints, 'value', 0, 20).name('Num depth points').listen();
+        atmosphereFolder.add(this.scatterValues, 'x', 300, 900).name('scatter Red').listen();
+        atmosphereFolder.add(this.scatterValues, 'y', 300, 900).name('scatter Green').listen();
+        atmosphereFolder.add(this.scatterValues, 'z', 300, 900).name('scatter Blue').listen();
+        atmosphereFolder.add(this, 'scatteringStrength', 0, 10).name('scattering strength').listen();
+        atmosphereFolder.add(this.sunDirectionVector, 'x', -1, 1).name('sun X').listen();
+        atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
+        atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
     }
 
     render = function(renderedWorld, camera) {
 
+        let scatterR = Math.pow(400 / this.scatterValues.x, 4) * this.scatteringStrength;
+        let scatterG = Math.pow(400 / this.scatterValues.y, 4) * this.scatteringStrength;
+        let scatterB = Math.pow(400 / this.scatterValues.z, 4) * this.scatteringStrength;
+
+        this.sunDirectionVector.normalize();
+        this.renderTargetMaterial.uniforms.sunDirection.value.set(-this.sunDirectionVector.x, -this.sunDirectionVector.y, -this.sunDirectionVector.z);
+        this.renderTargetMaterial.uniforms.scatterCoefficients.value.set(scatterR, scatterG, scatterB);
+
+
         this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = camera.projectionMatrixInverse;
         this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = camera.matrixWorld;
-
 
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);

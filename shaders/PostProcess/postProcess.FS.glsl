@@ -13,16 +13,16 @@ uniform mat4 projectionInverseMatrix;
 uniform mat4 cameraWorldInverseMatrix;
 
 
-const int NumScatterPoints = 10;
-const int NumOpticalDepthPoints = 10;
+uniform int NumScatterPoints;
+uniform int NumOpticalDepthPoints;
 
 
-vec3 planetCenter = vec3(0, 0, 50.0);
-float atmosphereRadius = 100.0;
-float planetRadius = 25.0;
-float atmosphereDensityFallof = 10.0;
-vec3 waveLengths = vec3(700, 530, 440);
-float scatteringStrength = 1.0;
+uniform vec3 planetCenter;
+uniform float atmosphereRadius;
+uniform float planetRadius;
+uniform float atmosphereDensityFalloff;
+uniform vec3 scatterCoefficients;
+uniform vec3 sunDirection;
 
 struct RaySphereTraceResult {
     float atmosphereDistanceIn;
@@ -30,12 +30,6 @@ struct RaySphereTraceResult {
 };
 
 
-
-float getlinearDepth(vec2 coord ) {
-    float fragCoordZ = texture2D( tDepth, coord ).x;
-    float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
-    return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
-}
 
 
 float atmosphereDistanceIn;
@@ -46,7 +40,7 @@ float atmosphereDistanceOut;
 float getAtmosphereDensityAtLocation(vec3 location) {
     float groundDistance = length(location - planetCenter) - planetRadius;
     float heightFactor = groundDistance / (atmosphereRadius - planetRadius);
-    return exp(-heightFactor * atmosphereDensityFallof) * (1.0 - heightFactor);
+    return exp(-heightFactor * atmosphereDensityFalloff) * (1.0 - heightFactor);
 }
 
 float opticalDepth(vec3 rayOrigin, vec3 rayDir, float rayLength) {
@@ -88,11 +82,11 @@ RaySphereTraceResult raySphereIntersection(vec3 spherePosition, float sphereRadi
     return res;
 }
 
-float computeLight(vec3 cameraPosition, vec3 cameraDirection, float raylength, vec3 dirToSun) {
+vec3 computeLight(vec3 cameraPosition, vec3 cameraDirection, float raylength, vec3 dirToSun, vec3 originalColor) {
     vec3 inScatterPoint = cameraPosition;
     float step = raylength / (float(NumScatterPoints) -1.0);
-
-    float inScatteredLight = 0.0;
+    vec3 inScatteredLight = vec3(0.0);
+    float viewRayOpticalDepth = 0.0;
 
     for (int i = 0; i < NumScatterPoints; ++i) {
 
@@ -100,13 +94,16 @@ float computeLight(vec3 cameraPosition, vec3 cameraDirection, float raylength, v
         float sunRayLength = max(0.0, rsResult.atmosphereDistanceOut - rsResult.atmosphereDistanceIn);
         float sunRayOpticalDepth = opticalDepth(inScatterPoint, dirToSun, sunRayLength);
         float viewRayOpticalDepth = opticalDepth(inScatterPoint, -cameraDirection, step * float(i));
-        float transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth));
+        vec3 transmittance = exp(-(sunRayOpticalDepth + viewRayOpticalDepth) * scatterCoefficients);
         float localDensity = getAtmosphereDensityAtLocation(inScatterPoint);
 
-        inScatteredLight += localDensity * transmittance * step;
+        inScatteredLight += localDensity * transmittance * scatterCoefficients * step;
         inScatterPoint += cameraDirection * step;
     }
-    return inScatteredLight;
+
+    float colorTransmittance = exp(-viewRayOpticalDepth);
+
+    return originalColor * colorTransmittance + inScatteredLight;
 }
 
 
@@ -144,26 +141,43 @@ vec3 getSceneWorldDirection() {
     return normalize(worldSpacePosition.xyz);
 }
 
+
+float getlinearDepth(vec2 coord ) {
+    float fragCoordZ = texture2D( tDepth, coord ).x;
+    float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
+    return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
+}
+
 void main() {
-    float depth = getlinearDepth(vUv);
+    float depth = getlinearDepth(vUv ) * (cameraFar - cameraNear) + cameraNear;
     vec4 color = texture2D(tDiffuse, vUv);
 
 
     vec3 cameraDirection = getSceneWorldDirection();
-    vec3 dirToSun = normalize(vec3(1, 1, 1));
+    vec3 dirToSun = sunDirection;
 
 
     RaySphereTraceResult hitInfo = raySphereIntersection(planetCenter, atmosphereRadius, cameraDirection, cameraPosition);
-    float distanceThroughAtmosphere = hitInfo.atmosphereDistanceOut - hitInfo.atmosphereDistanceIn;
+
+    vec3 sunPosition = dirToSun * 1000000.0;
+    RaySphereTraceResult sunInfos = raySphereIntersection(sunPosition, 50000.0, cameraDirection, cameraPosition);
+    float distanceThroughSun = max(0.0, sunInfos.atmosphereDistanceOut - sunInfos.atmosphereDistanceIn);
 
 
-    if (distanceThroughAtmosphere <= 0.0) gl_FragColor = color;
-    else {
+    float outMax = min(hitInfo.atmosphereDistanceOut, depth);
+    float distanceThroughAtmosphere = outMax - hitInfo.atmosphereDistanceIn;
+
+
+    if (distanceThroughAtmosphere > 0.0) {
         vec3 pointInAtmosphere = cameraPosition + cameraDirection * hitInfo.atmosphereDistanceIn;
-        float light = computeLight(pointInAtmosphere, cameraDirection, distanceThroughAtmosphere, dirToSun);
+        vec3 light = computeLight(pointInAtmosphere, cameraDirection, distanceThroughAtmosphere, dirToSun, color.xyz);
 
-        gl_FragColor = color * (1.0 - light) + light;
+        gl_FragColor = vec4(light, 0.0);
+    }
+    else {
+        gl_FragColor = color;
     }
 
+    if (depth > 50000.0) gl_FragColor += vec4(1.0, .5, .2, 1.0) * min(distanceThroughSun, 1.0);
 
 }
