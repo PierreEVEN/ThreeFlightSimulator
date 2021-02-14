@@ -1,23 +1,104 @@
 # Développement d'une simulation de vol avec ThreeJS
 
-## Présentation
+## Présentation du projet
+
+Le cours de P4x traitant un sujet que je maitrise déjà bien, j'ai voulu en profiter 
+pour faire des recherches et perfectionner mes connaissances dans le domaine via un unique projet que je détaillerais ici.
+
 
 ### Objectifs principaux
 
-- Avoir un monde pseudo-infini généré en temps réel
-- Modèle de vol simplifié d'un avion 
-- Generation de structures simples au sol (aéroports)
+- Perfectionner mes compétences en programmation shaders GLSL
+- Développer un petit simulateur de vol sur navigateur (idéalement capable de tourner sur mobile tant qu'à faire)
+- Avoir un monde pseudo-infini généré en temps réel (amélioration de mes précédentes tentatives)
+- Génération d'une végétation dense et légère en performances 
+- Generation de structures simples au sol (aéroports notamment)
+- Modèle de vol simplifié d'un avion
+- Shaders d'atmosphère avancés
+- Me former aux technologies du web (pour la culture générale, je ne compte pas m'y attarder plus que ca dans le futur)
 
 ### Objectifs secondaires et optionnels
 
-- Combats aériens
-- Shaders avancés pour l'athmosphère
+- Outils de level design pour paramétrer les algorithmes de generation procéduraux
+- Gameplay / Combats aériens (Démo technique avant tout, le jeu est plus secondaire)
 - Collisions physiques
 - IAs
 - Multijoueur
 - Génération de structures avancées (villes / routes)
 
 ## Développement
+
+### Gestion des ressources
+
+Un point assez pénible qui m'a rapidement posé problème, c'est le chargement des ressources avec
+ThreeJS. En effet, le fait que tous les assets (meshs / textures ...) soient chargés en asynchrone
+rend le développement d'un jeu avec beaucoup de ressources assez complexe à gérer.
+
+J'ai donc décidé en tout premier lieu de mettre en place un système de gestion des ressources
+qui répertorie et charge mes modèles avant de lancer la boucle de rendu.
+
+Grace à ce système, j'ai juste à lister les dépendances à charger, puis à attendre que le chargement
+de toutes les resources nécessaires soit fini pour lancer la boucle de rendu.
+
+```javascript
+RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
+
+function preInit() {
+  if (RESOURCE_MANAGER.isLoadingResource()) requestAnimationFrame(preInit);
+  else  init();
+}
+```
+
+Pour ce qui est des formats d'objets 3D, je restreins le système au format gltf (avec une préférence pour le .glb),
+car celui-ci a l'avantage d'avoir ses données en binaire et non en texte clair comme du .obj,
+ce qui permet un chargement plus rapide et des fichiers plus légers. Un autre avantage
+est aussi le fait que le glb embarque toutes ses dépendances à l'intérieur du fichier, ce qui évite
+tout problème de chemins relatifs.
+(j'ai aussi une forte préférence pour les formats open-source, de plus j'ai déjà écrit un loader
+gltf il y a peu pour mon moteur C++, mon choix a donc vite été fait)
+
+### Débuts dans ThreeJS
+
+La gestion des ressources étant maintenant grandement facilitée, j'ai pu commencer à charger
+quelques modèles pour faire quelques tests.
+
+Une petite recherche rapide sur google m'a permis de trouver un modèle d'avion potable (je ferrais peu etre
+un modèle plus détaillé plus tard si j'ai le temps et la motivation).
+Etant habitué à utiliser des softs 3D modernes, j'ai décidé de ne pas utiliser le système
+de coordonée par défaut de ThreeJS (Y-up), mais plutot du Z-up, plus standard dans les moteurs
+3D (J'ai constaté que le Y-up etait souvent un héritage des jeux 2D, avec la profondeur en Z).
+
+Je me retrouve donc avec un avion qui "vole" et un controleur qui me permet d'orbiter autours
+et d'avoir une vue embarquée
+![firstFlight](firstFlight.png) *J'en ai aussi profité pour entamer mes recherches sur le landscape, j'y reviendrais plus bas*
+
+### Foliages
+
+C'est déjà bien, et je perçois mieux le potentiel de ThreeJS. Je décide donc d'importer le premier
+modèle d'arbre qui me tombe sous la main (un feuillu low-poly que j'avais fait pour un projet de l'an dernier)
+
+Pour afficher un objet en masse, il n’y a pas de secrets, il faut instancier.
+![trees1](trees1.png) *quelques milliers d'arbres plus tard...*
+
+Pour éviter l'effet "forêt d'épicéas", j'ajoute un random à la position de mes instances pour les dispercer un peu... Sauf que mon arbre
+est en 2 meshes... et qu'on ne peut pas spécifier la seed d'un random JS pour faire apparaitre les 2 bouts au "même random".
+C'est pas très grave, je laisse tel quel en attendant une version propre.
+
+Même si ca tourne bien sur mon PC principal, je suis tout de même mitigé sur les performances.
+En effet, sur le GPU intégré de mon PC portable, je ne peux pas dépasser une zone de 100x100 arbres pour garder la tête au dessus des 60 fps.
+La machine a beau être mauvaise, c'est peu !
+
+Je commence à faire des tests pour ajouter de simples billboard, et je me rappelle alors d'un
+[article](https://www.shaderbits.com/blog/octahedral-impostors) qui présentait une sorte de billboard amélioré au rendu assez impressionant.
+
+Je commence donc à faire quelques tests, et c'est sans attentes. Passer de mon modèle mal optimisé
+à un simple plan me permet de passer de quelques dizaines de milliers à plusieurs dizaines de millions
+d'instances pour un cout dérisoire et très peu de contraintes. (Pas besoin de LODs, l'affichage reste correcte même à quelques dizaines de mètres)
+![trees2](trees2.png) *Je crois que j'ai un peu abusé sur la quantité*
+
+L'idée est là, mais il reste des problèmes de transformation sur les octahedral impostors. Je vais continuer à y réfléchir pendant que j'avance
+sur le reste. En attendant ça fait à peu près le café comme on dit.
+
 
 ### Génération du terrain (voir src/landscape.js)
 
@@ -131,13 +212,6 @@ L'effet est simple, et efficace.
 
 ![WaterZ](Water.png) *Nouveau shader d'eau intégré à celui du landscape*
 
-
-#### Génération du foliage
-
-[TODO] foliage quad trees
-
-[TODO] Octahedral impostors
-
 #### Optimisations et Web Assembly
 
 A ce stade, la génération du terrain commence à devenir assez lourde, trop pour être calculée en moins d'une frame.
@@ -165,7 +239,7 @@ complexifier l'algo de génération sans me soucier des performances.
 
 #### Génération des structures
 
-[TODO] Deformation du terrain pour accueuillir les structures
+[TODO]
 
 ### Simulation des avions
 
@@ -187,6 +261,12 @@ Il ne reste plus qu'à ajouter un menu permettant de remapper les touches, puis 
 
 #### Modèle de vol
 
+[TODO]
+
 #### Systèmes de particule
 
+[TODO]
+
 ### Interfaces utilisateur
+
+[TODO]
