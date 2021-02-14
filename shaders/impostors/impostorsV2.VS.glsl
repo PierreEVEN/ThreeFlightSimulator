@@ -2,15 +2,12 @@
 varying vec2 pUV;
 
 
-varying vec3 test;
 
 uniform float captureRadius;
 
 #define HALF_PI (3.1415926538 / 2.0)
 #define PI 3.1415926538
 #define TWO_PI (3.1415926538 * 2.0)
-
-
 
 
 
@@ -28,24 +25,24 @@ float getPitchFromDirection(vec3 direction) {
     return acos(-direction.z);
 }
 
-vec2 computeUVsFromStepPoint(float stepPitch, float pitchStepCount, float stepYaw, float yawStepCount) {
+vec2 capturePointToUvCoordinates(float stageCaptureCount, float percentYaw) {
+    if (percentYaw <= 0.25) return vec2(1.0, percentYaw * 8.0 - 1.0);
+    else if (percentYaw <= 0.5) return vec2(-percentYaw * 8.0 + 3.0, 1.0);
+    else if (percentYaw <= 0.75) return vec2(-1.0, -percentYaw * 8.0 + 5.0);
+    else return vec2(percentYaw * 8.0 - 7.0, -1.0);
+}
 
-    float stepSize = 1.0 / (captureRadius * 2.0);
+vec2 getTreeUVs(float r, float yawPercent) {
+    float stageCaptureCount = (r * 8.0 - 4.0);
 
+    vec2 uvPos = capturePointToUvCoordinates(stageCaptureCount, yawPercent) * (r - 0.5); // [-captureRadius + 0.5 -> captureRadius - 0.5]
 
-    vec2 scaledUvs = (uv) * stepSize + stepSize * (captureRadius - 0.5);
+    vec2 localUV = uv - 0.5; //[-0.5 -> 0.5]
+    localUV /= (captureRadius * 2.0);
 
+    localUV += uvPos / (captureRadius * 2.0);
 
-
-    //test.x = stepPitch + 0.5;
-
-
-    float offsety = (stepPitch) / pitchStepCount / 2.0;
-
-    scaledUvs.x += stepSize / 2.0;
-    scaledUvs.y += stepSize / 2.0;
-
-    return scaledUvs;
+    return localUV + 0.5;
 }
 
 
@@ -67,9 +64,8 @@ void main() {
     pitch = min(PI / 2.0, pitch); // We only use the top hemisphere
 
     // Round pitch to closest camera shot
-    float pitchStep = round((pitch / HALF_PI) * captureRadius);
-    pitch = pitchStep / captureRadius * HALF_PI;
-
+    float pitchStep = max(1.0, round(pitch / HALF_PI * captureRadius)); // [1.0 -> captureRadius]
+    pitch = pitchStep / captureRadius * HALF_PI; // [~1 step -> PI / 2.0]
 
     // Compute yaw steps from pitch current step
     float yawSteps = pitchStep * 8.0 - 4.0;
@@ -88,10 +84,9 @@ void main() {
     float yaw = -getYawFromDirection(objDirection);
 
     // Round yaw to closest camera shot
-    float yawStep = round((yaw / TWO_PI) * yawSteps);
-    yaw = yawStep / yawSteps * TWO_PI;
+    float yawStep = round((yaw / TWO_PI) * yawSteps + 0.5) - 0.5; // [0.0 -> yawSteps[
 
-
+    yaw = yawStep / yawSteps * TWO_PI; // [0.0 -> TWO_PI[
 
     instanceTransform[0][0] =+ cos(yaw); instanceTransform[0][1] = -sin(yaw);
     instanceTransform[1][0] = sin(yaw); instanceTransform[1][1] = cos(yaw);
@@ -100,7 +95,7 @@ void main() {
     instanceTransform *= pitchRotationMatrix;
 
     // Send modified UVs
-    pUV = computeUVsFromStepPoint(pitchStep, captureRadius, yawStep, yawSteps);
+    pUV = getTreeUVs(pitchStep, mod(-yaw / TWO_PI + 1.0 / (yawSteps * 2.0), 1.0));
 
     // Apply vertex position
     gl_Position = projectionMatrix * modelViewMatrix * instanceTransform * vec4(position, 1.0);

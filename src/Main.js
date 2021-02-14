@@ -87,7 +87,7 @@ function init() {
     background.appendChild( stats.dom );
 
     // Initialize world
-    gamemode = new DevGamemode();
+    gamemode = new DefaultGamemode();
     gameRenderer = new GameRenderer(null, document.getElementById('game'), gamemode);
 
     // build impostors

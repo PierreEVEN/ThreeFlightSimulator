@@ -1,6 +1,7 @@
 import * as THREE from "../threejs/build/three.module.js";
 import {OrbitControls} from "../threejs/examples/jsm/controls/OrbitControls.js";
 import {RESOURCE_MANAGER} from "./io/resourceManager.js";
+import {Quaternion} from "../threejs/build/three.module.js";
 
 export { DevGamemode }
 
@@ -16,7 +17,7 @@ class DevGamemode {
 
         this.controller = new OrbitControls(this.camera, document.getElementById('game'));
 
-        this.camera.position.x = 2;
+        this.camera.position.set(0, 0, 50);
     }
 
     update(deltaTime) {
@@ -30,8 +31,8 @@ class DevGamemode {
 
 
 
-    createBG() {
-        this.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhysicalMaterial({map: RESOURCE_MANAGER.TreeImpostor.colorTarget.texture})));
+    createBG() {//map: RESOURCE_MANAGER.TreeImpostor.colorTarget.texture
+        this.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhysicalMaterial({})));
 
         const instCount = 20;
         const spacing = 2;
@@ -48,6 +49,21 @@ class DevGamemode {
                 mesh.setMatrixAt(x + y * instCount, Mat);
             }
         }
+
+
+        for (const angle of RESOURCE_MANAGER.TreeImpostor.getCameraAngles()) {
+
+            const rotation = new THREE.Euler(0, angle.pitch, angle.yaw, 'ZYX');
+            const direction = new THREE.Vector3(1, 0, 0).applyEuler(rotation);
+
+            const arrow = new THREE.ArrowHelper(direction, new THREE.Vector3(0, 0, 0).addScaledVector(direction, -5), 1, new THREE.Color(1, 1, 0), 0.4, 0.2);
+
+            this.scene.add(arrow);
+
+
+        }
+
+
 
         this.scene.add(mesh);
     }

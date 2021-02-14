@@ -24,7 +24,7 @@ class ImpostorRenderer {
     constructor(renderedObject) {
 
         this.objectScaleFactor = 1.5;
-        this.captureRadius = 3;
+        this.captureRadius = 5;
         this.renderTargetResolution = 2048;
         this.alpha = 0;
 
@@ -114,35 +114,67 @@ class ImpostorRenderer {
         return material;
     }
 
-    renderItem(w, posX, posY, renderer, scene) {
-        length = Math.sqrt(posX * posX + posY * posY);
-        const normPosX = posX / length;
-        const normPosY = posY / length;
-        const notch = this.renderTargetResolution / (this.captureRadius * 2);
 
-        // camera yaw
-        this.camera.rotation.x = (posX === 0 && posY === 0) ? 0 : Math.atan2(normPosX, normPosY);
-
-        //camera pitch
-        this.camera.rotation.y = Math.cos(w / this.captureRadius * (Math.PI / 2)) * Math.PI / 2;
-
-        let x = (posX - 0.5 + this.captureRadius) * notch;
-        let y = (posY - 0.5 + this.captureRadius) * notch;
-        renderer.setViewport(x, y, notch, notch);
-        renderer.render(scene, this.camera);
+    capturePointToUvCoordinates(stageCaptureCount, percentYaw) {
+        let posX;
+        let posY;
+        if (percentYaw <= 0.25) {
+            posX = 1;
+            posY = percentYaw * 8 - 1;
+        }
+        else if (percentYaw <= 0.5) {
+            posX = -percentYaw * 8 + 3;
+            posY = 1;
+        }
+        else if (percentYaw <= 0.75) {
+            posX = -1;
+            posY = -percentYaw * 8 + 5;
+        }
+        else {
+            posX = percentYaw * 8 - 7;
+            posY = -1;
+        }
+        return {
+            posX: posX,
+            posY: posY
+        }
     }
+
+
+    getCameraAngles() {
+        const cameraAngles = [];
+
+        const atlasItemSize = this.renderTargetResolution / (this.captureRadius * 2);
+
+        for (let r = 1; r <= this.captureRadius; ++r) {
+            const stageCaptureCount = (r * 8 - 4);
+            for (let x = 0; x < stageCaptureCount; ++x) {
+
+
+                const uvPos = this.capturePointToUvCoordinates(stageCaptureCount, x / stageCaptureCount);
+
+                cameraAngles.push({
+                    pitch: (Math.PI / 2) - (r / (this.captureRadius) * (Math.PI / 2)),
+                    yaw: x / stageCaptureCount * Math.PI * 2 + Math.PI / 4,
+                    atlasItemSize: atlasItemSize,
+                    x: uvPos.posX * (r - 0.5),
+                    y: uvPos.posY * (r - 0.5)
+                })
+            }
+        }
+        return cameraAngles;
+    }
+
 
     runCapture(renderer, scene) {
 
-        for (let r = 1; r <= this.captureRadius; ++r) {
-            for (let i = -r; i < r; ++i) {
-                this.renderItem(r, i + 0.5, r - 0.5, renderer, scene);
-                this.renderItem(r, i + 0.5, -r + 0.5, renderer, scene);
-            }
-            for (let i = -r + 1; i < r - 1; ++i) {
-                this.renderItem(r, r - 0.5, i + 0.5, renderer, scene);
-                this.renderItem(r, -r + 0.5, i + 0.5, renderer, scene);
-            }
+        for (const angle of this.getCameraAngles()) {
+
+            this.camera.rotation.y = angle.pitch;
+            this.camera.rotation.x = angle.yaw;
+
+            renderer.setViewport((angle.x + this.captureRadius - 0.5) * angle.atlasItemSize, (angle.y + this.captureRadius - 0.5) * angle.atlasItemSize, angle.atlasItemSize, angle.atlasItemSize);
+            renderer.render(scene, this.camera);
         }
     }
 
