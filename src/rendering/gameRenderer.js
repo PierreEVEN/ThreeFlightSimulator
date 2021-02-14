@@ -8,6 +8,8 @@ import {Vector2} from "../../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 import {ImpostorRenderer} from "./impostorRenderer.js";
 import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
+import {FXAAShader} from "../../threejs/examples/jsm/shaders/FXAAShader.js";
+import {ShaderPass} from "../../threejs/examples/jsm/postprocessing/ShaderPass.js";
 
 export {GameRenderer}
 
@@ -26,7 +28,7 @@ class GameRenderer {
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(2);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);
@@ -74,16 +76,21 @@ class GameRenderer {
         // Create composer
         this.composer = new EffectComposer(this.renderer);
         this.composer.addPass(new RenderPass(this.renderTargetScene, gamemode.camera));
-        this.AAPass = new SMAAPass(window.innerWidth, window.innerHeight)
-        this.composer.addPass(this.AAPass);
+        this.fxaaPass = new ShaderPass(FXAAShader);
+        const pixelRatio = this.renderer.getPixelRatio();
+        this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
+        this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio );
+        this.composer.addPass(this.fxaaPass);
         this.composer.addPass(new UnrealBloomPass(new Vector2(256, 256), 0.23));
+
 
 
         // Set resize delegate
         window.addEventListener('resize', function () {
             gamemode.camera.aspect = window.innerWidth / window.innerHeight;
             gamemode.camera.updateProjectionMatrix();
-            rendererInstance.AAPass.setSize(window.innerWidth, window.innerHeight);
+            this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
+            this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio);
             rendererInstance.renderer.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.composer.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
