@@ -101,5 +101,4 @@ void main() {
 
     // Apply vertex position
     gl_Position = projectionMatrix * modelViewMatrix * instanceTransform * vec4(position, 1.0);
-
 }

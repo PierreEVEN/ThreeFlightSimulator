@@ -2,6 +2,7 @@ import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 
 export {ImpostorRenderer}
 import * as THREE from '../../threejs/build/three.module.js';
+import {RGBAFormat} from "../../threejs/build/three.module.js";
 
 /*
 Create normal material
@@ -36,7 +37,7 @@ class ImpostorRenderer {
         this.colorTarget = this.createRenderTarget(THREE.RGBAFormat,this.renderTargetResolution);
         this.normalTarget = this.createRenderTarget(THREE.RGBFormat, this.renderTargetResolution);
 
-        this.material = this.createMaterial(this.colorTarget, this.normalTarget, this.captureRadius);
+        //this.material = this.createMaterial(this.colorTarget, this.normalTarget, this.captureRadius);
     }
 
     makeObject(base) {
@@ -89,20 +90,19 @@ class ImpostorRenderer {
             resolution,
             resolution,
             {
-                generateMipmaps: true,
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
                 format: format
             });
     }
 
-    createMaterial(colorTarget, normalTarget, captureRadius) {
+    createMaterial(colorTexture, normalTexture, captureRadius) {
 
         const uniforms = {
             lightDir: { value: new THREE.Vector3(0, 1, 0) },
             captureRadius: { value: captureRadius },
-            colorTexture: {type: 't', value: colorTarget.texture },
-            normalTexture: {type: 't', value: normalTarget.texture },
+            colorTexture: {type: 't', value: colorTexture },
+            normalTexture: {type: 't', value: normalTexture },
         }
 
         const material = new THREE.ShaderMaterial( {
@@ -110,8 +110,8 @@ class ImpostorRenderer {
             vertexShader: RESOURCE_MANAGER.vertexShader_impostors,
             fragmentShader: RESOURCE_MANAGER.fragmentShader_impostors,
         });
-        material.colorTexture = colorTarget.texture;
-        material.normalTexture = normalTarget.texture;
+        material.colorTexture = colorTexture;
+        material.normalTexture = normalTexture;
 
         return material;
     }
@@ -190,9 +190,29 @@ class ImpostorRenderer {
         renderer.setRenderTarget(this.colorTarget);
         renderer.clear();
         this.runCapture(renderer, this.baseScene);
+
+        let colorData = new Uint8Array(this.renderTargetResolution * this.renderTargetResolution * 4);
+        renderer.readRenderTargetPixels(this.colorTarget, 0, 0, this.renderTargetResolution, this.renderTargetResolution, colorData);
+        const colorTexture = new THREE.DataTexture(colorData, this.renderTargetResolution, this.renderTargetResolution);
+        colorTexture.format = THREE.RGBAFormat;
+        colorTexture.magFilter = THREE.LinearFilter;
+        colorTexture.minFilter = THREE.LinearMipMapLinearFilter;
+        colorTexture.generateMipmaps = true;
+        colorTexture.needsUpdate = true
+
         renderer.setRenderTarget(this.normalTarget);
         renderer.clear();
         this.runCapture(renderer, this.normalScene);
 
+        let normalData = new Uint8Array(this.renderTargetResolution * this.renderTargetResolution * 4);
+        renderer.readRenderTargetPixels(this.colorTarget, 0, 0, this.renderTargetResolution, this.renderTargetResolution, normalData);
+        let normalTexture = new THREE.DataTexture(normalData, this.renderTargetResolution, this.renderTargetResolution);
+        normalTexture.format = THREE.RGBAFormat;
+        normalTexture.magFilter = THREE.LinearFilter;
+        normalTexture.minFilter = THREE.LinearMipMapLinearFilter;
+        normalTexture.generateMipmaps = true;
+        normalTexture.needsUpdate = true
+
+        this.material = this.createMaterial(colorTexture, normalTexture, this.captureRadius);
     }
 }
