@@ -89,6 +89,7 @@ class ImpostorRenderer {
             resolution,
             resolution,
             {
+                generateMipmaps: true,
                 minFilter: THREE.LinearFilter,
                 magFilter: THREE.LinearFilter,
                 format: format
@@ -173,12 +174,15 @@ class ImpostorRenderer {
             this.camera.rotation.y = angle.pitch;
             this.camera.rotation.x = angle.yaw;
 
-            renderer.setViewport((angle.x + this.captureRadius - 0.5) * angle.atlasItemSize, (angle.y + this.captureRadius - 0.5) * angle.atlasItemSize, angle.atlasItemSize, angle.atlasItemSize);
+            const pixelRatio = renderer.getPixelRatio();
+
+            renderer.setViewport((angle.x + this.captureRadius - 0.5) * angle.atlasItemSize / pixelRatio, (angle.y + this.captureRadius - 0.5) * angle.atlasItemSize / pixelRatio, angle.atlasItemSize / pixelRatio, angle.atlasItemSize / pixelRatio);
             renderer.render(scene, this.camera);
         }
     }
 
     render(renderer) {
+
         renderer.setClearAlpha(this.alpha);
 
         renderer.setRenderTarget(this.colorTarget);
@@ -187,6 +191,9 @@ class ImpostorRenderer {
         renderer.setRenderTarget(this.normalTarget);
         renderer.clear();
         this.runCapture(renderer, this.normalScene);
+
+
+
     }
 
 }

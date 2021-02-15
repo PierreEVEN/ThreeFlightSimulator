@@ -6,6 +6,7 @@ import {SaveGame} from "./io/saveGame.js";
 import {FoliageSystem} from "./rendering/foliageSystem.js";
 import {Landscape} from "./rendering/landscape.js";
 import {enableMouseCapture} from "./io/inputManager.js";
+import {getHeightAtLocation} from "./rendering/HeightGenerator.js";
 
 
 export { DefaultGamemode }
@@ -65,6 +66,15 @@ class DefaultGamemode {
         this.landscape.update(deltaTime);
         this.foliageSystem.update();
         this.plane.update(deltaTime);
+
+
+        if (this.plane.position.z < getHeightAtLocation(this.plane.position.x, this.plane.position.y)) {
+            this.plane.position.set(0, 0, getHeightAtLocation(this.plane.position.x, this.plane.position.y) + 100);
+            this.plane.velocity.set(0, 0, 0);
+            this.plane.rotation.identity();
+        }
+
+
         this.controller.update(deltaTime);
     }
 

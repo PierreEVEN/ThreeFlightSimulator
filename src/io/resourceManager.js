@@ -10,27 +10,24 @@ function LoadFile(target, resourcePath, propertyName) {
     target.pendingLoadResources++;
     fileLoader.load(resourcePath, function (textData) {
         target[propertyName] = textData;
-        //console.log('loaded file : ' + propertyName);
         target.pendingLoadResources--;
     });
 }
 
 function LoadTexture(target, resourcePath, propertyName) {
     target.pendingLoadResources++;
-    textureLoader.load(resourcePath, function (textureData) {
-        textureData.wrapS = THREE.RepeatWrapping;
-        textureData.wrapT = THREE.RepeatWrapping;
+    const texture = textureLoader.load(resourcePath, function (textureData) {
         target[propertyName] = textureData;
-        //console.log('loaded texture : ' + propertyName);
         target.pendingLoadResources--;
     });
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
 }
 
 function LoadMesh(target, resourcePath, propertyName) {
     target.pendingLoadResources++;
     meshLoader.load(resourcePath, function (gltfData) {
         target[propertyName] = gltfData;
-        //console.log('loaded mesh : ' + propertyName);
         target.pendingLoadResources--;
     });
 }

@@ -6,14 +6,13 @@ import {SMAAPass} from "../../threejs/examples/jsm/postprocessing/SMAAPass.js";
 import {UnrealBloomPass} from "../../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
 import {Vector2} from "../../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "../io/resourceManager.js";
-import {ImpostorRenderer} from "./impostorRenderer.js";
 import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 import {FXAAShader} from "../../threejs/examples/jsm/shaders/FXAAShader.js";
 import {ShaderPass} from "../../threejs/examples/jsm/postprocessing/ShaderPass.js";
 
 export {GameRenderer}
 
-let rendererInstance = null;
+let rendererInstance = null, fxaaPass = null;
 
 class GameRenderer {
 
@@ -28,7 +27,7 @@ class GameRenderer {
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
-        this.renderer.setPixelRatio(2);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);
@@ -47,6 +46,7 @@ class GameRenderer {
 
         // Create render target scene
         this.renderTargetScene = new THREE.Scene();
+        /*
         this.renderTargetMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 cameraNear: {value: gamemode.camera.near},
@@ -69,18 +69,19 @@ class GameRenderer {
         });
         this.renderTargetMaterial.tDiffuse = this.sceneRenderTarget.texture;
         this.renderTargetMaterial.tDepth = this.sceneRenderTarget.depthTexture;
-        const obj = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.renderTargetMaterial);
+        */
+        const obj = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshNormalMaterial());//this.renderTargetMaterial);
         obj.frustumCulled = false;
         this.renderTargetScene.add(obj);
 
         // Create composer
+        fxaaPass = new ShaderPass(FXAAShader);
+        const pixelRatio = this.renderer.getPixelRatio();
+        fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
+        fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio );
         this.composer = new EffectComposer(this.renderer);
         this.composer.addPass(new RenderPass(this.renderTargetScene, gamemode.camera));
-        this.fxaaPass = new ShaderPass(FXAAShader);
-        const pixelRatio = this.renderer.getPixelRatio();
-        this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
-        this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio );
-        this.composer.addPass(this.fxaaPass);
+        this.composer.addPass(fxaaPass);
         this.composer.addPass(new UnrealBloomPass(new Vector2(256, 256), 0.23));
 
 
@@ -89,8 +90,8 @@ class GameRenderer {
         window.addEventListener('resize', function () {
             gamemode.camera.aspect = window.innerWidth / window.innerHeight;
             gamemode.camera.updateProjectionMatrix();
-            this.fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
-            this.fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio);
+            fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / ( window.innerWidth * pixelRatio);
+            fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / ( window.innerHeight * pixelRatio);
             rendererInstance.renderer.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.composer.setSize(window.innerWidth, window.innerHeight);
             rendererInstance.sceneRenderTarget.setSize(window.innerWidth, window.innerHeight);
@@ -101,7 +102,7 @@ class GameRenderer {
 
         this.gui = new GUI();
         let atmosphereFolder = this.gui.addFolder('atmosphere');
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
+        /*atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetCenter.value, 'z', -9985946 - 10000, -9985946 + 10000).name('planet z center').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetRadius, 'value', 100000, 10000000).name('planet radius').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereDensityFalloff, 'value', 0.01, 10.0).name('density falloff').listen()
@@ -114,6 +115,8 @@ class GameRenderer {
         atmosphereFolder.add(this.sunDirectionVector, 'x', -1, 1).name('sun X').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
+
+         */
     }
 
     render = function(gamemode) {
@@ -123,6 +126,7 @@ class GameRenderer {
         let scatterB = Math.pow(400 / this.scatterValues.z, 4) * this.scatteringStrength;
 
         this.sunDirectionVector.normalize();
+        /*
         this.renderTargetMaterial.uniforms.sunDirection.value.set(-this.sunDirectionVector.x, -this.sunDirectionVector.y, -this.sunDirectionVector.z);
         this.renderTargetMaterial.uniforms.scatterCoefficients.value.set(scatterR, scatterG, scatterB);
 
@@ -130,13 +134,15 @@ class GameRenderer {
         this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = gamemode.camera.projectionMatrixInverse;
         this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = gamemode.camera.matrixWorld;
 
+
+         */
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-        this.renderer.setRenderTarget( this.sceneRenderTarget );
+        this.renderer.setRenderTarget( null );
         this.renderer.clear();
         this.renderer.render(gamemode.scene, gamemode.camera);
 
-        this.composer.render();
+        //this.composer.render();
     }
 }
