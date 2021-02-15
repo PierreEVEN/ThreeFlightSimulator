@@ -126,7 +126,7 @@ let PlaneController = function ( inPlane, inCamera) {
         }
 
         this.updateCameraLocation(deltaTime);
-        if (this.camera.position.z - 10 < getHeightAtLocation(this.camera.position.x, this.camera.position.y)) this.camera.position.z = getHeightAtLocation(this.camera.position.x, this.camera.position.y) + 10;
+        if (this.camera.position.z - 1 < getHeightAtLocation(this.camera.position.x, this.camera.position.y)) this.camera.position.z = getHeightAtLocation(this.camera.position.x, this.camera.position.y) + 1;
     }
 }
 

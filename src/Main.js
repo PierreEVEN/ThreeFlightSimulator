@@ -19,6 +19,7 @@ let clock, stats, gamemode, gameRenderer;
 
 function loadResources() {
     RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
+    RESOURCE_MANAGER.loadMeshResource('./models/debugCube.glb', 'debugCube');
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 
     RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.FS.glsl', 'fragmentShader_postProcess');

@@ -51,7 +51,7 @@ vec2 getTreeUVs(float r, float yawPercent) {
 void main() {
     vec3 instancePosition = getTranslation(instanceMatrix);
     vec3 objDirection = normalize(instancePosition - cameraPosition);
-
+    instancePosition.z;
     // Create raw instance transform matrix
     mat4 instanceTransform = mat4(
     1, 0, 0, 0,
@@ -88,8 +88,10 @@ void main() {
 
     yaw = yawStep / yawSteps * TWO_PI; // [0.0 -> TWO_PI[
 
-    instanceTransform[0][0] =+ cos(yaw); instanceTransform[0][1] = -sin(yaw);
-    instanceTransform[1][0] = sin(yaw); instanceTransform[1][1] = cos(yaw);
+    float yawCorrection = yaw - (1.0 - pitchStep / captureRadius) * HALF_PI / 2.0 ;
+
+    instanceTransform[0][0] =+ cos(yawCorrection); instanceTransform[0][1] = -sin(yawCorrection);
+    instanceTransform[1][0] = sin(yawCorrection); instanceTransform[1][1] = cos(yawCorrection);
 
     // Combine rotations
     instanceTransform *= pitchRotationMatrix;
@@ -99,4 +101,5 @@ void main() {
 
     // Apply vertex position
     gl_Position = projectionMatrix * modelViewMatrix * instanceTransform * vec4(position, 1.0);
+
 }

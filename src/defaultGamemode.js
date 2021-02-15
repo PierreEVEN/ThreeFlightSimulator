@@ -27,7 +27,7 @@ function createPlane(scene) {
         }
     });
     scene.add(rootNode);
-    return new Plane(scene, rootNode, true);
+    return new Plane(scene, rootNode, false);
 }
 
 class DefaultGamemode {

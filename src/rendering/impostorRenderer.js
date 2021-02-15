@@ -23,7 +23,7 @@ class ImpostorRenderer {
 
     constructor(renderedObject) {
 
-        this.objectScaleFactor = 1.5;
+        this.objectScaleFactor = 1.0;
         this.captureRadius = 5;
         this.renderTargetResolution = 2048;
         this.alpha = 0;
@@ -97,6 +97,7 @@ class ImpostorRenderer {
     }
 
     createMaterial(colorTarget, normalTarget, captureRadius) {
+
         const uniforms = {
             lightDir: { value: new THREE.Vector3(0, 1, 0) },
             captureRadius: { value: captureRadius },
@@ -172,7 +173,7 @@ class ImpostorRenderer {
         for (const angle of this.getCameraAngles()) {
 
             this.camera.rotation.y = angle.pitch;
-            this.camera.rotation.x = angle.yaw;
+            this.camera.rotation.x = angle.yaw - Math.PI / 4;
 
             const pixelRatio = renderer.getPixelRatio();
 
@@ -185,6 +186,7 @@ class ImpostorRenderer {
 
         renderer.setClearAlpha(this.alpha);
 
+        renderer.setSize(this.renderTargetResolution, this.renderTargetResolution);
         renderer.setRenderTarget(this.colorTarget);
         renderer.clear();
         this.runCapture(renderer, this.baseScene);
@@ -192,8 +194,5 @@ class ImpostorRenderer {
         renderer.clear();
         this.runCapture(renderer, this.normalScene);
 
-
-
     }
-
 }

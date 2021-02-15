@@ -1,8 +1,6 @@
 import * as THREE from "../../threejs/build/three.module.js";
-import {addInputPressAction, initializeInputs} from "../io/inputManager.js";
 import {EffectComposer} from "../../threejs/examples/jsm/postprocessing/EffectComposer.js";
 import {RenderPass} from "../../threejs/examples/jsm/postprocessing/RenderPass.js";
-import {SMAAPass} from "../../threejs/examples/jsm/postprocessing/SMAAPass.js";
 import {UnrealBloomPass} from "../../threejs/examples/jsm/postprocessing/UnrealBloomPass.js";
 import {Vector2} from "../../threejs/build/three.module.js";
 import {RESOURCE_MANAGER} from "../io/resourceManager.js";
@@ -22,7 +20,7 @@ class GameRenderer {
 
         this.sunDirectionVector = gamemode.sunDirectionVector;
 
-        this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);//new THREE.Color(.6 * 0.8, .8 * 0.8, 0.8);
+        this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);
 
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
@@ -46,7 +44,7 @@ class GameRenderer {
 
         // Create render target scene
         this.renderTargetScene = new THREE.Scene();
-        /*
+
         this.renderTargetMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 cameraNear: {value: gamemode.camera.near},
@@ -69,8 +67,8 @@ class GameRenderer {
         });
         this.renderTargetMaterial.tDiffuse = this.sceneRenderTarget.texture;
         this.renderTargetMaterial.tDepth = this.sceneRenderTarget.depthTexture;
-        */
-        const obj = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshNormalMaterial());//this.renderTargetMaterial);
+
+        const obj = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.renderTargetMaterial);
         obj.frustumCulled = false;
         this.renderTargetScene.add(obj);
 
@@ -102,7 +100,7 @@ class GameRenderer {
 
         this.gui = new GUI();
         let atmosphereFolder = this.gui.addFolder('atmosphere');
-        /*atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
+        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetCenter.value, 'z', -9985946 - 10000, -9985946 + 10000).name('planet z center').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetRadius, 'value', 100000, 10000000).name('planet radius').listen();
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereDensityFalloff, 'value', 0.01, 10.0).name('density falloff').listen()
@@ -116,7 +114,7 @@ class GameRenderer {
         atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
 
-         */
+
     }
 
     render = function(gamemode) {
@@ -126,7 +124,7 @@ class GameRenderer {
         let scatterB = Math.pow(400 / this.scatterValues.z, 4) * this.scatteringStrength;
 
         this.sunDirectionVector.normalize();
-        /*
+
         this.renderTargetMaterial.uniforms.sunDirection.value.set(-this.sunDirectionVector.x, -this.sunDirectionVector.y, -this.sunDirectionVector.z);
         this.renderTargetMaterial.uniforms.scatterCoefficients.value.set(scatterR, scatterG, scatterB);
 
@@ -134,15 +132,13 @@ class GameRenderer {
         this.renderTargetMaterial.uniforms.projectionInverseMatrix.value = gamemode.camera.projectionMatrixInverse;
         this.renderTargetMaterial.uniforms.cameraWorldInverseMatrix.value = gamemode.camera.matrixWorld;
 
-
-         */
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-        this.renderer.setRenderTarget( null );
+        this.renderer.setRenderTarget( this.sceneRenderTarget );
         this.renderer.clear();
         this.renderer.render(gamemode.scene, gamemode.camera);
 
-        //this.composer.render();
+        this.composer.render();
     }
 }
