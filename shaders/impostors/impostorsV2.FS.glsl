@@ -12,5 +12,5 @@ void main() {
     vec4 color = texture2D(colorTexture, pUV);
     if (color.a < 0.5) discard;
 
-    gl_FragColor = (vec4(dot(normal.xyz, lightDir)) + 0.5) * color;
+    gl_FragColor = (vec4(1.0 - dot(normal.xyz, lightDir))) * color;
 }

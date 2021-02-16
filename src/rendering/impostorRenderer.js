@@ -3,6 +3,7 @@ import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 export {ImpostorRenderer}
 import * as THREE from '../../threejs/build/three.module.js';
 import {RGBAFormat} from "../../threejs/build/three.module.js";
+import {createMipMappedTexture} from "./textureTools.js";
 
 /*
 Create normal material
@@ -26,7 +27,7 @@ class ImpostorRenderer {
 
         this.objectScaleFactor = 1.0;
         this.captureRadius = 5;
-        this.renderTargetResolution = 2048;
+        this.renderTargetResolution = 4096;
         this.alpha = 0;
 
         this.object = this.makeObject(renderedObject);
@@ -35,9 +36,7 @@ class ImpostorRenderer {
         this.normalScene = this.createNormalScene(this.object);
 
         this.colorTarget = this.createRenderTarget(THREE.RGBAFormat,this.renderTargetResolution);
-        this.normalTarget = this.createRenderTarget(THREE.RGBFormat, this.renderTargetResolution);
-
-        //this.material = this.createMaterial(this.colorTarget, this.normalTarget, this.captureRadius);
+        this.normalTarget = this.createRenderTarget(THREE.RGBAFormat, this.renderTargetResolution);
     }
 
     makeObject(base) {
@@ -191,27 +190,16 @@ class ImpostorRenderer {
         renderer.clear();
         this.runCapture(renderer, this.baseScene);
 
-        let colorData = new Uint8Array(this.renderTargetResolution * this.renderTargetResolution * 4);
+        let colorData = new Uint8ClampedArray(this.renderTargetResolution * this.renderTargetResolution * 4);
         renderer.readRenderTargetPixels(this.colorTarget, 0, 0, this.renderTargetResolution, this.renderTargetResolution, colorData);
-        const colorTexture = new THREE.DataTexture(colorData, this.renderTargetResolution, this.renderTargetResolution);
-        colorTexture.format = THREE.RGBAFormat;
-        colorTexture.magFilter = THREE.LinearFilter;
-        colorTexture.minFilter = THREE.LinearMipMapLinearFilter;
-        colorTexture.generateMipmaps = true;
-        colorTexture.needsUpdate = true
+        const colorTexture = createMipMappedTexture(this.renderTargetResolution, 4, colorData);
 
         renderer.setRenderTarget(this.normalTarget);
         renderer.clear();
         this.runCapture(renderer, this.normalScene);
-
-        let normalData = new Uint8Array(this.renderTargetResolution * this.renderTargetResolution * 4);
-        renderer.readRenderTargetPixels(this.colorTarget, 0, 0, this.renderTargetResolution, this.renderTargetResolution, normalData);
-        let normalTexture = new THREE.DataTexture(normalData, this.renderTargetResolution, this.renderTargetResolution);
-        normalTexture.format = THREE.RGBAFormat;
-        normalTexture.magFilter = THREE.LinearFilter;
-        normalTexture.minFilter = THREE.LinearMipMapLinearFilter;
-        normalTexture.generateMipmaps = true;
-        normalTexture.needsUpdate = true
+        let normalData = new Uint8ClampedArray(this.renderTargetResolution * this.renderTargetResolution * 4);
+        renderer.readRenderTargetPixels(this.normalTarget, 0, 0, this.renderTargetResolution, this.renderTargetResolution, normalData);
+        const normalTexture = createMipMappedTexture(this.renderTargetResolution, 4, normalData);
 
         this.material = this.createMaterial(colorTexture, normalTexture, this.captureRadius);
     }
