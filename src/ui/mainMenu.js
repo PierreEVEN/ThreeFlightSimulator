@@ -1,4 +1,5 @@
 import {releaseRenderer} from "../Main.js";
+import {graphicsPage} from "./graphics.js";
 
 const background = document.getElementById('interface-container');
 
@@ -10,7 +11,7 @@ function buildContainers() {
     interfaceBackground = document.createElement("div");
 
     const menuBarContainer = document.createElement("div");
-    const menuBarTitle = document.createElement("p");
+    const menuBarTitle = document.createElement("h1");
     menuBarTitle.innerText = "THREE FLIGHT SIMULATOR";
 
     menuBar = document.createElement("div");
@@ -48,16 +49,22 @@ function fillMenuBar() {
     addMenuButton("keybinds", keybinds);
 }
 
-function home() {}
+function home() {
+    showMenu(null);
+}
 
 function play() {
     hideMenu();
     releaseRenderer();
 }
 
-function graphics() {}
+function graphics() {
+    showMenu(graphicsPage);
+}
 
-function keybinds() {}
+function keybinds() {
+    showMenu(null);
+}
 
 buildContainers();
 fillMenuBar();
