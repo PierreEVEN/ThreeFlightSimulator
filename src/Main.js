@@ -13,8 +13,8 @@ import {GameRenderer} from "./rendering/gameRenderer.js";
 import {DefaultGamemode} from "./defaultGamemode.js";
 import {ImpostorRenderer} from "./rendering/impostorRenderer.js";
 import {DevGamemode} from "./devGamemode.js";
-
-let clock, stats, gamemode, gameRenderer;
+export {releaseRenderer}
+let isReady = false, clock, stats, gamemode, gameRenderer;
 
 
 function loadResources() {
@@ -107,9 +107,7 @@ function preInit() {
         return;
     }
     console.log('loading complete. Starting simulation');
-
-    init();
-    animate();
+    isReady = true;
 }
 
 function animate() {
@@ -122,6 +120,13 @@ function animate() {
     stats.update();
 
     requestAnimationFrame(animate);
+}
+
+function releaseRenderer() {
+    if (isReady) {
+        init();
+        animate();
+    }
 }
 
 loadResources();

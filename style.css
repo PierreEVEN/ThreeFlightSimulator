@@ -1,5 +1,5 @@
 /** Global layout */
-
+/*
 body {
     margin: 0px;
     width: 100%;
@@ -55,8 +55,6 @@ div#content-page {
     flex-flow: nowrap;
 }
 
-/** Menu layouts */
-
 
 div.content-cell {
     display: flex;
@@ -97,8 +95,6 @@ div.content-cell > div.description {
     }
 }
 
-/** Settings */
-
 img#settingsButton {
     margin-right: 20px;
     width: 30px;
@@ -123,8 +119,6 @@ img#backButton:hover {
     cursor: pointer;
 }
 
-/** animations */
-
 .clickable_content {
     transform: scale(0.95);
     transition: all 100ms;
@@ -134,3 +128,4 @@ img#backButton:hover {
     transform: scale(1);
     cursor: pointer;
 }
+*/

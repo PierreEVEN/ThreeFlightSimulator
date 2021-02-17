@@ -1,51 +1,67 @@
+import {releaseRenderer} from "../Main.js";
 
-export {mainMenu, buildMenu}
-import {displaySettings} from "./settings.js";
+const background = document.getElementById('interface-container');
 
-function buildMenu() {
-    document.getElementById('interface-container').innerHTML =
-        '<div id="interface"> ' +
-            '<img id="background" src="https://www.coved.com/wp-content/uploads/2016/11/orionthemes-placeholder-image-1.png">' +
-            '<div id="top-bar"></div>' +
-            '<div id="content-page"></div>' +
-            '<div id="bottom-bar"></div>' +
-        '</div>'
+let interfaceBackground, menuBar, contentPage;
 
+function buildContainers() {
+    background.innerHTML = "";
+
+    interfaceBackground = document.createElement("div");
+
+    const menuBarContainer = document.createElement("div");
+    const menuBarTitle = document.createElement("p");
+    menuBarTitle.innerText = "THREE FLIGHT SIMULATOR";
+
+    menuBar = document.createElement("div");
+    contentPage = document.createElement("div");
+
+    menuBarContainer.appendChild(menuBarTitle);
+    menuBarContainer.appendChild(menuBar);
+    interfaceBackground.appendChild(menuBarContainer);
+    interfaceBackground.appendChild(contentPage);
 }
 
-function multiplayer() {}
+function showMenu(desiredContent) {
+    background.appendChild(interfaceBackground);
+    contentPage.innerHTML = "";
+    if (desiredContent) contentPage.appendChild(desiredContent);
+}
 
-function singleplayer() {
-    document.getElementById('interface-container').innerHTML = "";
+function hideMenu() {
+    background.removeChild(interfaceBackground);
 }
 
 
-function mainMenu() {
-    buildMenu();
-
-    document.getElementById('content-page').innerHTML =
-    '<div class="content-cell clickable_content" id="singleplayer">' +
-        '<img src="https://www.coved.com/wp-content/uploads/2016/11/orionthemes-placeholder-image-1.png">' +
-        '<div class="description">' +
-            '<p class="play-button"> singleplayer</p>' +
-        '</div>' +
-    '</div>' +
-    '<div class="content-cell clickable_content" id="multiplayer">' +
-        '<img src="https://www.coved.com/wp-content/uploads/2016/11/orionthemes-placeholder-image-1.png">' +
-        '<div class="description">' +
-            '<p class="play-button"> multiplayer</p>' +
-        '</div>' +
-    '</div>'
-
-    document.getElementById('top-bar').innerHTML =
-        '<img id="settingsButton" src="./textures/icons/settings-icon.png">';
-
-
-    document.getElementById('singleplayer').onclick = singleplayer;
-    document.getElementById('multiplayer').onclick = multiplayer;
-    document.getElementById("settingsButton").onclick = displaySettings;
+function addMenuButton(text, onclick) {
+    const menuButton = document.createElement("button");
+    menuButton.innerText = text;
+    menuButton.onclick = onclick;
+    menuButton.class = "menuButton";
+    menuBar.appendChild(menuButton);
 }
 
-mainMenu();
-displaySettings();
+function fillMenuBar() {
+    addMenuButton("home", home);
+    addMenuButton("Play", play);
+    addMenuButton("Graphics", graphics);
+    addMenuButton("keybinds", keybinds);
+}
 
+function home() {}
+
+function play() {
+    hideMenu();
+    releaseRenderer();
+}
+
+function graphics() {}
+
+function keybinds() {}
+
+buildContainers();
+fillMenuBar();
+home();
+
+/* display menu */
+showMenu(null);

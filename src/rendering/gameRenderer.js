@@ -25,7 +25,7 @@ class GameRenderer {
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
-        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setPixelRatio(window.devicePixelRatio * 0.5);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);

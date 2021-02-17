@@ -191,7 +191,7 @@ Pour le moment, on se contentera d'une shader assez basique. Dans celui ci on d�
 - Texture d'eau au niveau 0
 - Texture d'herbe autrement, mélangée avec des zones plus rocailleuses sur les pentes plus inclinées.
 
-Pour éviter les séparations nettes, on ferra des interpullations entre les differentes zones pour des transitions douces.
+Pour éviter les séparations nettes, on ferra des interpolations entre les differentes zones pour des transitions douces.
 La detection des pentes elle repose simplement sur un produit scalaire entre un vecteur (0,0,1) et le vecteur normal de la surface.
 
 ![BasicLandscapeShader](BasicLandscapeShader.png) *Une première version du shader de terrain*

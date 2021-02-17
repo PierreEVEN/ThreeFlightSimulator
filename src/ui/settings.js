@@ -1,7 +1,7 @@
 import {keybinds} from "../io/inputManager.js";
 
 export {displaySettings}
-import {buildMenu, mainMenu} from "./mainMenu.js";
+import {showMainMenu} from "./mainMenu.js";
 
 function addGraphics() {
     return '';
@@ -84,7 +84,7 @@ function generateInput(name, binding) {
 function update() {
     requestAnimationFrame(update);
 }
-update();
+//update();
 
 
 function addControls() {
@@ -100,10 +100,10 @@ function addControls() {
 
 
 function displaySettings() {
-    buildMenu();
+    buildContainers();
 
     document.getElementById('bottom-bar').innerHTML = '<img id="backButton" src="./textures/icons/back-icon.png">'
-    document.getElementById("backButton").onclick = mainMenu;
+    document.getElementById("backButton").onclick = showMainMenu;
 
     document.getElementById('content-page').innerHTML =
         '<div class="content-cell">' +
