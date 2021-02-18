@@ -3,15 +3,16 @@ import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 import {addCommand} from "../wasm/wasmInterface.js";
 import {addInputPressAction, addKeyInput} from "../io/inputManager.js";
 import {getHeightAtLocation} from "./HeightGenerator.js";
+import {OPTION_MANAGER} from "../io/optionManager.js";
 
 export { Landscape }
 
 /*
 LANDSCAPE SETTINGS
  */
-const ViewDistance = 6; // Section loading range
-const CellsPerChunk = 20; // Wireframe resolution
-const SectionWidth = 20000; // Section width
+let ViewDistance = 6; // Section loading range
+let CellsPerChunk = 20; // Wireframe resolution
+let SectionWidth = 20000; // Section width
 
 /*
 CONSTANTS
@@ -19,7 +20,6 @@ CONSTANTS
 const cameraGroundLocation = new THREE.Vector3();
 
 addKeyInput('Debug', 'KeyG', 1, 0);
-let TEST;
 
 /**
  * Represent a whole landscape system
@@ -28,6 +28,21 @@ let TEST;
 class Landscape {
 
     constructor(inScene, inCamera) {
+
+
+        ViewDistance = OPTION_MANAGER.options["loading range"].value;
+        CellsPerChunk = OPTION_MANAGER.options["landscape quality"].value;
+
+        OPTION_MANAGER.bindOption(this, "loading range" ,(context, value) => {
+            ViewDistance = value;
+            context.rebuildLandscape();
+        });
+
+        OPTION_MANAGER.bindOption(this, "landscape quality" ,(context, value) => {
+            CellsPerChunk = value;
+            context.rebuildLandscape();
+        });
+
         this.Scene = inScene;
         this.camera = inCamera;
         this.Sections = [];
@@ -37,11 +52,6 @@ class Landscape {
         this.rebuildLandscape();
         this.update(0);
 
-        TEST = this;
-        addInputPressAction('Debug', function() {
-            TEST.rebuildLandscape();
-            console.log("call");
-        });
     }
 
     update(deltaTime) {

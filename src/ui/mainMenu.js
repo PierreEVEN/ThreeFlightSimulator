@@ -1,9 +1,10 @@
 import {releaseRenderer} from "../Main.js";
 import {graphicsPage} from "./graphics.js";
+import {addInputPressAction} from "../io/inputManager.js";
 
 const background = document.getElementById('interface-container');
 
-let interfaceBackground, menuBar, contentPage;
+let interfaceBackground, menuBar, contentPage, bShowMenu = false;
 
 function buildContainers() {
     background.innerHTML = "";
@@ -24,12 +25,14 @@ function buildContainers() {
 }
 
 function showMenu(desiredContent) {
+    bShowMenu = true;
     background.appendChild(interfaceBackground);
     contentPage.innerHTML = "";
     if (desiredContent) contentPage.appendChild(desiredContent);
 }
 
 function hideMenu() {
+    bShowMenu = false;
     background.removeChild(interfaceBackground);
 }
 
@@ -71,4 +74,9 @@ fillMenuBar();
 home();
 
 /* display menu */
-//showMenu(null);
+showMenu(null);
+
+addInputPressAction("Main menu", () => {
+    if (bShowMenu) hideMenu(null);
+    else showMenu();
+});

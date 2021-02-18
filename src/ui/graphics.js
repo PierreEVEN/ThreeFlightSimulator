@@ -1,3 +1,4 @@
+import {OPTION_MANAGER} from "../io/optionManager.js";
 
 export {graphicsPage}
 
@@ -19,7 +20,6 @@ function newSliderOption(title, value, min, max) {
     slider.min = min;
     slider.max = max;
     slider.value = value;
-
     option.appendChild(slider);
     return option;
 }
@@ -56,24 +56,54 @@ function createGraphics() {
     graphicsPage = document.createElement("div");
 
 
-    const globalQuality = document.createElement("select");
-    globalQuality.textContent = "graphics preset";
-    const custom = document.createElement("option");
-    custom.innerText = "custom";
-    globalQuality.appendChild(custom);
-    const low = document.createElement("option");
-    low.innerText = "low";
-    globalQuality.appendChild(low);
-    const medium = document.createElement("option");
-    medium.innerText = "medium";
-    globalQuality.appendChild(medium);
-    const high = document.createElement("option");
-    high.innerText = "high";
-    globalQuality.appendChild(high);
-    const cinematic = document.createElement("option");
-    cinematic.innerText = "cinematic";
-    globalQuality.appendChild(cinematic);
+    for (const option in OPTION_MANAGER.options) {
+        const optionValue = OPTION_MANAGER.options[option];
 
+        const optionContainer = document.createElement("div");
+        const optionTitle = document.createElement("h4");
+        optionTitle.innerText = option;
+        optionContainer.appendChild(optionTitle);
+
+        switch (optionValue.type) {
+            case "combo":
+                const combo = document.createElement("select");
+                combo.value = optionValue.currentChoice;
+                for (const option of optionValue.choices) {
+                    const optionItem = document.createElement("option");
+                    optionItem.innerText = option;
+                    optionItem.value = option;
+                    combo.appendChild(optionItem);
+                }
+                optionContainer.appendChild(combo);
+                combo.onchange = () => {
+                    OPTION_MANAGER.setOptionValue(option, combo.value);
+                }
+                break;
+            case "range":
+                const slider = document.createElement("input");
+                slider.type = "range";
+                slider.min = optionValue.min;
+                slider.max = optionValue.max;
+                slider.value = optionValue.value;
+                slider.step = optionValue.step;
+                optionContainer.appendChild(slider);
+                slider.onchange = () => {
+                    OPTION_MANAGER.setOptionValue(option, parseFloat(slider.value));
+                }
+                break;
+            case "boolean":
+                const checkBox = document.createElement("input");
+                checkBox.type = "checkbox";
+                checkBox.checked = optionValue.value;
+                optionContainer.appendChild(checkBox);
+                checkBox.onchange = () => {
+                    OPTION_MANAGER.setOptionValue(option, checkBox.checked);
+                }
+                break;
+        }
+
+        graphicsPage.appendChild(optionContainer);
+    }
 
     let miscellaneous = newCategory("miscellaneous");
     miscellaneous.appendChild(newSliderOption("pixel percentage", 100, 25, 200));
@@ -90,13 +120,6 @@ function createGraphics() {
     landscape.appendChild(newCheckboxOption("use skirts", true));
     landscape.appendChild(newSliderOption("loading range", 6, 2, 10));
 
-
-
-    graphicsPage.appendChild(globalQuality);
-    graphicsPage.appendChild(miscellaneous);
-    graphicsPage.appendChild(foliage);
-    graphicsPage.appendChild(atmosphere);
-    graphicsPage.appendChild(landscape);
 }
 
 createGraphics();

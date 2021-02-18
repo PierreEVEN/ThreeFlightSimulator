@@ -7,6 +7,7 @@ import {FoliageSystem} from "./rendering/foliageSystem.js";
 import {Landscape} from "./rendering/landscape.js";
 import {enableMouseCapture} from "./io/inputManager.js";
 import {getHeightAtLocation} from "./rendering/HeightGenerator.js";
+import {OPTION_MANAGER} from "./io/optionManager.js";
 
 
 export { DefaultGamemode }
@@ -36,7 +37,7 @@ class DefaultGamemode {
         enableMouseCapture();
 
         this.sunDirectionVector = new THREE.Vector3(0, 0, -1);
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, OPTION_MANAGER.options["camera min"].value, OPTION_MANAGER.options["camera max"].value);
 
         this.scene = new THREE.Scene();
         this.plane = createPlane(this.scene);
@@ -44,6 +45,18 @@ class DefaultGamemode {
         new SaveGame(this.controller);
 
         this.fillScene();
+
+
+        OPTION_MANAGER.bindOption(this, "camera min" ,(context, value) => {
+            context.camera.near = value;
+            console.log("update near : " + value);
+            context.camera.updateProjectionMatrix();
+        });
+
+        OPTION_MANAGER.bindOption(this, "camera max" ,(context, value) => {
+            context.camera.far = value;
+            context.camera.updateProjectionMatrix();
+        });
     }
 
     fillScene() {

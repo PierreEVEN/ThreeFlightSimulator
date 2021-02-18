@@ -7,6 +7,7 @@ import {RESOURCE_MANAGER} from "../io/resourceManager.js";
 import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 import {FXAAShader} from "../../threejs/examples/jsm/shaders/FXAAShader.js";
 import {ShaderPass} from "../../threejs/examples/jsm/postprocessing/ShaderPass.js";
+import {OPTION_MANAGER} from "../io/optionManager.js";
 
 export {GameRenderer}
 
@@ -25,7 +26,7 @@ class GameRenderer {
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
-        this.renderer.setPixelRatio(window.devicePixelRatio * 1);
+        this.renderer.setPixelRatio(window.devicePixelRatio * OPTION_MANAGER.options["pixel percentage"].value / 100);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);
@@ -40,7 +41,7 @@ class GameRenderer {
         this.sceneRenderTarget.depthTexture = new THREE.DepthTexture();
         this.sceneRenderTarget.depthTexture.format = THREE.DepthFormat;
         this.sceneRenderTarget.depthTexture.type = THREE.UnsignedIntType;
-
+        this.bUsePostProcessing = OPTION_MANAGER.options["post processing"].value;
 
         // Create render target scene
         this.renderTargetScene = new THREE.Scene();
@@ -114,7 +115,13 @@ class GameRenderer {
         atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
 
+        OPTION_MANAGER.bindOption(this, "pixel percentage" ,(context, value) => {
+            context.renderer.setPixelRatio(window.devicePixelRatio * (value / 100.0));
+        });
 
+        OPTION_MANAGER.bindOption(this, "post processing" ,(context, value) => {
+            context.bUsePostProcessing = value;
+        });
     }
 
     render = function(gamemode) {
@@ -137,10 +144,10 @@ class GameRenderer {
         this.renderer.setClearColor(this.clearColor, 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-        this.renderer.setRenderTarget( this.sceneRenderTarget );
+        this.renderer.setRenderTarget( this.bUsePostProcessing ? this.sceneRenderTarget : null);
         this.renderer.clear();
         this.renderer.render(gamemode.scene, gamemode.camera);
 
-        this.composer.render();
+        if (this.bUsePostProcessing) this.composer.render();
     }
 }

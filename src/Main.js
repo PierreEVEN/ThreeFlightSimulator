@@ -13,39 +13,31 @@ import {GameRenderer} from "./rendering/gameRenderer.js";
 import {DefaultGamemode} from "./defaultGamemode.js";
 import {ImpostorRenderer} from "./rendering/impostorRenderer.js";
 import {DevGamemode} from "./devGamemode.js";
+import {OPTION_MANAGER} from "./io/optionManager.js";
 export {releaseRenderer}
+
 let isReady = false, clock, stats, gamemode, gameRenderer;
 
+/**
+ * OPTIONS
+ */
 
-function loadResources() {
-    RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
-    RESOURCE_MANAGER.loadMeshResource('./models/debugCube.glb', 'debugCube');
-    RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
+OPTION_MANAGER.addComboOption("Graphic settings", ["custom", "low", "medium", "high", "cinematic"], "high");
+OPTION_MANAGER.addRangeOption("pixel percentage", 100, 25, 200);
+OPTION_MANAGER.addBooleanOption("enable foliage", true);
+OPTION_MANAGER.addRangeOption("foliage density", 100, 20, 200);
+OPTION_MANAGER.addBooleanOption("post processing", true);
+OPTION_MANAGER.addRangeOption("atmospheric scattering quality", 10, 3, 30);
+OPTION_MANAGER.addRangeOption("loading range", 6, 1, 10);
+OPTION_MANAGER.addRangeOption("landscape quality", 20, 2, 100);
+OPTION_MANAGER.addRangeOption("camera min", 0.1, 0.01, 1, 0.01);
+OPTION_MANAGER.addRangeOption("camera max", 100000, 10000, 1000000, 10000);
 
-    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.FS.glsl', 'fragmentShader_postProcess');
-    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.VS.glsl', 'vertexShader_postProcess');
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.VS.glsl', 'vertexShader_landscape_a');
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.VS.glsl', 'vertexShader_landscape_b');
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.FS.glsl', 'fragmentShader_landscape_a');
-    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.FS.glsl', 'fragmentShader_landscape_b');
-    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.VS.glsl', 'vertexShader_impostors');
-    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.FS.glsl', 'fragmentShader_impostors');
-    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
-    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
+/**
+ * INPUTS
+ */
 
-    RESOURCE_MANAGER.loadTextureResource('./textures/noise.png', 'texture_noise');
-    RESOURCE_MANAGER.loadTextureResource('./textures/forrest_ground_01_diff_1k.jpg', 'texture_grass1');
-    RESOURCE_MANAGER.loadTextureResource('./textures/brown_mud_leaves_01_diff_1k.jpg', 'texture_grass2');
-    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_rocks_02_diff_1k.jpg', 'texture_rock1');
-    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_rocks_04_diff_1k.jpg', 'texture_rock2');
-    RESOURCE_MANAGER.loadTextureResource('./textures/snow_02_diff_1k.jpg', 'texture_snow1');
-    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_beach_01_diff_1k.jpg', 'texture_sand1');
-    RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_DISP.png', 'texture_waterDisp');
-    RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_NORM.jpg', 'texture_waterNorm');
-}
-
-
-
+addKeyInput("Main menu", "Escape", 1, 0);
 addKeyInput("Wireframe", "F2", 1, 0);
 addKeyInput("DetachCamera", "KeyT", 1, 0);
 addKeyInput("FpsView", "KeyV", 1, 0);
@@ -75,6 +67,52 @@ addGamepadAxisInput("Yaw", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controll
 addGamepadAxisInput("Throttle", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Controller", 1, 1);
 
 
+/**
+ * RESOURCES
+ */
+
+function loadResources() {
+    RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
+    RESOURCE_MANAGER.loadMeshResource('./models/debugCube.glb', 'debugCube');
+    RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
+
+    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.FS.glsl', 'fragmentShader_postProcess');
+    RESOURCE_MANAGER.loadFileResource('./shaders/PostProcess/postProcess.VS.glsl', 'vertexShader_postProcess');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.VS.glsl', 'vertexShader_landscape_a');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.VS.glsl', 'vertexShader_landscape_b');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.a.FS.glsl', 'fragmentShader_landscape_a');
+    RESOURCE_MANAGER.loadFileResource('./shaders/landscape.b.FS.glsl', 'fragmentShader_landscape_b');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.VS.glsl', 'vertexShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/impostors/impostorsV2.FS.glsl', 'fragmentShader_impostors');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
+    RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
+
+    RESOURCE_MANAGER.loadTextureResource('./textures/noise.png', 'texture_noise');
+    RESOURCE_MANAGER.loadTextureResource('./textures/forrest_ground_01_diff_1k.jpg', 'texture_grass1');
+    RESOURCE_MANAGER.loadTextureResource('./textures/brown_mud_leaves_01_diff_1k.jpg', 'texture_grass2');
+    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_rocks_02_diff_1k.jpg', 'texture_rock1');
+    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_rocks_04_diff_1k.jpg', 'texture_rock2');
+    RESOURCE_MANAGER.loadTextureResource('./textures/snow_02_diff_1k.jpg', 'texture_snow1');
+    RESOURCE_MANAGER.loadTextureResource('./textures/aerial_beach_01_diff_1k.jpg', 'texture_sand1');
+    RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_DISP.png', 'texture_waterDisp');
+    RESOURCE_MANAGER.loadTextureResource('./textures/Water_001_NORM.jpg', 'texture_waterNorm');
+}
+
+function preInit() {
+
+    // Wait resource loading...
+    if (RESOURCE_MANAGER.isLoadingResource()) {
+        requestAnimationFrame(preInit);
+        return;
+    }
+    console.log('loading complete. Starting simulation');
+    isReady = true;
+}
+
+/**
+ * INITIALIZATION
+ */
+
 function init() {
 
     const background = document.getElementById('game');
@@ -97,18 +135,6 @@ function init() {
     RESOURCE_MANAGER.TreeImpostor = new ImpostorRenderer(RESOURCE_MANAGER.model_detailedTree.scene);
     RESOURCE_MANAGER.TreeImpostor.render(gameRenderer.renderer);
     addInputPressAction("Wireframe", () => { RESOURCE_MANAGER.TreeImpostor.material.wireframe = !RESOURCE_MANAGER.TreeImpostor.material.wireframe; });
-}
-
-function preInit() {
-
-    // Wait resource loading...
-    if (RESOURCE_MANAGER.isLoadingResource()) {
-        requestAnimationFrame(preInit);
-        return;
-    }
-    console.log('loading complete. Starting simulation');
-    isReady = true;
-    releaseRenderer();
 }
 
 function animate() {

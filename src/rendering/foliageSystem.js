@@ -3,6 +3,7 @@ import * as THREE from '../../threejs/build/three.module.js';
 import {RESOURCE_MANAGER} from '../io/resourceManager.js';
 import {getHeightAtLocation} from "./HeightGenerator.js";
 import {addCommand} from "../wasm/wasmInterface.js";
+import {OPTION_MANAGER} from "../io/optionManager.js";
 
 export {FoliageSystem}
 
@@ -20,7 +21,7 @@ class FoliageType {
         let test = 0.02;
         this.scale = new THREE.Vector3(test, test, test);
 
-        this.density = 100;
+        this.density = OPTION_MANAGER.options["foliage density"].value;
 
         meshGroups.push({
             geometry: new THREE.PlaneGeometry(15, 15),
@@ -69,6 +70,7 @@ class FoliageSystem {
     }
 
     update() {
+        
         let cameraX = Math.trunc(this.camera.position.x / this.sectionSize);
         let cameraY = Math.trunc(this.camera.position.y / this.sectionSize);
         for (let i = this.sections.length - 1; i >= 0; --i) {
