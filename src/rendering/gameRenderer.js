@@ -59,8 +59,8 @@ class GameRenderer {
                 planetRadius: {value : 4000},
                 atmosphereDensityFalloff: {value: 3.9},
                 scatterCoefficients: { value: new THREE.Vector3(700, 550, 460)},
-                NumScatterPoints: {value : 10},
-                NumOpticalDepthPoints: {value : 10},
+                NumScatterPoints: {value : OPTION_MANAGER.options["atmospheric scattering quality"].value},
+                NumOpticalDepthPoints: {value : OPTION_MANAGER.options["atmospheric scattering quality"].value},
                 sunDirection: {value: new THREE.Vector3(1, 1, 1).normalize()}
             },
             vertexShader: RESOURCE_MANAGER.vertexShader_postProcess,
@@ -99,6 +99,7 @@ class GameRenderer {
         this.scatterValues = new THREE.Vector3(700, 530, 440);
         this.scatteringStrength = 2.62;
 
+        /*
         this.gui = new GUI();
         let atmosphereFolder = this.gui.addFolder('atmosphere');
         atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
@@ -114,9 +115,16 @@ class GameRenderer {
         atmosphereFolder.add(this.sunDirectionVector, 'x', -1, 1).name('sun X').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
         atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
+         */
+
+        OPTION_MANAGER.bindOption(this, "atmospheric scattering quality" ,(context, value) => {
+            context.renderTargetMaterial.uniforms.NumScatterPoints.value = value;
+            context.renderTargetMaterial.uniforms.NumOpticalDepthPoints.value = value;
+        });
 
         OPTION_MANAGER.bindOption(this, "pixel percentage" ,(context, value) => {
             context.renderer.setPixelRatio(window.devicePixelRatio * (value / 100.0));
+            context.sceneRenderTarget.setSize(window.innerWidth * value / 100, window.innerHeight * value / 100)
         });
 
         OPTION_MANAGER.bindOption(this, "post processing" ,(context, value) => {

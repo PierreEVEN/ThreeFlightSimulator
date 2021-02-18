@@ -70,7 +70,7 @@ class FoliageSystem {
     }
 
     update() {
-        
+
         let cameraX = Math.trunc(this.camera.position.x / this.sectionSize);
         let cameraY = Math.trunc(this.camera.position.y / this.sectionSize);
         for (let i = this.sections.length - 1; i >= 0; --i) {

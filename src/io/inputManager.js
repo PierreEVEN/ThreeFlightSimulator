@@ -1,3 +1,4 @@
+
 export {keybinds, initializeInputs, updateInputs, addKeyInput, addGamepadAxisInput, addMouseAxisInput, addMouseButtonInput, getInputValue, getKeybindValue, addInputPressAction, addInputReleaseAction, isPressed, enableMouseCapture, disableMouseCapture}
 
 
@@ -48,7 +49,6 @@ function updateInputs() {
     }
 }
 
-
 function registerInput(inputID) {
     if (!keybinds[inputID]) keybinds[inputID] = {
         inputs: [],
@@ -58,10 +58,7 @@ function registerInput(inputID) {
         releasedEvents: [],
         pressed: false,
     }
-
-
 }
-
 
 function addKeyInput(inputId, key, pressedValue, releasedValue) {
     registerInput(inputId);
@@ -102,7 +99,9 @@ function getKeybindValue(inputId) {
     return keybinds[inputId].value;
 }
 
-function addInputPressAction(inputId, action) { keybinds[inputId].pressedEvents.push(action); }
+function addInputPressAction(inputId, action) {
+    keybinds[inputId].pressedEvents.push(action);
+}
 
 function addInputReleaseAction(inputId, action) { keybinds[inputId].releasedEvents.push(action); }
 

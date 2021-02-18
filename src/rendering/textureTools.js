@@ -52,30 +52,6 @@ function improveAlphaColor(texture, resolutionX, resolutionY) {
             //texture[(x + y * resolutionX) * 4 + 3] = 255;
         }
     }
-    return;
-
-    let averageRed = 0, averageGreen = 0, averageBlue = 0;
-    let pixels = 0;
-    for (let i = 0; i < resolutionX * resolutionY; ++i) {
-        const pixelIndex = i * 4;
-        if (texture[pixelIndex + 4]) {
-            averageRed += texture[pixelIndex];
-            averageGreen += texture[pixelIndex + 1];
-            averageBlue += texture[pixelIndex + 2];
-            pixels ++;
-        }
-    }
-    averageRed /= pixels;
-    averageGreen /= pixels;
-    averageBlue /= pixels;
-    for (let i = 0; i < resolutionX * resolutionY; ++i) {
-        const pixelIndex = i * 4;
-        if (!texture[pixelIndex + 4]) {
-            texture[pixelIndex] = averageRed;
-            texture[pixelIndex + 1] = averageGreen;
-            texture[pixelIndex + 2] = averageBlue;
-        }
-    }
 }
 
 

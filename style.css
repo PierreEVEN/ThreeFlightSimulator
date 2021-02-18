@@ -1,131 +1,82 @@
-/** Global layout */
-/*
+
 body {
+    color: white;
     margin: 0px;
     width: 100%;
     height: 100%;
+    background-color: gray;
 }
 
 div#game {
-    position: absolute;
-    margin: 0px;
-    padding: 0px;
-    display: flex;
-}
-
-div#interface {
     position:absolute;
     display: flex;
-    flex-direction: column;
+    transition: all 200ms;
+    background-color: black;
+}
+
+#test {
+    transition: all 200ms;
+}
+
+.blurred {
+    transition: all 200ms;
+    filter: blur(8px) brightness(50%);
+    -webkit-filter: blur(8px)  brightness(50%);
+}
+
+.fill {
     width: 100%;
     height: 100%;
 }
 
-
-img#background {
+div#game > img {
     width: 100%;
-    height:100%;
-    object-fit: cover;
-    position: absolute;
-    z-index: -10;
+    height: 100%;
 }
 
-div#top-bar {
-    background-color: rgba(0.1, 0.1, 0.1, 0.7);
+div#interface-container {
+    position:absolute;
     display: flex;
+}
+
+div#interfaceBackground {
+    display: flex;
+    height: 100%;
     width: 100%;
-    height: 70px;
-    align-items: center;
-    justify-content: right;
 }
 
-div#bottom-bar {
-    background-color: rgba(0.1, 0.1, 0.1, 0.7);
+div#menuBar {
+    color: white;
     display: flex;
-    width: 100%;
-    height: 70px;
-    align-items: center;
+    flex-direction: column;
+    background-color: rgba(1, 1, 1, 0.4);
+    height: 100%;
+}
+div#menuBar > h1 {
+    margin: 10% 30px 10%;
 }
 
-div#content-page {
-    color:white;
+div#menubarContainer {
     display: flex;
-    flex-grow: 1;
-    height: 50%;
-    flex-flow: nowrap;
-}
-
-
-div.content-cell {
-    display: flex;
-    margin: 50px 10px;
-    background-color: rgba(0.1, 0.1, 0.1, 0.6);
-    flex-grow: 1;
-}
-div.content-cell > img {
-    object-fit: cover;
-    min-height: 0;
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    margin: 10px;
     flex-direction: column;
 }
 
-div.content-cell > div.description {
-    font-size: 20px;
+.menuButton {
     display: flex;
-    bottom: 10px;
-    width: 100%;
-    position: absolute;
-    background-color: rgba(0.1, 0.1, 0.1, 0.4);
-    justify-content: center;
+    color: white;
+    margin: 10px;
+    height: 70px;
+    border-style: groove;
+    background-color: transparent;
+    transition: 100ms;
+    border-color: rgba(1, 1, 0, 0);
+    border-radius: 20px;
+    transform: scale(0.95);
     align-items: center;
 }
 
-@media only screen and (max-device-width : 640px) {
-    div#content-page {
-        flex-direction: column;
-    }
-    div.content-cell {
-        height:40%;
-        width: auto;
-        margin: 10px 50px;
-    }
-}
-
-img#settingsButton {
-    margin-right: 20px;
-    width: 30px;
-    height: 30px;
-    transition: all 200ms;
-}
-img#settingsButton:hover {
-    transform: rotate(100deg) scale(1.2);
-    cursor: pointer;
-}
-
-
-img#backButton {
-    margin-left: 25px;
-    width: 30px;
-    height: 30px;
-    transition: all 200ms;
-}
-img#backButton:hover {
-    margin-left: 20px;
-    transform: scale(1.2);
-    cursor: pointer;
-}
-
-.clickable_content {
-    transform: scale(0.95);
-    transition: all 100ms;
-}
-
-.clickable_content:hover {
+.menuButton:hover {
+    border-color: sandybrown;
+    transition: 100ms;
     transform: scale(1);
-    cursor: pointer;
 }
-*/

@@ -86,10 +86,29 @@ function createGraphics() {
                 slider.max = optionValue.max;
                 slider.value = optionValue.value;
                 slider.step = optionValue.step;
-                optionContainer.appendChild(slider);
+                const number = document.createElement("input");
+                number.type = "number";
+                number.min = optionValue.min;
+                number.max = optionValue.max;
+                number.value = optionValue.value;
+                number.step = optionValue.step;
                 slider.onchange = () => {
                     OPTION_MANAGER.setOptionValue(option, parseFloat(slider.value));
                 }
+                slider.oninput = () => {
+                    number.value = slider.value;
+                }
+                number.onchange = () => {
+                    const value = parseFloat(number.value);
+                    if (value < optionValue.min) number.value = optionValue.min;
+                    if (value > optionValue.max) number.value = optionValue.max;
+                    OPTION_MANAGER.setOptionValue(option, parseFloat(number.value));
+                }
+                number.oninput = () => {
+                    slider.value = number.value;
+                }
+                optionContainer.appendChild(slider);
+                optionContainer.appendChild(number);
                 break;
             case "boolean":
                 const checkBox = document.createElement("input");

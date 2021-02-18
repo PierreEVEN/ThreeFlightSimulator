@@ -2,20 +2,23 @@ import {releaseRenderer} from "../Main.js";
 import {graphicsPage} from "./graphics.js";
 import {addInputPressAction} from "../io/inputManager.js";
 
+export {showMenu}
+
 const background = document.getElementById('interface-container');
 
 let interfaceBackground, menuBar, contentPage, bShowMenu = false;
 
 function buildContainers() {
     background.innerHTML = "";
-
     interfaceBackground = document.createElement("div");
-
+    interfaceBackground.id = "interfaceBackground";
     const menuBarContainer = document.createElement("div");
     const menuBarTitle = document.createElement("h1");
     menuBarTitle.innerText = "THREE FLIGHT SIMULATOR";
+    menuBarContainer.id = "menuBar";
 
     menuBar = document.createElement("div");
+    menuBar.id = "menubarContainer";
     contentPage = document.createElement("div");
 
     menuBarContainer.appendChild(menuBarTitle);
@@ -27,12 +30,18 @@ function buildContainers() {
 function showMenu(desiredContent) {
     bShowMenu = true;
     background.appendChild(interfaceBackground);
-    contentPage.innerHTML = "";
-    if (desiredContent) contentPage.appendChild(desiredContent);
+    background.classList.add("fill");
+    document.getElementById("game").classList.add("blurred");
+    if (desiredContent) {
+        contentPage.innerHTML = "";
+        if (desiredContent !== false) contentPage.appendChild(desiredContent);
+    }
 }
 
 function hideMenu() {
     bShowMenu = false;
+    background.classList.remove("fill");
+    document.getElementById("game").classList.remove("blurred");
     background.removeChild(interfaceBackground);
 }
 
@@ -41,24 +50,26 @@ function addMenuButton(text, onclick) {
     const menuButton = document.createElement("button");
     menuButton.innerText = text;
     menuButton.onclick = onclick;
-    menuButton.class = "menuButton";
+    menuButton.classList.add("menuButton");
     menuBar.appendChild(menuButton);
 }
 
 function fillMenuBar() {
-    addMenuButton("home", home);
-    addMenuButton("Play", play);
-    addMenuButton("Graphics", graphics);
-    addMenuButton("keybinds", keybinds);
+    addMenuButton("HOME", home);
+    addMenuButton("PLAY", play);
+    addMenuButton("GRAPHICS", graphics);
+    addMenuButton("INPUTS", keybinds);
 }
 
 function home() {
-    showMenu(null);
+    showMenu();
 }
 
+let hasClickedPlay = true;
 function play() {
     hideMenu();
-    releaseRenderer();
+    if (hasClickedPlay) releaseRenderer();
+    hasClickedPlay = false;
 }
 
 function graphics() {
@@ -66,7 +77,7 @@ function graphics() {
 }
 
 function keybinds() {
-    showMenu(null);
+    showMenu();
 }
 
 buildContainers();
@@ -77,6 +88,10 @@ home();
 showMenu(null);
 
 addInputPressAction("Main menu", () => {
-    if (bShowMenu) hideMenu(null);
-    else showMenu();
+    if (bShowMenu) hideMenu();
+    else showMenu(false);
 });
+
+document.addEventListener('pointerlockchange', (event) => {
+    if (!document.pointerLockElement) showMenu(false);
+}, false);
