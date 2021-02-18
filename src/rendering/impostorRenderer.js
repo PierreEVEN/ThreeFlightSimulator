@@ -25,7 +25,7 @@ class ImpostorRenderer {
 
     constructor(renderedObject) {
 
-        this.objectScaleFactor = 1.5;
+        this.objectScaleFactor = 1.4;
         this.captureRadius = 3;
         this.renderTargetResolution = 1024;
         this.alpha = 0;

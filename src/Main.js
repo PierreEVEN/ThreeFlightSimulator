@@ -108,6 +108,7 @@ function preInit() {
     }
     console.log('loading complete. Starting simulation');
     isReady = true;
+    releaseRenderer();
 }
 
 function animate() {

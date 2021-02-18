@@ -64,4 +64,4 @@ fillMenuBar();
 home();
 
 /* display menu */
-showMenu(null);
+//showMenu(null);

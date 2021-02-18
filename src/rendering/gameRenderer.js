@@ -25,7 +25,7 @@ class GameRenderer {
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
-        this.renderer.setPixelRatio(window.devicePixelRatio * 0.5);
+        this.renderer.setPixelRatio(window.devicePixelRatio * 1);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         domElement.appendChild(this.renderer.domElement);
@@ -124,6 +124,8 @@ class GameRenderer {
         let scatterB = Math.pow(400 / this.scatterValues.z, 4) * this.scatteringStrength;
 
         this.sunDirectionVector.normalize();
+
+        RESOURCE_MANAGER.TreeImpostor.material.uniforms.lightDir.value = this.sunDirectionVector;
 
         this.renderTargetMaterial.uniforms.sunDirection.value.set(-this.sunDirectionVector.x, -this.sunDirectionVector.y, -this.sunDirectionVector.z);
         this.renderTargetMaterial.uniforms.scatterCoefficients.value.set(scatterR, scatterG, scatterB);

@@ -4,7 +4,7 @@ import * as THREE from '../../threejs/build/three.module.js';
 export {createMipMappedTexture}
 let test = 0;
 
-function divideImageData(imageData, newResolution, channels) {
+function co(imageData, newResolution, channels) {
 
     const pixels = newResolution * newResolution;
     let dividedData = new Uint8ClampedArray(pixels * channels);
@@ -22,21 +22,73 @@ function divideImageData(imageData, newResolution, channels) {
             dividedData[newPos + 1] = (imageData[lastPos0 + 1] + imageData[lastPos1 + 1] + imageData[lastPos2 + 1] + imageData[lastPos3 + 1]) / 4;
             dividedData[newPos + 2] = (imageData[lastPos0 + 2] + imageData[lastPos1 + 2] + imageData[lastPos2 + 2] + imageData[lastPos3 + 2]) / 4;
             dividedData[newPos + 3] = (imageData[lastPos0 + 3] + imageData[lastPos1 + 3] + imageData[lastPos2 + 3] + imageData[lastPos3 + 3]) / 2;
-            if (dividedData[newPos + 3] < 0.5) {
-                dividedData[newPos] = 70
-                dividedData[newPos + 1] = 120
-                dividedData[newPos + 2] = 30
-            }
-
         }
     }
     return dividedData;
 }
 
+function improveAlphaColor(texture, resolutionX, resolutionY) {
+
+
+    for (let x = 0; x < resolutionX; ++x) {
+        for (let y = 0; y < resolutionY; ++y) {
+            // Only done on transparent pixels
+            if (texture[(x + y * resolutionX) * 4 + 3] === 0) {
+                // For each channel
+                for (let channel = 0; channel < 3; ++channel) {
+
+                    let px = texture[(x + 1 + y * resolutionX) * 4 + channel];
+                    let mx = texture[(x - 1 + y * resolutionX) * 4 + channel];
+                    let py = texture[(x + (y + 1) * resolutionX) * 4 + channel];
+                    let my = texture[(x + (y - 1) * resolutionX) * 4 + channel];
+
+                    let sum = 0;
+                    if (mx) sum += 1;
+                    if (my) sum += 1;
+
+                    texture[(x + y * resolutionX) * 4 + channel] = (mx +  my ) / sum;
+                }
+            }
+            //texture[(x + y * resolutionX) * 4 + 3] = 255;
+        }
+    }
+    return;
+
+    let averageRed = 0, averageGreen = 0, averageBlue = 0;
+    let pixels = 0;
+    for (let i = 0; i < resolutionX * resolutionY; ++i) {
+        const pixelIndex = i * 4;
+        if (texture[pixelIndex + 4]) {
+            averageRed += texture[pixelIndex];
+            averageGreen += texture[pixelIndex + 1];
+            averageBlue += texture[pixelIndex + 2];
+            pixels ++;
+        }
+    }
+    averageRed /= pixels;
+    averageGreen /= pixels;
+    averageBlue /= pixels;
+    for (let i = 0; i < resolutionX * resolutionY; ++i) {
+        const pixelIndex = i * 4;
+        if (!texture[pixelIndex + 4]) {
+            texture[pixelIndex] = averageRed;
+            texture[pixelIndex + 1] = averageGreen;
+            texture[pixelIndex + 2] = averageBlue;
+        }
+    }
+}
+
+
 
 function createMipMappedTexture(resolution, channels, baseData) {
 
+    improveAlphaColor(baseData, resolution, resolution);
+
+
+
+
     const texture = new THREE.CanvasTexture(document.createElement("canvas"));
+
 
     let lastMipMaps = baseData;
     texture.mipmaps[0] = new ImageData(lastMipMaps, resolution, resolution);
@@ -44,15 +96,42 @@ function createMipMappedTexture(resolution, channels, baseData) {
     do {
         resolution /= 2;
         test = mipmap;
-        const newMip = divideImageData(lastMipMaps, resolution, channels);
+        const newMip = co(lastMipMaps, resolution, channels);
         texture.mipmaps[mipmap++] = new ImageData(newMip, resolution, resolution);
         lastMipMaps = newMip;
     }
     while (resolution > 1);
 
-    //texture.minFilter = THREE.NearestMipMapNearestFilter;
-    //texture.magFilter = THREE.NearestFilter
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
+
+
     return texture;
+
+
+    /*
+    let imageCanvas = document.createElement( "canvas" ),
+        context = imageCanvas.getContext( "2d" );
+    imageCanvas.width = resolution;
+    imageCanvas.height = resolution;
+    let testImData = new ImageData(baseData, resolution, resolution);
+
+    context.putImageData(testImData, 0, 0);
+    let imgAsDataURL = imageCanvas.toDataURL("image/png");
+
+    document.getElementById("game").appendChild(imageCanvas);
+
+    // Save image into localStorage
+    try {
+        localStorage.setItem("elephant", imgAsDataURL);
+        console.log("stored");
+        let link = document.createElement("a");
+        link.setAttribute("href", imgAsDataURL);
+        link.setAttribute("download", "test");
+        link.click();
+    }
+    catch (e) {
+        console.log("Storage failed: " + e);
+    }
+     */
 }
