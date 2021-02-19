@@ -14,6 +14,7 @@ import {DefaultGamemode} from "./defaultGamemode.js";
 import {ImpostorRenderer} from "./rendering/impostorRenderer.js";
 import {DevGamemode} from "./devGamemode.js";
 import {OPTION_MANAGER} from "./io/optionManager.js";
+import {SAVEGAME} from "./io/saveGame.js";
 export {releaseRenderer}
 
 let isReady = false, clock, stats, gamemode, gameRenderer;
@@ -75,6 +76,12 @@ OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
     }
 });
 
+if (!SAVEGAME.getOption("Graphic settings")) {
+    let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) console.log("detected mobile device, using low settings");
+    else console.log("detected desktop device, using high settings");
+    OPTION_MANAGER.setOptionValue("Graphic settings", isMobile ? "low" : "high");
+}
 
 /**
  * INPUTS
