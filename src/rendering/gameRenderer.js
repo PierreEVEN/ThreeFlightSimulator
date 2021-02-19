@@ -9,7 +9,7 @@ import {FXAAShader} from "../../threejs/examples/jsm/shaders/FXAAShader.js";
 import {ShaderPass} from "../../threejs/examples/jsm/postprocessing/ShaderPass.js";
 import {OPTION_MANAGER} from "../io/optionManager.js";
 import {CSM} from "../../threejs/examples/jsm/csm/CSM.js";
-import {CSMHelper} from "../../threejs/examples/jsm/csm/CSMHelper.js";
+import {addInputPressAction} from "../io/inputManager.js";
 
 export {GameRenderer}
 
@@ -123,27 +123,46 @@ class GameRenderer {
          */
 
 
+        const splitFunction = function ( amount, near, far, target ) {
+
+
+            target.push( 0.001 );
+            target.push( 0.005 );
+            target.push( 0.5 );
+            target.push( 1 );
+        }
+
         this.csm = new CSM( {
             maxFar: 5000,
-            shadowMapSize: 8192,
+            lightFar: 20000,
+            shadowMapSize: 4096,
+            shadowBias: 0.000000001,
             lightDirection: gamemode.sunDirectionVector,
             camera: gamemode.camera,
             parent: gamemode.scene,
-            mode: 'practical',
+            mode: 'custom',
             lightIntensity: 1,
-            cascades: 6,
+            cascades: 4,
+            fade: true,
+            customSplitsCallback: splitFunction,
         } );
         this.csm.fade = true;
+        this.csm.update();
+        this.enableShadows = OPTION_MANAGER.options["shadows"].value;
+        this.renderer.shadowMap.enabled = this.enableShadows;
+
+        OPTION_MANAGER.bindOption(this, "shadows" ,(context, value) => {
+            context.enableShadows = value;
+            this.renderer.shadowMap.enabled = value;
+        });
 
         if (gamemode.setMaterialCsmShadows) gamemode.setMaterialCsmShadows(this.csm);
-
 
         this.gui = new GUI();
         const sunFolder = this.gui.addFolder("sun");
         sunFolder.add(gamemode.sunDirectionVector, 'x', -1, 1).name('X').listen();
         sunFolder.add(gamemode.sunDirectionVector, 'y', -1, 1).name('Y').listen();
         sunFolder.add(gamemode.sunDirectionVector, 'z', -1, 1).name('Z').listen();
-
     }
 
     render = function(gamemode) {
@@ -172,6 +191,6 @@ class GameRenderer {
 
         if (this.bUsePostProcessing) this.composer.render();
 
-        if (this.csm) this.csm.update();
+        if (this.csm && this.enableShadows) this.csm.update();
     }
 }

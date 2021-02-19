@@ -20,8 +20,10 @@ function createPlane(scene) {
         if (child.isMesh) {
             child.material.metalness = 0;
             child.material.roughness = 1;
-            child.castShadow = true;
-            child.receiveShadow = true;
+            if (child.name !== "CanopyGlass") {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
         }
     });
     scene.add(RESOURCE_MANAGER.modele_F16.scene);
@@ -60,7 +62,7 @@ class DefaultGamemode {
 
     fillScene() {
 
-        const lightIntensity = 0.1;
+        const lightIntensity = 0.3;
         this.ambiantLight = new THREE.AmbientLight(new THREE.Color(lightIntensity, lightIntensity, lightIntensity));
         this.scene.add(this.ambiantLight);
 

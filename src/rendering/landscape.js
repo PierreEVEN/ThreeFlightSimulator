@@ -111,8 +111,8 @@ class Landscape {
     }
 
     createShaderMaterial() {
-        const material = new THREE.MeshPhysicalMaterial();
-
+        const material = new THREE.MeshLambertMaterial();
+        material.landscapeMateria = true;
         material.noise = RESOURCE_MANAGER.texture_noise;
         material.grass1 = RESOURCE_MANAGER.texture_grass1;
         material.grass2 = RESOURCE_MANAGER.texture_grass2;
@@ -123,11 +123,9 @@ class Landscape {
         material.waterDisp = RESOURCE_MANAGER.texture_waterDisp;
         material.waterNorm = RESOURCE_MANAGER.texture_waterNorm;
 
-        material.reflectivity = 0.2;
 
         material.onBeforeCompile = shader => {
-            if (shader.shaderName !== "MeshPhysicalMaterial") return;
-
+            if (!material.landscapeMateria) return;
 
             shader.uniforms.time = { value: 0 },
             shader.uniforms.noise = { type: 't', value: RESOURCE_MANAGER.texture_noise },

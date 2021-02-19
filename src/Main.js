@@ -27,6 +27,7 @@ OPTION_MANAGER.addComboOption("Graphic settings", ["custom", "low", "medium", "h
 OPTION_MANAGER.addRangeOption("pixel percentage", 100, 25, 200);
 OPTION_MANAGER.addBooleanOption("enable foliage", true);
 OPTION_MANAGER.addRangeOption("foliage density", 100, 20, 200);
+OPTION_MANAGER.addBooleanOption("shadows", true);
 OPTION_MANAGER.addBooleanOption("post processing", true);
 OPTION_MANAGER.addRangeOption("atmospheric scattering quality", 10, 3, 30);
 OPTION_MANAGER.addRangeOption("loading range", 6, 1, 10);
@@ -43,6 +44,7 @@ OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
             OPTION_MANAGER.setOptionValue("enable foliage", true);
             OPTION_MANAGER.setOptionValue("foliage density", 20);
             OPTION_MANAGER.setOptionValue("post processing", false);
+            OPTION_MANAGER.setOptionValue("shadows", false);
             OPTION_MANAGER.setOptionValue("loading range", 1);
             OPTION_MANAGER.setOptionValue("landscape quality", 10);
             break;
@@ -50,6 +52,7 @@ OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
             OPTION_MANAGER.setOptionValue("pixel percentage", 100);
             OPTION_MANAGER.setOptionValue("enable foliage", true);
             OPTION_MANAGER.setOptionValue("foliage density", 50);
+            OPTION_MANAGER.setOptionValue("shadows", false);
             OPTION_MANAGER.setOptionValue("post processing", true);
             OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 3);
             OPTION_MANAGER.setOptionValue("loading range", 3);
@@ -59,6 +62,7 @@ OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
             OPTION_MANAGER.setOptionValue("pixel percentage", 100);
             OPTION_MANAGER.setOptionValue("enable foliage", true);
             OPTION_MANAGER.setOptionValue("foliage density", 100);
+            OPTION_MANAGER.setOptionValue("shadows", true);
             OPTION_MANAGER.setOptionValue("post processing", true);
             OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 10);
             OPTION_MANAGER.setOptionValue("loading range", 6);
@@ -68,6 +72,7 @@ OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
             OPTION_MANAGER.setOptionValue("pixel percentage", 200);
             OPTION_MANAGER.setOptionValue("enable foliage", true);
             OPTION_MANAGER.setOptionValue("foliage density", 150);
+            OPTION_MANAGER.setOptionValue("shadows", true);
             OPTION_MANAGER.setOptionValue("post processing", true);
             OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 20);
             OPTION_MANAGER.setOptionValue("loading range", 6);
@@ -89,6 +94,7 @@ if (!SAVEGAME.getOption("Graphic settings")) {
 
 addKeyInput("Main menu", "Escape", 1, 0);
 addKeyInput("Wireframe", "F2", 1, 0);
+addKeyInput("Debug", "F8", 1, 0);
 addKeyInput("DetachCamera", "KeyT", 1, 0);
 addKeyInput("FpsView", "KeyV", 1, 0);
 addKeyInput("Pause", "KeyP", 1, 0);

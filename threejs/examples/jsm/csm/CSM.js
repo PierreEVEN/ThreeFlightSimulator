@@ -34,7 +34,7 @@ class CSM {
 		this.lightDirection = data.lightDirection || new Vector3( 1, - 1, 1 ).normalize();
 		this.lightIntensity = data.lightIntensity || 1;
 		this.lightNear = data.lightNear || 1;
-		this.lightFar = data.lightFar || 20000;
+		this.lightFar = data.lightFar || 2000;
 		this.lightMargin = data.lightMargin || 200;
 		this.customSplitsCallback = data.customSplitsCallback;
 		this.fade = false;
