@@ -49,7 +49,7 @@ class Landscape {
         this.time = 0;
 
         this.LandscapeMaterial = this.createShaderMaterial();
-        this.rebuildLandscape();
+        this.Sections = [];
         this.update(0);
 
     }
@@ -60,21 +60,54 @@ class Landscape {
             this.LandscapeMaterial.uniforms.time.value = this.time;
         }
 
-        for (let section of this.Sections) section.update();
+        let cameraX = Math.trunc(this.camera.position.x / SectionWidth);
+        let cameraY = Math.trunc(this.camera.position.y / SectionWidth);
+        for (let i = this.Sections.length - 1; i >= 0; --i) {
+            if (
+                this.Sections[i].posX < cameraX - ViewDistance ||
+                this.Sections[i].posX > cameraX + ViewDistance ||
+                this.Sections[i].posY < cameraY - ViewDistance ||
+                this.Sections[i].posY > cameraY + ViewDistance
+            ) {
+                this.Sections[i].section.destroy();
+                this.Sections.splice(i, 1);
+            }
+        }
+
+        for (let x = cameraX - ViewDistance; x <= cameraX + ViewDistance; ++x) {
+            for (let y = cameraY - ViewDistance; y <= cameraY + ViewDistance; ++y) {
+                this.tryLoadSection(x, y);
+            }
+        }
+
+        for (let section of this.Sections) {
+            section.section.update();
+        }
     }
+
+    tryLoadSection(posX, posY) {
+        let exists = false;
+        for (let section of this.Sections) {
+            if (section.posX === posX && section.posY === posY) {
+                exists = true;
+            }
+        }
+        if (!exists) {
+            this.Sections.push({
+                posX: posX,
+                posY: posY,
+                section: new LandscapeSection(this, new THREE.Vector3(posX * SectionWidth, posY * SectionWidth, 0), SectionWidth),
+            });
+        }
+    }
+
 
     rebuildLandscape() {
         for (const section of this.Sections) {
-            section.destroy();
+            section.section.destroy();
         }
 
         this.Sections = [];
-
-        for (let x = -ViewDistance; x <= ViewDistance; ++x) {
-            for (let y = -ViewDistance; y <= ViewDistance; ++y) {
-                this.Sections.push(new LandscapeSection(this, new THREE.Vector3(x * SectionWidth, y * SectionWidth, 0), SectionWidth));
-            }
-        }
     }
 
     createShaderMaterial() {
@@ -312,6 +345,8 @@ class OctreeNode {
             }
 
             this.Mesh = new THREE.Mesh(Geometry, this.Landscape.LandscapeMaterial);
+            this.Mesh.castShadow = true;
+            this.Mesh.receiveShadow = true;
         });
     }
 

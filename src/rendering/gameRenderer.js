@@ -8,6 +8,8 @@ import {GUI} from "../../threejs/examples/jsm/libs/dat.gui.module.js";
 import {FXAAShader} from "../../threejs/examples/jsm/shaders/FXAAShader.js";
 import {ShaderPass} from "../../threejs/examples/jsm/postprocessing/ShaderPass.js";
 import {OPTION_MANAGER} from "../io/optionManager.js";
+import {CSM} from "../../threejs/examples/jsm/csm/CSM.js";
+import {CSMHelper} from "../../threejs/examples/jsm/csm/CSMHelper.js";
 
 export {GameRenderer}
 
@@ -27,6 +29,8 @@ class GameRenderer {
         this.renderer.setPixelRatio(window.devicePixelRatio * OPTION_MANAGER.options["pixel percentage"].value / 100);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         domElement.appendChild(this.renderer.domElement);
 
         // Create world render target
@@ -97,24 +101,6 @@ class GameRenderer {
         this.scatterValues = new THREE.Vector3(700, 530, 440);
         this.scatteringStrength = 2.62;
 
-        /*
-        this.gui = new GUI();
-        let atmosphereFolder = this.gui.addFolder('atmosphere');
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereRadius, 'value', 1000000, 10000000).name('atmosphere radius').listen();
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetCenter.value, 'z', -9985946 - 10000, -9985946 + 10000).name('planet z center').listen();
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.planetRadius, 'value', 100000, 10000000).name('planet radius').listen();
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.atmosphereDensityFalloff, 'value', 0.01, 10.0).name('density falloff').listen()
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.NumScatterPoints, 'value', 0, 20).name('Num scatter points').listen();
-        atmosphereFolder.add(this.renderTargetMaterial.uniforms.NumOpticalDepthPoints, 'value', 0, 20).name('Num depth points').listen();
-        atmosphereFolder.add(this.scatterValues, 'x', 300, 900).name('scatter Red').listen();
-        atmosphereFolder.add(this.scatterValues, 'y', 300, 900).name('scatter Green').listen();
-        atmosphereFolder.add(this.scatterValues, 'z', 300, 900).name('scatter Blue').listen();
-        atmosphereFolder.add(this, 'scatteringStrength', 0, 10).name('scattering strength').listen();
-        atmosphereFolder.add(this.sunDirectionVector, 'x', -1, 1).name('sun X').listen();
-        atmosphereFolder.add(this.sunDirectionVector, 'y', -1, 1).name('sun Y').listen();
-        atmosphereFolder.add(this.sunDirectionVector, 'z', -1, 1).name('sun Z').listen();
-         */
-
         OPTION_MANAGER.bindOption(this, "atmospheric scattering quality" ,(context, value) => {
             context.renderTargetMaterial.uniforms.NumScatterPoints.value = value;
             context.renderTargetMaterial.uniforms.NumOpticalDepthPoints.value = value;
@@ -131,6 +117,32 @@ class GameRenderer {
             else context.clearColor = new THREE.Color(0, 0, 0);
         });
         this.clearColor = OPTION_MANAGER.options["post processing"].value ? new THREE.Color(0,0,0) : new THREE.Color(102 / 256, 203 / 256, 239 / 256);
+
+        /**
+         * Setup cascaded shadow maps
+         */
+
+
+        this.csm = new CSM( {
+            maxFar: 5000,
+            shadowMapSize: 8192,
+            lightDirection: gamemode.sunDirectionVector,
+            camera: gamemode.camera,
+            parent: gamemode.scene,
+            mode: 'practical',
+            lightIntensity: 1,
+            cascades: 6,
+        } );
+        this.csm.fade = true;
+
+        if (gamemode.setMaterialCsmShadows) gamemode.setMaterialCsmShadows(this.csm);
+
+
+        this.gui = new GUI();
+        const sunFolder = this.gui.addFolder("sun");
+        sunFolder.add(gamemode.sunDirectionVector, 'x', -1, 1).name('X').listen();
+        sunFolder.add(gamemode.sunDirectionVector, 'y', -1, 1).name('Y').listen();
+        sunFolder.add(gamemode.sunDirectionVector, 'z', -1, 1).name('Z').listen();
 
     }
 
@@ -159,5 +171,7 @@ class GameRenderer {
         this.renderer.render(gamemode.scene, gamemode.camera);
 
         if (this.bUsePostProcessing) this.composer.render();
+
+        if (this.csm) this.csm.update();
     }
 }

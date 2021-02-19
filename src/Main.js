@@ -122,7 +122,7 @@ addGamepadAxisInput("Throttle", "0b9b-4012-GOLD WARRIOR SIM -  XTR5.5+G2+FMS Con
  */
 
 function loadResources() {
-    RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16.glb', 'modele_F16');
+    RESOURCE_MANAGER.loadMeshResource('./models/F-16/F-16_b.glb', 'modele_F16');
     RESOURCE_MANAGER.loadMeshResource('./models/debugCube.glb', 'debugCube');
     RESOURCE_MANAGER.loadMeshResource('./models/detailedTree.glb', 'model_detailedTree');
 

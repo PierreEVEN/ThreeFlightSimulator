@@ -7,27 +7,25 @@ import {Landscape} from "./rendering/landscape.js";
 import {enableMouseCapture} from "./io/inputManager.js";
 import {getHeightAtLocation} from "./rendering/HeightGenerator.js";
 import {OPTION_MANAGER} from "./io/optionManager.js";
+import {CSM} from "../threejs/examples/jsm/csm/CSM.js";
+import {CSMHelper} from "../threejs/examples/jsm/csm/CSMHelper.js";
+import {MeshPhysicalMaterial} from "../threejs/build/three.module.js";
 
 
 export { DefaultGamemode }
 
 
 function createPlane(scene) {
-    let rootNode = null;
     RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
         if (child.isMesh) {
-            child.material.metalness = 0.95;
-            child.material.roughness = 0.01;
-            if (rootNode === null) {
-                rootNode = new THREE.Mesh(child.geometry, child.material);
-            } else {
-                let NewMesh = new THREE.Mesh(child.geometry, child.material);
-                rootNode.attach(NewMesh);
-            }
+            child.material.metalness = 0;
+            child.material.roughness = 1;
+            child.castShadow = true;
+            child.receiveShadow = true;
         }
     });
-    scene.add(rootNode);
-    return new Plane(scene, rootNode, false);
+    scene.add(RESOURCE_MANAGER.modele_F16.scene);
+    return new Plane(scene, RESOURCE_MANAGER.modele_F16.scene, false);
 }
 
 class DefaultGamemode {
@@ -35,8 +33,11 @@ class DefaultGamemode {
     constructor() {
         enableMouseCapture();
 
-        this.sunDirectionVector = new THREE.Vector3(0, 0, -1);
+        this.sunDirectionVector = new THREE.Vector3(0, 1, -1).normalize();
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, OPTION_MANAGER.options["camera min"].value, OPTION_MANAGER.options["camera max"].value);
+
+
+
 
         this.scene = new THREE.Scene();
         this.plane = createPlane(this.scene);
@@ -61,18 +62,13 @@ class DefaultGamemode {
 
         const lightIntensity = 0.1;
         this.ambiantLight = new THREE.AmbientLight(new THREE.Color(lightIntensity, lightIntensity, lightIntensity));
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
         this.scene.add(this.ambiantLight);
-        this.scene.add(this.directionalLight);
 
         this.landscape = new Landscape(this.scene, this.camera);
         this.foliageSystem = new FoliageSystem(this.scene, null, this.camera);
     }
 
     update(deltaTime) {
-
-        this.directionalLight.position.set(-this.sunDirectionVector.x, -this.sunDirectionVector.y, -this.sunDirectionVector.z)
-
 
         this.landscape.update(deltaTime);
         this.foliageSystem.update();
@@ -87,6 +83,14 @@ class DefaultGamemode {
 
 
         this.controller.update(deltaTime);
+    }
+
+    setMaterialCsmShadows(csm) {
+        this.plane.mesh.traverse(function (child) {
+            if (child.isMesh) {
+                csm.setupMaterial(child.material);
+            }
+        });
     }
 
 }

@@ -2,6 +2,8 @@ import * as THREE from "../threejs/build/three.module.js";
 import {OrbitControls} from "../threejs/examples/jsm/controls/OrbitControls.js";
 import {RESOURCE_MANAGER} from "./io/resourceManager.js";
 import {Quaternion} from "../threejs/build/three.module.js";
+import {CSM} from "../threejs/examples/jsm/csm/CSM.js";
+import {CSMHelper} from "../threejs/examples/jsm/csm/CSMHelper.js";
 
 export { DevGamemode }
 
@@ -27,11 +29,15 @@ class DevGamemode {
         }
 
         this.controller.update();
+
     }
 
 
 
     createBG() {//map: RESOURCE_MANAGER.TreeImpostor.colorTarget.texture
+
+
+
         this.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhysicalMaterial({})));
 
         const instCount = 20;
@@ -66,5 +72,17 @@ class DevGamemode {
 
 
         this.scene.add(mesh);
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

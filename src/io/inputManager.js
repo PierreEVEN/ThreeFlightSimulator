@@ -13,16 +13,18 @@ const mouseAxisStates = {
     posY: 0, lastPosY: 0, deltaY:0,
     wheel: 0, lastWheel: 0, deltaWheel: 0
 };
+const touchAxisStates = {
+    posX: 0, lastPosX: 0, deltaX: 0,
+    posY: 0, lastPosY: 0, deltaY: 0,
+}
 
 function initializeInputs(dom) {
-
     if ( dom === undefined ) {
         console.warn( 'THREE.FlyControls: The second parameter "domElement" is now mandatory.' );
         dom = document;
     }
     domElement = dom;
     if ( domElement ) domElement.setAttribute( 'tabindex', - 1 );
-
 }
 
 function enableMouseCapture() {
@@ -43,6 +45,12 @@ function updateInputs() {
     mouseAxisStates.lastPosX = mouseAxisStates.posX;
     mouseAxisStates.lastPosY = mouseAxisStates.posY;
     mouseAxisStates.lastWheel = mouseAxisStates.wheel;
+
+    touchAxisStates.deltaX = touchAxisStates.posX - touchAxisStates.lastPosX;
+    touchAxisStates.deltaY = touchAxisStates.posY - touchAxisStates.lastPosY;
+
+    touchAxisStates.lastPosX = touchAxisStates.posX
+    touchAxisStates.lastPosY = touchAxisStates.posY;
 
     for (const [key, value] of Object.entries(keybinds)) {
         updateInputValue(value);
@@ -82,6 +90,14 @@ function addMouseAxisInput(inputId, axis, multiplier) {
     registerInput(inputId);
     keybinds[inputId].inputs.push({
         mouseAxis: axis,
+        multiplier: multiplier,
+    });
+}
+
+function addTouchAxisInput(inputId, axis, multiplier) {
+    registerInput(inputId);
+    keybinds[inputId].inputs.push({
+        touchAxis: axis,
         multiplier: multiplier,
     });
 }
@@ -183,10 +199,18 @@ function mousemove( event ) {
     mouseAxisStates.posX += event.movementX;
     mouseAxisStates.posY += event.movementY;
 }
+function touchMove(e) {
+    if(e.touches) {
+        touchAxisStates.posX = e.touches[0].pageX;
+        touchAxisStates.posY = e.touches[0].pageY;
+        e.preventDefault();
+    }
+}
 
 function mouseWheel(event) {
     mouseAxisStates.wheel += event.deltaY;
 }
+document.addEventListener("touchmove", touchMove);
 
 document.addEventListener('pointerlockchange', function() {
     if (document.pointerLockElement === domElement) {
