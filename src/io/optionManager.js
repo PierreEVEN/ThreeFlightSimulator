@@ -1,3 +1,4 @@
+import {SAVEGAME} from "./saveGame.js";
 
 export {OPTION_MANAGER};
 
@@ -10,7 +11,7 @@ class OptionManager {
         this.options[optionName] = {
             type: "combo",
             choices: choices,
-            currentChoice: currentChoice,
+            currentChoice: SAVEGAME.getOption(optionName) ? SAVEGAME.getOption(optionName) : currentChoice,
             onChanged: []
         }
     }
@@ -18,7 +19,7 @@ class OptionManager {
     addRangeOption(optionName, defaultValue, min, max, step) {
         this.options[optionName] = {
             type: "range",
-            value: defaultValue,
+            value: SAVEGAME.getOption(optionName) ? parseFloat(SAVEGAME.getOption(optionName)) : defaultValue,
             min: min,
             max: max,
             step: step ? step : "1",
@@ -29,7 +30,7 @@ class OptionManager {
     addBooleanOption(optionName, defaultValue) {
         this.options[optionName] = {
             type: "boolean",
-            value: defaultValue,
+            value:  SAVEGAME.getOption(optionName) ? SAVEGAME.getOption(optionName) === "true" : defaultValue,
             onChanged: []
         }
     }
@@ -39,11 +40,11 @@ class OptionManager {
     }
 
     setOptionValue(optionName, value) {
+        SAVEGAME.saveOption(optionName, value);
         this.options[optionName].value = value;
         for(const event of this.options[optionName].onChanged) {
             event.event(event.context, value);
         }
-        console.log(value);
     }
 }
 

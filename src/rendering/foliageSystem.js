@@ -23,6 +23,10 @@ class FoliageType {
 
         this.density = OPTION_MANAGER.options["foliage density"].value;
 
+        OPTION_MANAGER.bindOption(this, "foliage density", (context, value) => {
+            context.density = value;
+        });
+
         meshGroups.push({
             geometry: new THREE.PlaneGeometry(15, 15),
         });
@@ -67,10 +71,26 @@ class FoliageSystem {
         this.sectionSize = 6000;
 
         this.sections = [];
+        this.generate = OPTION_MANAGER.options["enable foliage"].value;
+        OPTION_MANAGER.bindOption(this, "enable foliage", (context, value) => {
+            context.generate = value;
+            context.rebuild();
+        });
+
+        OPTION_MANAGER.bindOption(this, "foliage density", (context, value) => {
+            context.rebuild();
+        });
+    }
+
+    rebuild() {
+        for (const section of this.sections) {
+            section.section.destroy();
+        }
+        this.sections = [];
     }
 
     update() {
-
+        if (!this.generate) return;
         let cameraX = Math.trunc(this.camera.position.x / this.sectionSize);
         let cameraY = Math.trunc(this.camera.position.y / this.sectionSize);
         for (let i = this.sections.length - 1; i >= 0; --i) {

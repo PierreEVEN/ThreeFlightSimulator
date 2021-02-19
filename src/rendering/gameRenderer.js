@@ -21,8 +21,6 @@ class GameRenderer {
 
         this.sunDirectionVector = gamemode.sunDirectionVector;
 
-        this.clearColor = clearColor ? clearColor : new THREE.Color(0,0,0);
-
         // Create renderer
         this.renderer = new THREE.WebGLRenderer({antialias: false});
         this.renderer.autoClear = false;
@@ -129,7 +127,11 @@ class GameRenderer {
 
         OPTION_MANAGER.bindOption(this, "post processing" ,(context, value) => {
             context.bUsePostProcessing = value;
+            if (!value) context.clearColor = new THREE.Color(102 / 256, 203 / 256, 239 / 256);
+            else context.clearColor = new THREE.Color(0, 0, 0);
         });
+        this.clearColor = OPTION_MANAGER.options["post processing"].value ? new THREE.Color(0,0,0) : new THREE.Color(102 / 256, 203 / 256, 239 / 256);
+
     }
 
     render = function(gamemode) {

@@ -33,6 +33,49 @@ OPTION_MANAGER.addRangeOption("landscape quality", 20, 2, 100);
 OPTION_MANAGER.addRangeOption("camera min", 0.1, 0.01, 1, 0.01);
 OPTION_MANAGER.addRangeOption("camera max", 100000, 10000, 1000000, 10000);
 
+OPTION_MANAGER.bindOption(null, "Graphic settings", (context, value) => {
+    switch (value) {
+        case "custom":
+            return;
+        case "low":
+            OPTION_MANAGER.setOptionValue("pixel percentage", 50);
+            OPTION_MANAGER.setOptionValue("enable foliage", true);
+            OPTION_MANAGER.setOptionValue("foliage density", 20);
+            OPTION_MANAGER.setOptionValue("post processing", false);
+            OPTION_MANAGER.setOptionValue("loading range", 1);
+            OPTION_MANAGER.setOptionValue("landscape quality", 10);
+            break;
+        case "medium":
+            OPTION_MANAGER.setOptionValue("pixel percentage", 100);
+            OPTION_MANAGER.setOptionValue("enable foliage", true);
+            OPTION_MANAGER.setOptionValue("foliage density", 50);
+            OPTION_MANAGER.setOptionValue("post processing", true);
+            OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 3);
+            OPTION_MANAGER.setOptionValue("loading range", 3);
+            OPTION_MANAGER.setOptionValue("landscape quality", 15);
+            break;
+        case "high":
+            OPTION_MANAGER.setOptionValue("pixel percentage", 100);
+            OPTION_MANAGER.setOptionValue("enable foliage", true);
+            OPTION_MANAGER.setOptionValue("foliage density", 100);
+            OPTION_MANAGER.setOptionValue("post processing", true);
+            OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 10);
+            OPTION_MANAGER.setOptionValue("loading range", 6);
+            OPTION_MANAGER.setOptionValue("landscape quality", 20);
+            break;
+        case "cinematic":
+            OPTION_MANAGER.setOptionValue("pixel percentage", 200);
+            OPTION_MANAGER.setOptionValue("enable foliage", true);
+            OPTION_MANAGER.setOptionValue("foliage density", 150);
+            OPTION_MANAGER.setOptionValue("post processing", true);
+            OPTION_MANAGER.setOptionValue("atmospheric scattering quality", 20);
+            OPTION_MANAGER.setOptionValue("loading range", 6);
+            OPTION_MANAGER.setOptionValue("landscape quality", 50);
+            break;
+    }
+});
+
+
 /**
  * INPUTS
  */

@@ -67,11 +67,11 @@ function createGraphics() {
         switch (optionValue.type) {
             case "combo":
                 const combo = document.createElement("select");
-                combo.value = optionValue.currentChoice;
-                for (const option of optionValue.choices) {
+                for (const selectOption of optionValue.choices) {
                     const optionItem = document.createElement("option");
-                    optionItem.innerText = option;
-                    optionItem.value = option;
+                    optionItem.innerText = selectOption;
+                    optionItem.value = selectOption;
+                    if (selectOption === optionValue.currentChoice) optionItem.selected = true;
                     combo.appendChild(optionItem);
                 }
                 optionContainer.appendChild(combo);
@@ -92,6 +92,8 @@ function createGraphics() {
                 number.max = optionValue.max;
                 number.value = optionValue.value;
                 number.step = optionValue.step;
+                OPTION_MANAGER.bindOption(slider, option, (context, value) => {context.value = value;});
+                OPTION_MANAGER.bindOption(number, option, (context, value) => {context.value = value;});
                 slider.onchange = () => {
                     OPTION_MANAGER.setOptionValue(option, parseFloat(slider.value));
                 }
@@ -115,6 +117,7 @@ function createGraphics() {
                 checkBox.type = "checkbox";
                 checkBox.checked = optionValue.value;
                 optionContainer.appendChild(checkBox);
+                OPTION_MANAGER.bindOption(optionContainer, option, (context, value) => {context.checked = value;});
                 checkBox.onchange = () => {
                     OPTION_MANAGER.setOptionValue(option, checkBox.checked);
                 }
