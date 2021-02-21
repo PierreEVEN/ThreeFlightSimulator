@@ -67,9 +67,13 @@ function home() {
 
 let hasClickedPlay = true;
 function play() {
+    if (hasClickedPlay) {
+        if (!releaseRenderer()) {
+            return;
+        }
+        hasClickedPlay = false;
+    }
     hideMenu();
-    if (hasClickedPlay) releaseRenderer();
-    hasClickedPlay = false;
 }
 
 function graphics() {

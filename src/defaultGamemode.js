@@ -71,14 +71,15 @@ class DefaultGamemode {
     }
 
     update(deltaTime) {
-
         this.landscape.update(deltaTime);
         this.foliageSystem.update();
         this.plane.update(deltaTime);
 
 
-        if (this.plane.position.z < getHeightAtLocation(this.plane.position.x, this.plane.position.y)) {
-            this.plane.position.set(0, 0, getHeightAtLocation(this.plane.position.x, this.plane.position.y) + 100);
+        if (this.plane.position.z < getHeightAtLocation(this.plane.position.x, this.plane.position.y) || this.plane.position.z < 0.0) {
+            let newZ = getHeightAtLocation(this.plane.position.x, this.plane.position.y);
+            if (newZ < 0) newZ = 0;
+            this.plane.position.set(0, 0,  newZ + 100);
             this.plane.velocity.set(0, 0, 0);
             this.plane.rotation.identity();
         }

@@ -143,6 +143,10 @@ function loadResources() {
     RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.VS.glsl', 'vertexShader_normal');
     RESOURCE_MANAGER.loadFileResource('./shaders/normalMaterial.FS.glsl', 'fragmentShader_normal');
 
+    //HUD
+    RESOURCE_MANAGER.loadTextureResource('./textures/hud/directionCrosshair.png', 'texture_hud_directionCrosshair');
+    RESOURCE_MANAGER.loadTextureResource('./textures/hud/velocityCrosshair.png', 'texture_hud_velocityCrosshair');
+
     RESOURCE_MANAGER.loadTextureResource('./textures/noise.png', 'texture_noise');
     RESOURCE_MANAGER.loadTextureResource('./textures/forrest_ground_01_diff_1k.jpg', 'texture_grass1');
     RESOURCE_MANAGER.loadTextureResource('./textures/brown_mud_leaves_01_diff_1k.jpg', 'texture_grass2');
@@ -170,7 +174,6 @@ function preInit() {
  */
 
 function init() {
-
     const background = document.getElementById('game');
     initializeInputs(background);
 
@@ -197,7 +200,6 @@ function animate() {
     let deltaTime = clock.getDelta();
 
     updateInputs();
-
     gamemode.update(deltaTime);
     gameRenderer.render(gamemode);
     stats.update();
@@ -207,9 +209,11 @@ function animate() {
 
 function releaseRenderer() {
     if (isReady) {
-        init();
+        init()
         animate();
+        return true;
     }
+    return false;
 }
 
 loadResources();

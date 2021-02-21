@@ -71,10 +71,9 @@ class Plane {
         this.upLiftCoefficient = 0.02;
         this.rightLiftCoefficient = 0.002;
 
-        this.update(0);
-
-
         addInputPressAction("Pause", () => { this.pause = !this.pause; });
+
+        this.update(0);
     }
 
     updateRotations(deltaTime) {

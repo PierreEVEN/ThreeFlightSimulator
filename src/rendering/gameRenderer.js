@@ -166,7 +166,6 @@ class GameRenderer {
     }
 
     render = function(gamemode) {
-
         let scatterR = Math.pow(400 / this.scatterValues.x, 4) * this.scatteringStrength;
         let scatterG = Math.pow(400 / this.scatterValues.y, 4) * this.scatteringStrength;
         let scatterB = Math.pow(400 / this.scatterValues.z, 4) * this.scatteringStrength;
@@ -187,6 +186,7 @@ class GameRenderer {
 
         this.renderer.setRenderTarget( this.bUsePostProcessing ? this.sceneRenderTarget : null);
         this.renderer.clear();
+
         this.renderer.render(gamemode.scene, gamemode.camera);
 
         if (this.bUsePostProcessing) this.composer.render();

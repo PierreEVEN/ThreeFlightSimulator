@@ -4,8 +4,24 @@ import {RESOURCE_MANAGER} from "./io/resourceManager.js";
 import {Quaternion} from "../threejs/build/three.module.js";
 import {CSM} from "../threejs/examples/jsm/csm/CSM.js";
 import {CSMHelper} from "../threejs/examples/jsm/csm/CSMHelper.js";
+import {Plane} from "./objects/plane.js";
 
 export { DevGamemode }
+
+function createPlane(scene) {
+    RESOURCE_MANAGER.modele_F16.scene.traverse(function (child) {
+        if (child.isMesh) {
+            child.material.metalness = 0;
+            child.material.roughness = 1;
+            if (child.name !== "CanopyGlass") {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        }
+    });
+    scene.add(RESOURCE_MANAGER.modele_F16.scene);
+    return new Plane(scene, RESOURCE_MANAGER.modele_F16.scene, false);
+}
 
 class DevGamemode {
 
@@ -17,6 +33,7 @@ class DevGamemode {
 
         this.scene.add(new THREE.AmbientLight())
 
+        this.plane = createPlane(this.scene);
         this.controller = new OrbitControls(this.camera, document.getElementById('game'));
 
         this.camera.position.set(0, 0, 50);
@@ -30,16 +47,18 @@ class DevGamemode {
 
         this.controller.update();
 
+        this.plane.update(deltaTime);
+
     }
 
 
 
-    createBG() {//map: RESOURCE_MANAGER.TreeImpostor.colorTarget.texture
+    createBG() {
 
 
 
         this.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhysicalMaterial({})));
-
+/*
         const instCount = 20;
         const spacing = 2;
 
@@ -71,18 +90,9 @@ class DevGamemode {
 
 
 
+
         this.scene.add(mesh);
-
-
-
-
-
-
-
-
-
-
-
+ */
 
     }
 }

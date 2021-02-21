@@ -68,6 +68,7 @@ function createMipMappedTexture(resolution, channels, baseData) {
 
     let lastMipMaps = baseData;
     texture.mipmaps[0] = new ImageData(lastMipMaps, resolution, resolution);
+
     let mipmap = 1;
     do {
         resolution /= 2;
