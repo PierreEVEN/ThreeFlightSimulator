@@ -262,11 +262,10 @@ J'ai tout d'abord fais des tests avec les Promises JavaScript. Le soucis c'est q
 sont toujours réalisées sur le même thread (coroutines) et le gain de performance est discutable.
 
 J'ai alors deux options qui s'offrent à moi : 
-- Les WebWorkers javascript : Simple à mettre, mais performances mediocres du javascript.
+- Les WebWorkers javascript : Simple à mettre, mais performances médiocres du javascript.
 - Faire du WebAssembly : Puissance du C/C++ dans un navigateur.
 
-Etant un gros consommateur du C++, le choix fut donc rapide.
-
+Étant un gros consommateur du C++, le choix fut donc rapide.
 
 Le passage des algos de génération en C++ a été assez rapide, le hic arrive au moment où j'ai voulu utiliser
 des threads. En effet, depuis la failles SPECTRE qui a touché les processeurs intels en 2018,
@@ -278,10 +277,6 @@ manipuler des WebWorkers qui appellent eux du code C++. Un sacré schmillblick.
 Au final la mise en place est assez simple et propre, et le résultat est sans attente,
 le terrain se charge dynamiquement en temps réel sans aucun bloquage, ce qui me permettra dans le futur de
 complexifier l'algo de génération sans me soucier des performances.
-
-#### Génération des structures
-
-[TODO]
 
 ### Simulation des avions
 
@@ -307,8 +302,24 @@ Il ne reste plus qu'à ajouter un menu permettant de remapper les touches, puis 
 
 #### Systèmes de particule
 
-[TODO]
+> Abandonné, car ThreeJS ne possède pas un système de particule à proprement parler. Je décide de garder ça pour mes futures projets C++
+> pour me concentrer sur d'autres aspects.
 
 ### Interfaces utilisateur
 
 [TODO]
+
+## Conclusion
+
+La prise en main de ThreeJS fut assez rapide. La librairie est plutot intuitive est fournie d'exemples divers.
+Cependant, si celle-ci me semble parfaite pour des petits projets ou des petites démo à faire tourner sur navigateur,
+pour des projets plus avancés elle montre rapidement ses limitations. Le renderer est en effet trop statique à mon gout,
+et la gestion du post process semble avoir été rajoutée *a l'arrache* si je peux me le permettre, rendant son usage assez crade.
+Pour continuer le développement de ce simulateur, j'arrive à un stade où je suis trop limité avec la librairie dans son état
+actuel, au point que j'aurais idéalement besoin de réécrire le renderer. Cependant cela m'engage à un travail énorme pour un intérêt
+relatif pour ma formation.
+Je décide donc de laisser le projet dans son état actuel, et de le reprendre en C++ avec Vulkan. (j'y vois un bien meilleur
+avenir pédagogiquement parlant).
+
+En attendant réaliser ce petit simulateur fut assez plaisant, et cela m'a permis de découvrir différentes technologie du web,
+web auquel je n'avais jamais sérieusement touché jusqu'ici (et que j'espère ne pas avoir à retoucher avant un bon moment ! :) ) 
