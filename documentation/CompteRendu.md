@@ -12,13 +12,13 @@ pour faire des recherches et perfectionner mes connaissances dans le domaine via
 - Développer un petit simulateur de vol sur navigateur (idéalement capable de tourner sur mobile tant qu'à faire)
 - Avoir un monde pseudo-infini généré en temps réel (amélioration de mes précédentes tentatives)
 - Génération d'une végétation dense et légère en performances 
-- Generation de structures simples au sol (aéroports notamment)
 - Modèle de vol simplifié d'un avion
 - Shaders d'atmosphère avancés
 - Me former aux technologies du web (pour la culture générale, je ne compte pas m'y attarder plus que ca dans le futur)
 
 ### Objectifs secondaires et optionnels
 
+- Generation de structures simples au sol (aéroports notamment)
 - Outils de level design pour paramétrer les algorithmes de generation procéduraux
 - Gameplay / Combats aériens (Démo technique avant tout, le jeu est plus secondaire)
 - Collisions physiques
@@ -51,54 +51,96 @@ function preInit() {
 
 Pour ce qui est des formats d'objets 3D, je restreins le système au format gltf (avec une préférence pour le .glb),
 car celui-ci a l'avantage d'avoir ses données en binaire et non en texte clair comme du .obj,
-ce qui permet un chargement plus rapide et des fichiers plus légers. Un autre avantage
+ce qui permet un chargement plus rapide et des fichiers plus légers. (en plus d'être un format très puissant et facilement portable vers
+toute sorte d'application) Un autre avantage
 est aussi le fait que le glb embarque toutes ses dépendances à l'intérieur du fichier, ce qui évite
 tout problème de chemins relatifs.
-(j'ai aussi une forte préférence pour les formats open-source, de plus j'ai déjà écrit un loader
-gltf il y a peu pour mon moteur C++, mon choix a donc vite été fait)
+(j'ai aussi une forte préférence pour les formats open-source, et j'ai aussi déjà écrit un loader
+gltf il y a peu pour mon moteur C++, mon choix a donc été rapide)
 
 ### Débuts dans ThreeJS
 
 La gestion des ressources étant maintenant grandement facilitée, j'ai pu commencer à charger
 quelques modèles pour faire quelques tests.
 
-Une petite recherche rapide sur google m'a permis de trouver un modèle d'avion potable (je ferrais peu etre
+Une petite recherche rapide sur google m'a permis de trouver un modèle d'avion potable (je ferrais peu être
 un modèle plus détaillé plus tard si j'ai le temps et la motivation).
-Etant habitué à utiliser des softs 3D modernes, j'ai décidé de ne pas utiliser le système
-de coordonée par défaut de ThreeJS (Y-up), mais plutot du Z-up, plus standard dans les moteurs
-3D (J'ai constaté que le Y-up etait souvent un héritage des jeux 2D, avec la profondeur en Z).
+Étant habitué à utiliser des softs 3D modernes, j'ai décidé de ne pas utiliser le système
+de coordonnée par défaut de ThreeJS (Y-up hérité historiquement d'OpenGL), mais plutôt du Z-up, plus standard dans les applications
+3D récents.
 
 Je me retrouve donc avec un avion qui "vole" et un controleur qui me permet d'orbiter autours
 et d'avoir une vue embarquée
 ![firstFlight](firstFlight.png) *J'en ai aussi profité pour entamer mes recherches sur le landscape, j'y reviendrais plus bas*
 
-### Foliages
+### Foliage (voir src/foliageSystem.js)
 
-C'est déjà bien, et je perçois mieux le potentiel de ThreeJS. Je décide donc d'importer le premier
+Ces premiers tests me permettent de mieux percevoir le potentiel de ThreeJS. Je décide donc d'importer le premier
 modèle d'arbre qui me tombe sous la main (un feuillu low-poly que j'avais fait pour un projet de l'an dernier)
 
-Pour afficher un objet en masse, il n’y a pas de secrets, il faut instancier.
+Pour afficher un objet en masse, il n’y a pas de secrets, il faut instancier. Je commence donc à faire quelques tests
+avec les instancedMesh de ThreeJS
 ![trees1](trees1.png) *quelques milliers d'arbres plus tard...*
 
-Pour éviter l'effet "forêt d'épicéas", j'ajoute un random à la position de mes instances pour les dispercer un peu... Sauf que mon arbre
-est en 2 meshes... et qu'on ne peut pas spécifier la seed d'un random JS pour faire apparaitre les 2 bouts au "même random".
+Pour éviter l'effet "forêt d'épicéas", j'ajoute un random à la position de mes instances (initialement en grille pour avoir une densité à peu près uniforme)
+pour les disperser un peu... Sauf que mon arbre est en 2 meshes... et qu'on ne peut pas spécifier la seed d'un random en JS pour faire apparaitre les 2 bouts au "même random".
 C'est pas très grave, je laisse tel quel en attendant une version propre.
 
 Même si ca tourne bien sur mon PC principal, je suis tout de même mitigé sur les performances.
-En effet, sur le GPU intégré de mon PC portable, je ne peux pas dépasser une zone de 100x100 arbres pour garder la tête au dessus des 60 fps.
-La machine a beau être mauvaise, c'est peu !
+En effet, sur le GPU intégré de mon PC portable, je ne peux pas dépasser une zone de 100x100 arbres pour garder la tête au-dessus des 60 fps.
+La machine à beau être mauvaise, c'est peu ! Il va donc falloir travailler l'optimisation GPU, donc soit en réduisant le coup par texel du shader,
+soit en réduisant le nombre de polygones par instance. Ici le shader est déjà très basique, la première option n'est donc pas envisageable.
 
-Je commence à faire des tests pour ajouter de simples billboard, et je me rappelle alors d'un
-[article](https://www.shaderbits.com/blog/octahedral-impostors) qui présentait une sorte de billboard amélioré au rendu assez impressionant.
+
+Je commence à faire des tests pour ajouter de simples billboard dans l'optique de gerer des LOD, et je me rappelle alors d'un
+[article](https://www.shaderbits.com/blog/octahedral-impostors) qui présentait une sorte de billboard amélioré au rendu assez impressionnant pour le coût.
 
 Je commence donc à faire quelques tests, et c'est sans attentes. Passer de mon modèle mal optimisé
 à un simple plan me permet de passer de quelques dizaines de milliers à plusieurs dizaines de millions
-d'instances pour un cout dérisoire et très peu de contraintes. (Pas besoin de LODs, l'affichage reste correcte même à quelques dizaines de mètres)
+d'instances pour un cout dérisoire en gardant un rendu acceptable à faible distance. (Pas besoin de m'embeter avec des LOD, chose que je
+n'avais clairement pas envie d'implementer en JavaScript)
 ![trees2](trees2.png) *Je crois que j'ai un peu abusé sur la quantité*
 
-L'idée est là, mais il reste des problèmes de transformation sur les octahedral impostors. Je vais continuer à y réfléchir pendant que j'avance
-sur le reste. En attendant ça fait à peu près le café comme on dit.
+En plus de l'atlas qui contient le color buffer de mon arbre, je génère un 2e buffer avec les normals, ce qui me permet
+de simuler un éclairage primitif.
 
+L'idée est là, mais j'ai mal géré mes transformations ce qui conduit à quelques désagréments,
+notamment des transitions trop apparentes entre les différentes images de l'atlas, et des rotation
+foireuses sous certains angles.
+
+![upside_down](upside_down.png) *on évitera le vol dos pour le moment...*
+
+Le premier prototype était coddé à l'arrache pour me faire une idée, je décide donc de reposer mes algos proprement.
+J'en profite aussi pour changer de modèle d'arbre en utilisant un générateur. C'est beaucoup mieux, les rotations sont maintenant
+bonnes. Cependant un nouveau problème se pose, j'ai un sérieux problème d'aliasing. En effet je bind les renderTarget directement
+dans mon shader, ce qui fait que je n'ai pas de mipmaps sur mes textures causant cet immonde bouillie de pixels.
+
+![no_mipmaps](no_mipmaps.png) *c'est à ce moment que j'ai une préférence pour les arbres low-poly*
+
+Je soupçonne aussi le Z-buffer... Mais un problème à la fois, il faut déjà générer les mipmaps !
+
+Je passe donc plusieurs jours à me battre avec le Javascript pour tenter soit de faire des copies de textures, soit pour exporter des textures... Bref
+c'est clairement pas un langage fait pour ça... Au final j'arrive à copier mon RenderBuffer dans une texture et à générer des mipmaps. C'est beaucoup
+mieux. Cependant, la façon dont OpenGL blit mon image pour générer les mipmaps fait perdre progressivement de l'alpha, ce qui 
+a tendance à faire disparaitre mes arbres avec la distance. (problème classique quand on traite de la végétation).
+
+![AlphaMipMaps](AlphaMipMaps.png) *au loins, les arbres deviennent rapidement invisibles*
+
+C'est donc repartis pour plusieurs jours de galère pour réussir à générer des mipmaps en JS (faire des opérations sur des textures en JS c'est
+vraiment pas le plus fun). Au final, le temps de calcul pour générer les mipmaps de mon atlas est assez long même si le résultat est bon
+(merci JS). Je décide donc d'abandonner ma modif et de mettre un seuil de masque plus haut dans le shader
+en bricolant pour avec un rendu potable sans mipmaps customs.
+
+![GoodTrees](GoodTrees.png) *ca commence à être propre*
+
+Entretemps j'en ai profité pour gérer mon foliage avec des quadtrees et passé la génération des vector de matrices d'instances en 
+web assembly.
+
+![PerfectTrees](PerfectTrees.png) *Encore quelques réglages, et j'obtiens un résultat assez plaisant.*
+
+je décide d'arrèter là mes recherches sur le sujet pour le moment.
+Il reste encore beaucoup d'améliorations à faire, notamment sur le ZBuffer qui galère à grande distance, mais ca me semble
+overkill pour un projet ThreeJS. 
 
 ### Génération du terrain (voir src/landscape.js)
 
