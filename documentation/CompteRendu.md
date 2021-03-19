@@ -244,7 +244,7 @@ Sur les OpenWorlds, les surfaces aquatiques sont rapidement problématiques.
 En effet, leur forte proximité avec le sol au niveau des plages rend le travail
 du z-buffer approximatif.
 
-![WaterZ](WaterZ.png) *Exemple de problème de conflits de z-fighting*
+![WaterZ](waterZ.png) *Exemple de problème de conflits de z-fighting*
 
 Là dessus, l'approche la plus efficace que j'ai trouvé etait de tout simplement combiner l'eau et le sol.
 Dans le vertexShader, je réhausse les pixels en dessous du niveau de l'eau à zéro et le tour est joué.
@@ -252,7 +252,7 @@ En plus de celà cette technique me permet d'obtenir la profondeur d'eau, et de 
 shader de l'eau pour faire des zones plus ou moins sombres.
 L'effet est simple, et efficace.
 
-![WaterZ](Water.png) *Nouveau shader d'eau intégré à celui du landscape*
+![WaterZ](water.png) *Nouveau shader d'eau intégré à celui du landscape*
 
 #### Optimisations et Web Assembly
 
