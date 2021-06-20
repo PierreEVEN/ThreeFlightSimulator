@@ -11,7 +11,7 @@ The goal behind this project was to improve my shader programming skills and to 
 
 - Web assembly for high performance generation algorithms
 - Infinite procedural landscape generation
-- Primitive foliage system
+- Basic foliage system
 - Basic atmospheric scattering shader
 - Tree impostors
 
