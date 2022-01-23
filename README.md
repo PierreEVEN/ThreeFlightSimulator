@@ -29,3 +29,8 @@ A live demo of this project is available [here](https://pierreeven.github.io/dem
 
 ![Shadows](https://user-images.githubusercontent.com/24438631/110436644-c5724100-80b4-11eb-9b51-f0067786d554.png)*Experimentation with the threeJS's cascaded shadow module. (i didn't achieved to a good result, and the efforts required to improve the rendering was too much for a side project)*
 
+![atmospheric_scattering](https://user-images.githubusercontent.com/24438631/150693735-efe73c3d-397a-4479-b0ab-e43f0df9069f.png)
+> Atmospheric scattering
+
+![quadtree](https://user-images.githubusercontent.com/24438631/150693744-59b0760e-b12d-46cb-a446-142ed685eafe.png)
+> Quadtree
