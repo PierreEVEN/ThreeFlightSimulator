@@ -12,7 +12,6 @@ import {
 import {GameRenderer} from "./rendering/gameRenderer.js";
 import {DefaultGamemode} from "./defaultGamemode.js";
 import {ImpostorRenderer} from "./rendering/impostorRenderer.js";
-import {DevGamemode} from "./devGamemode.js";
 import {OPTION_MANAGER} from "./io/optionManager.js";
 import {SAVEGAME} from "./io/saveGame.js";
 export {releaseRenderer}
@@ -175,6 +174,7 @@ function preInit() {
 
 function init() {
     const background = document.getElementById('game');
+    background.innerHTML = '';
     initializeInputs(background);
 
     // Setup clock

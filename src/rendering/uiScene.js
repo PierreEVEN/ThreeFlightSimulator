@@ -15,7 +15,9 @@ class UIScene {
         this.setSize(resX, resY);
 
         this.renderer.setPixelRatio(window.devicePixelRatio * OPTION_MANAGER.options["pixel percentage"].value / 100);
-        document.getElementById('game').appendChild(this.renderer.domElement);
+        const game_dom = document.getElementById('game');
+        game_dom.innerHTML = '';
+        game_dom.appendChild(this.renderer.domElement);
     }
 
     setSize(sizeX, sizeY) {

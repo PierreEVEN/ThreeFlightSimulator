@@ -55,7 +55,9 @@ function addMenuButton(text, onclick) {
 }
 
 function fillMenuBar() {
-    addMenuButton("HOME", home);
+    addMenuButton("HOME", () => {
+        window.location.href = "https://evenpierre.fr"
+    });
     addMenuButton("PLAY", play);
     addMenuButton("GRAPHICS", graphics);
     addMenuButton("INPUTS", keybinds);
@@ -66,6 +68,7 @@ function home() {
 }
 
 let hasClickedPlay = true;
+
 function play() {
     if (hasClickedPlay) {
         if (!releaseRenderer()) {

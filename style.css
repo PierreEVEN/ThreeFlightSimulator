@@ -1,7 +1,7 @@
 
 body {
     color: white;
-    margin: 0px;
+    margin: 0;
     width: 100%;
     height: 100%;
     background-color: gray;
@@ -13,6 +13,8 @@ div#game {
     display: flex;
     transition: all 200ms;
     background-color: black;
+    width: 100%;
+    height: 100%;
 }
 
 #test {
@@ -33,6 +35,12 @@ div#game {
 div#game > img {
     width: 100%;
     height: 100%;
+}
+
+#background-image {
+    min-width: 100%;
+    min-height: 100%;
+    object-fit: cover;
 }
 
 div#interface-container {

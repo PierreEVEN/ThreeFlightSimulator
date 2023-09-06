@@ -6,20 +6,27 @@ const callReferences = {};
 let commandPool = [];
 let commandsInProcess = 0;
 
-let callbackPtr = Module.addFunction((id, Data, Size) => {
+const try_add_function = () => {
+    let callbackPtr = Module.addFunction((id, Data, Size) => {
 
-    if (!callReferences[id]) {
-        console.log("failed to find call with id : " + id);
+        if (!callReferences[id]) {
+            console.log("failed to find call with id : " + id);
+            return;
+        }
+
+        callReferences[id].validate({Data: Data, Size: Size, context: callReferences[id].context});
+        delete callReferences[id];
+        commandsInProcess--;
+        triggerCommandPool();
+    }, 'viii');
+
+    if (!callbackPtr) {
+        setTimeout(try_add_function, 50);
         return;
     }
-
-    callReferences[id].validate({Data: Data, Size: Size, context:callReferences[id].context});
-    delete callReferences[id];
-    commandsInProcess--;
-    triggerCommandPool();
-}, 'viii');
-
-Module.cwrap("Init", 'void', ['string', 'number'])("./src/wasm/bin/tfsWasmWorker.js", callbackPtr);
+    Module.cwrap("Init", 'void', ['string', 'number'])("./src/wasm/bin/tfsWasmWorker.js", callbackPtr);
+}
+try_add_function();
 
 function executeCommand(command) {
     commandsInProcess++;
@@ -42,7 +49,9 @@ function triggerCommandPool() {
                 MaxPriorityID = i;
             }
         }
-        if (!MaxPriorityCommand) { return; }
+        if (!MaxPriorityCommand) {
+            return;
+        }
         executeCommand(MaxPriorityCommand);
         commandPool.splice(MaxPriorityID, 1);
     }

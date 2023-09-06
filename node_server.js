@@ -7,7 +7,7 @@ require('dotenv').config();
 const is_secured = fs.existsSync(process.env.SSL_CERTIFICATE) && fs.existsSync(process.env.SSL_PRIVATE_KEY) && fs.existsSync(process.env.SSL_CHAIN);
 
 const hostname = '127.0.0.1';
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || (is_secured ? 443 : 80);
 
 const app = express();
 app.set('port', port);

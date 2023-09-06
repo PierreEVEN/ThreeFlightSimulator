@@ -476,6 +476,9 @@ function getEmptyTableSlot() {
 
 // Add a wasm function to the table.
 function addFunctionWasm(func, sig) {
+  if (!wasmTable)
+    return null;
+
   // Check if the function is already in the table, to ensure each function
   // gets a unique index. First, create the map if this is the first use.
   if (!functionsInTableMap) {
