@@ -1,0 +1,13 @@
+{
+  "name": "ThreeFlightSimulator",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/Main.js",
+  "scripts": {
+    "start": "node ./node_server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2"
+  }
+}
