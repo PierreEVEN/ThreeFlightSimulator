@@ -17,7 +17,7 @@ The goal behind this project was to improve my shader programming skills and to 
 
 ## Live demo
 
-A live demo of this project is available [here](https://pierreeven.github.io/demos.html)
+A live demo of this project is available [here](https://flightsim.evenpierre.fr)
 (please keep in mind that the high settings require a high-end GPU. Prefer lower presets for laptop or mobile devices)
 
 
